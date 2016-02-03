@@ -46,7 +46,6 @@ class AbstractSample(models.Model):
     collection_time = models.DateTimeField(blank=True, null=True, editable=False)
     creation_time = models.DateTimeField(blank=True, default=datetime.datetime.utcnow(), editable=False)
     modification_time = models.DateTimeField(blank=True, default=datetime.datetime.utcnow(), editable=False)
-    #TODO: image , plots.
     
     def buildName(self, inputName):
         name = inputName

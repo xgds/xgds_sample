@@ -19,6 +19,6 @@ from django import forms
 from django.forms import ModelForm
 
 class SampleForm(ModelForm):
-    # TODO: hide creation/modification time and creator/modifier
+    exclude = ['creation_time', 'modification_time', 'collection_time', 'creator', 'modifier', 'collector']
     class Meta: 
         model = settings.XGDS_SAMPLE_SAMPLE_MODEL
