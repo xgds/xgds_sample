@@ -21,5 +21,6 @@ from xgds_sample import views
 
 
 urlpatterns = patterns('',
-                       (r'^$', TemplateView.as_view(template_name='xgds_sample/index.html'), {}, 'index'),
+                       (r'^import/', views.getSampleImportPage, {}, 'xgds_sample_import'),
+                       (r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_search'),
                        )

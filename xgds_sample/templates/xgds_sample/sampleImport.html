@@ -1,0 +1,36 @@
+{% extends 'xgds_sample/sampleDashboardBase.html' %}
+
+ {% block cssExtras %}
+ {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}dropzone/dist/min/dropzone.min.css"></link>
+ {% endblock cssExtras %}
+
+{% block otherJSInit %}
+{% endblock otherJSInit %}
+
+
+{% block scripts %}
+{{block.super}}
+	<script type="text/javascript" src='{{ EXTERNAL_URL }}dropzone/dist/dropzone.js'></script>
+{% endblock scripts %}
+
+
+{% block firstPackery %}
+	{{ block.super }}
+	<div class='item w2 lockAspect' id='item_sample_import' data-isStamped="false">
+		<div class="error-message upload-error"></div>
+		<i class="icon-lock-open pinDiv"></i><br />
+	
+		<form class="sampleImport" id="sampleImport" 
+			action="" method="post"
+			enctype="multipart/form-data">
+			
+			<table>
+				{{ form.as_table }}
+			</table>
+			{% csrf_token %}
+		</form>
+		
+		<button id="submit-all" class="small">Import</button>
+	</div>
+{% endblock firstPackery %}

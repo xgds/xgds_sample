@@ -1,0 +1,12 @@
+{% load url from future %}
+{% block sitemenu-content-secondary %}
+{% load nav %}
+<div class="sitemenu-nav-secondary">
+	<nav class="subnav">
+	<ul>
+		<li {% currentnav xgds_sample_search %}><a href="{% url 'xgds_sample_search' %}">Search</a></li>
+		<li {% currentnav xgds_sample_import %}><a href="{% url 'xgds_sample_import' %}">Import</a></li>
+  	</ul>
+  	</nav>
+</div>
+{% endblock %}
