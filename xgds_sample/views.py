@@ -14,8 +14,10 @@
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.http import HttpResponse
 from django.template import RequestContext
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.forms.formsets import formset_factory
@@ -25,14 +27,27 @@ from geocamUtil.loader import LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
 from geocamUtil.loader import getClassByName
+import json
 
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 
 
-def getSampleImportPage(request):
-    data = {'form': SampleForm()}
-    return render_to_response("xgds_sample/sampleImport.html", data, 
+@login_required
+def createNewSample(request):
+    if request.method == 'POST':
+        form = SampleForm(request.POST)
+        if form.is_valid():
+            newSample = form.save()
+            return HttpResponse(json.dumps({'success':''}, content_type='application/json'),content_type='application/json')
+        else: 
+            return HttpResponse(json.dumps({'failed': 'Problem during creating new sample: ' + form.errors}), content_type='application/json', status=406)
+            
+
+def getSampleCreatePage(request):
+    data = {'form': SampleForm(), 
+            }
+    return render_to_response("xgds_sample/sampleCreate.html", data, 
                               context_instance=RequestContext(request))
 
 

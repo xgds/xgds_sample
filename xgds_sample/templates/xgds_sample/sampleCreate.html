@@ -21,16 +21,12 @@
 		<div class="error-message upload-error"></div>
 		<i class="icon-lock-open pinDiv"></i><br />
 	
-		<form class="sampleImport" id="sampleImport" 
-			action="" method="post"
-			enctype="multipart/form-data">
-			
+		<form class="sampleCreate" id="sampleCreate" action="{% url 'create_new_sample' %}" method="post" enctype="multipart/form-data">
 			<table>
 				{{ form.as_table }}
 			</table>
 			{% csrf_token %}
+			<input type="submit" value="create"/> 
 		</form>
-		
-		<button id="submit-all" class="small">Import</button>
 	</div>
 {% endblock firstPackery %}

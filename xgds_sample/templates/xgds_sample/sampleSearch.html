@@ -20,8 +20,10 @@
 	<form id="form-AbstractSample" action="" method="post">
 		{{ formset.management_form }} 
 		{% csrf_token %} 
-		{% for form in formset %} 
+		{% for form in formset %}
+			<table> 
 			{{ form.as_table }}
+			</table>
 		{% endfor %} 
 		<input type="submit" id="doSearch" class="small" value="Search" /> 
 		&nbsp; 
