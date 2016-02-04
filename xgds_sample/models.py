@@ -58,6 +58,6 @@ class AbstractSample(models.Model):
         abstract = True
 
 
-class Sample(AbstractSample):
-    pass
+#class Sample(AbstractSample):
+#    pass
             
