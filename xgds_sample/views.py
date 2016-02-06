@@ -41,6 +41,7 @@ SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 def createNewSample(request):
     if request.method == 'GET':
         form = SampleForm()
+        messages.success(request, '')
     elif request.method == 'POST':
         form = SampleForm(request.POST)
         if form.is_valid():
