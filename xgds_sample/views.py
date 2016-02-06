@@ -15,34 +15,45 @@
 # __END_LICENSE__
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
-from django.http import HttpResponse
+from django.shortcuts import render_to_response, render
+from django.core.urlresolvers import reverse
+from django.http import (HttpResponseRedirect, 
+                         HttpResponseForbidden, 
+                         Http404, 
+                         HttpResponse, 
+                         HttpResponseNotAllowed)
 from django.template import RequestContext
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.forms.formsets import formset_factory
 from django.conf import settings
-from geocamUtil.loader import LazyGetModelByName
+from django.contrib import messages 
 
+from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
-from geocamUtil.loader import getClassByName
-import json
 
+import json
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 
 
 @login_required
 def createNewSample(request):
-    if request.method == 'POST':
+    if request.method == 'GET':
+        form = SampleForm()
+    elif request.method == 'POST':
         form = SampleForm(request.POST)
         if form.is_valid():
-            newSample = form.save()
-            return HttpResponse(json.dumps({'success':''}, content_type='application/json'),content_type='application/json')
+            form.save()
+            messages.success(request, 'Successful form save.') 
+            return HttpResponseRedirect(reverse('create_new_sample'))
         else: 
-            return HttpResponse(json.dumps({'failed': 'Problem during creating new sample: ' + form.errors}), content_type='application/json', status=406)
-            
+            messages.error(request, 'Error in saving form. ')
+    else: 
+        return HttpResponseNotAllowed(['GET', 'POST'])        
+    return render_to_response('xgds_sample/sampleCreate.html', 
+                              RequestContext(request, {'form': form}))
+
 
 def getSampleCreatePage(request):
     data = {'form': SampleForm(), 
