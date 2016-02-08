@@ -6,15 +6,30 @@
 
  {% block cssExtras %}
  {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
  {% endblock cssExtras %}
 
+{% block otherJSInit %}
+	matchWidth('item_sample_table','map');
+{% endblock otherJSInit %}
 
-{% block jsInitPreApp %}
+{% block jsInitPreApp %}    
+	var samplesArray = []
+	var aoColumns = [			   {"width": "20%", "mRender": function(data, type, full) {
+	                            	   return "<img src='#'></img>"
+	                               }},
+	                               {"mRender":function(data, type, full){
+	                            	   var sampleName = full['name'];
+	                            	   var jsonString = JSON.stringify(full);
+	                                   return "<a onclick='#'>"<!-- + sampleName + -->"</a>"; <!-- construct sample view -->
+	                               }},
+	                               {"mData": "number"},
+	                               {"mData": "date"},
+	                               {"mData": "region"},
+	                               {"mData": "timestamp"},
+	];
+	setupTable('item_sample_table', 'sample_table', samplesArray, aoColumns);
 {% endblock jsInitPreApp %}
 
-{% block otherJSInit %}
-{% endblock otherJSInit %}
 
 {% block scripts %}
 {{block.super}}
@@ -29,6 +44,25 @@
 
 
 {% block firstPackery %}
+<!-- Samples table -->
+<div class='item w2 freeAspect' id='item_sample_table' data-isStamped="false">
+	<i class="icon-lock-open pinDiv"></i>
+	<div class="ttip" data-tooltip="remove selected samples"> <i class="icon-trash" id="delete_sample"></i> </div>
+		<table cellpadding="0" cellspacing="0" border="0"  id="sample_table">
+			<thead class="table_header">
+				<tr>
+					<th></th>
+					<th>Name</th>
+				    <th>Number</th>
+				    <th>Date</th>
+				    <th>Region</th>
+				    <th>Timestamp</th>
+			    </tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+</div>
 {% endblock firstPackery %}
 
 {% block lastPackery %}
