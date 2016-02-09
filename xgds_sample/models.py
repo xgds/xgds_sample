@@ -20,6 +20,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
+from geocamUtil.modelJson import modelToDict
 
 
 class Region(models.Model):
@@ -53,6 +54,22 @@ class AbstractSample(models.Model):
     
     def getPrintedLabelURL(self):
         return 'basalt.xgds.org/sample/' + self.name
+    
+    def toMapDict(self):
+        result = modelToDict(self)
+        print "result"
+        print result
+        if result: 
+            if self.collection_time:     
+                result['collection_time'] = self.collection_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+            else: 
+                result['collection_time'] = ""
+            result['type'] = self.type.display_name
+            result['region'] = self.region.name
+            result['creator'] = self.creator
+            return result
+        else: 
+            return None
     
     class Meta:
         abstract = True

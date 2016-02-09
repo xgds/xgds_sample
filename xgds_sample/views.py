@@ -37,6 +37,15 @@ import json
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 
 
+def updateSampleDataFromName(sample, name):
+    pass
+
+
+def generateSampleName(sample):
+    pass
+#[2-char Region ID]    [2-digit year]    [1-char sample type]    [hyphen]    [3-digit number]    [1-char triplicates]
+
+
 @login_required
 def createNewSample(request):
     if request.method == 'GET':
@@ -45,6 +54,20 @@ def createNewSample(request):
     elif request.method == 'POST':
         form = SampleForm(request.POST)
         if form.is_valid():
+            new_sample = form.save()
+            try:
+                name = request.POST['Name']
+                new_sample = updateSampleDataFromName(new_sample, name)
+            except:
+                name = None
+                name = generateSampleName(new_sample)
+                new_sample.name = name
+            new_sample.save()
+            # if there is no name, construct one.
+            # if there is name, get the info from the name.
+            
+            print "request.POST in new sample"
+            print request.POST
             form.save()
             messages.success(request, 'Successful form save.') 
             return HttpResponseRedirect(reverse('create_new_sample'))
@@ -57,8 +80,10 @@ def createNewSample(request):
 
 
 def getSampleCreatePage(request):
+    recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
+    recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
     data = {'form': SampleForm(), 
-            }
+            'samplesJsonArray': recentSamplesJson}
     return render_to_response("xgds_sample/sampleCreate.html", data, 
                               context_instance=RequestContext(request))
 
@@ -67,6 +92,8 @@ def getSampleSearchPage(request):
     theForm = SpecializedForm(SearchForm, SAMPLE_MODEL.get())
     theFormSetMaker = formset_factory(theForm, extra=0)
     theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
-    data = {'formset': theFormSet}
+    samplesJson = [] #TODO
+    data = {'formset': theFormSet,
+            'samplesJsonArray': samplesJson}
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))

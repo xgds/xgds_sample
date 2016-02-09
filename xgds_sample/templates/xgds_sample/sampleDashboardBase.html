@@ -6,14 +6,15 @@
 
  {% block cssExtras %}
  {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
  {% endblock cssExtras %}
 
-{% block otherJSInit %}
-	matchWidth('item_sample_table','map');
-{% endblock otherJSInit %}
-
 {% block jsInitPreApp %}    
-	var samplesArray = []
+	var samplesJsonArray = {{ samplesJsonArray|safe }};
+	var samplesArray = [];
+	$(samplesJsonArray).each(function() {
+		samplesArray.push(JSON.parse(this)); // parse json string
+	});
 	var aoColumns = [			   {"width": "20%", "mRender": function(data, type, full) {
 	                            	   return "<img src='#'></img>"
 	                               }},
@@ -22,14 +23,18 @@
 	                            	   var jsonString = JSON.stringify(full);
 	                                   return "<a onclick='#'>"<!-- + sampleName + -->"</a>"; <!-- construct sample view -->
 	                               }},
+								   {"mData": "collector"},
+								   {"mData": "type"},
 	                               {"mData": "number"},
-	                               {"mData": "date"},
 	                               {"mData": "region"},
-	                               {"mData": "timestamp"},
+	                               {"mData": "collection_time"},
 	];
 	setupTable('item_sample_table', 'sample_table', samplesArray, aoColumns);
 {% endblock jsInitPreApp %}
 
+{% block otherJSInit %}
+	matchWidth('item_sample_table','map');
+{% endblock otherJSInit %}
 
 {% block scripts %}
 {{block.super}}
@@ -53,10 +58,11 @@
 				<tr>
 					<th></th>
 					<th>Name</th>
+					<th>Collector</th>
+					<th>Type</th>					
 				    <th>Number</th>
-				    <th>Date</th>
 				    <th>Region</th>
-				    <th>Timestamp</th>
+				    <th>Collection time</th>
 			    </tr>
 			</thead>
 			<tbody>

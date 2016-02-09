@@ -32,8 +32,55 @@
 		
 		<form class="sampleCreate" id="sampleCreate" action="{% url 'create_new_sample' %}" method="post" enctype="multipart/form-data">
 			<table>
-				{{ form.as_table }}
+				<tr><th><label for="id_name">Name:</label></th><td><input id="id_name" maxlength="512" name="name" type="text" /></td></tr>
 			</table>
+			{% csrf_token %}
+			<input type="submit" value="create"/> 
+		</form>
+
+		<div
+			style="width: 100%; height: 20px; border-bottom: 1.5px solid black; text-align: center; margin-bottom: 20px">
+			<span style="font-size: 15px; padding: 0 10px;">
+				<strong> Or </strong>
+			</span>
+		</div>
+	
+		<form class="sampleCreate" id="sampleCreate" action="{% url 'create_new_sample' %}" method="post" enctype="multipart/form-data">
+			<table>
+				<tr>
+					<th><label for="id_type">Type:</label></th>
+					<td><select id="id_type" name="type">
+							<option value="" selected="selected">---------</option>
+							<option value="1">biology</option>
+					</select></td>
+				</tr>
+				<tr>
+					<th><label for="id_region">Region:</label></th>
+					<td><select id="id_region" name="region">
+							<option value="" selected="selected">---------</option>
+							<option value="1">Region object</option>
+					</select></td>
+				</tr>
+				<tr>
+					<th><label for="id_location">Location:</label></th>
+					<td><select id="id_location" name="location">
+							<option value="" selected="selected">---------</option>
+					</select></td>
+				</tr>
+				<tr>
+					<th><label for="id_number">Number:</label></th>
+					<td><input id="id_number" name="number" type="number" /></td>
+				</tr>
+				<tr>
+					<th><label for="id_triplicate">Triplicate:</label></th>
+					<td><input id="id_triplicate" maxlength="2" name="triplicate"
+						type="text" /></td>
+				</tr>
+				<tr>
+					<th><label for="id_year">Year:</label></th>
+					<td><input id="id_year" min="0" name="year" type="number" /></td>
+				</tr>
+		</table>
 			{% csrf_token %}
 			<input type="submit" value="create"/> 
 		</form>
