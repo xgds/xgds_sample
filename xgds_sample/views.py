@@ -33,6 +33,7 @@ from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleType, Region
 
+import pydevd
 import json
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
@@ -40,35 +41,36 @@ SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 
 @login_required
 def createNewSample(request):
-    if request.method == 'GET':
-        form = SampleForm()
-        messages.success(request, '')
-    elif request.method == 'POST':
+    if request.method == 'POST':
         newSample = None
         try:
             name = request.POST['Name']
             newSample =SAMPLE_MODEL.get().createSampleFromName(name)
+            if newSample:
+                newSample.save()
         except:
-            newSample = SAMPLE_MODEL.get().createSampleFromForm(request.POST)
-        if newSample:
-            newSample.save()
+            samplesList = SAMPLE_MODEL.get().createSamplesFromForm(request.POST)
+            if samplesList:
+                for sample in samplesList:
+                    sample.save()
         messages.success(request, 'Sample data is successful recorded') 
         return HttpResponseRedirect(reverse('create_new_sample'))
-    else: 
-        return HttpResponseNotAllowed(['GET', 'POST'])        
+    recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
+    recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
     return render_to_response('xgds_sample/sampleCreate.html', 
-                              RequestContext(request, {'form': form}))
+                              RequestContext(request, {'form': SampleForm(), 
+                                                       'samplesJsonArray': recentSamplesJson, 
+                                                       'types_list': SampleType.objects.all(),
+                                                       'regions_list': Region.objects.all()}))
 
 
 def getSampleCreatePage(request):
-    sampleTypesList = SampleType.objects.all()
-    regionsList = Region.objects.all()
     recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
     recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
     data = {'form': SampleForm(), 
             'samplesJsonArray': recentSamplesJson, 
-            'types_list': sampleTypesList, 
-            'regions_list': regionsList}
+            'types_list': SampleType.objects.all(), 
+            'regions_list': Region.objects.all()}
     return render_to_response("xgds_sample/sampleCreate.html", data, 
                               context_instance=RequestContext(request))
 

@@ -58,7 +58,7 @@ class AbstractSample(models.Model):
         pass
     
     @classmethod
-    def createSampleFromForm(cls, form):
+    def createSamplesFromForm(cls, form):
         pass
     
     def getPrintedLabelURL(self):

@@ -16,7 +16,6 @@
 
 
 {% block firstPackery %}
-	{{ block.super }}
 	<div class='item auto lockAspect' id='item_sample_import' data-isStamped="false">
 		<div class="error-message upload-error"></div>
 		<i class="icon-lock-open pinDiv"></i><br />
@@ -65,36 +64,10 @@
 							{% endfor %}
 					</select></td>
 				</tr>
-				<tr>
-					<th><label for="latitude">Location:</label></th>
-					<td><input id="latitude" name="latitude" type="number" step="any" placeholder='latitude' /></td>
-				</tr>
-				<tr>
-					<th></th>
-					<td><input id="longitude" name="longitude" type="number" step="any" placeholder='longitude' /></td>
-				</tr>
-				<tr>
-					<th><label for="id_number">Number:</label></th>
-					<td><input id="id_number" name="number" type="number" /></td>
-				</tr>
-				<tr>
-					<th><label for="id_triplicate">Triplicate:</label></th>
-					<td><input id="id_triplicate" maxlength="2" name="triplicate"
-						type="text" /></td>
-				</tr>
-				<tr>
-					<th><label for="id_year">Year:</label></th>
-					<td><select id="id_year" name="year">
-							<option value="" selected="selected">---------</option>
-							<option value="15">2015</option>
-							<option value="16">2016</option>
-							<option value="17">2017</option>
-							<option value="18">2018</option>
-					</select></td>
-				</tr>
 		</table>
 			{% csrf_token %}
 			<input type="submit" value="create"/> 
 		</form>
 	</div>
+	{{ block.super }}
 {% endblock firstPackery %}
