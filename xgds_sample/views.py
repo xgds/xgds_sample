@@ -31,20 +31,12 @@ from django.contrib import messages
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
+from xgds_sample.models import SampleType, Region
 
 import json
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
-
-
-def updateSampleDataFromName(sample, name):
-    pass
-
-
-def generateSampleName(sample):
-    pass
-#[2-char Region ID]    [2-digit year]    [1-char sample type]    [hyphen]    [3-digit number]    [1-char triplicates]
-
+    
 
 @login_required
 def createNewSample(request):
@@ -52,27 +44,16 @@ def createNewSample(request):
         form = SampleForm()
         messages.success(request, '')
     elif request.method == 'POST':
-        form = SampleForm(request.POST)
-        if form.is_valid():
-            new_sample = form.save()
-            try:
-                name = request.POST['Name']
-                new_sample = updateSampleDataFromName(new_sample, name)
-            except:
-                name = None
-                name = generateSampleName(new_sample)
-                new_sample.name = name
-            new_sample.save()
-            # if there is no name, construct one.
-            # if there is name, get the info from the name.
-            
-            print "request.POST in new sample"
-            print request.POST
-            form.save()
-            messages.success(request, 'Successful form save.') 
-            return HttpResponseRedirect(reverse('create_new_sample'))
-        else: 
-            messages.error(request, 'Error in saving form. ')
+        newSample = None
+        try:
+            name = request.POST['Name']
+            newSample =SAMPLE_MODEL.get().createSampleFromName(name)
+        except:
+            newSample = SAMPLE_MODEL.get().createSampleFromForm(request.POST)
+        if newSample:
+            newSample.save()
+        messages.success(request, 'Sample data is successful recorded') 
+        return HttpResponseRedirect(reverse('create_new_sample'))
     else: 
         return HttpResponseNotAllowed(['GET', 'POST'])        
     return render_to_response('xgds_sample/sampleCreate.html', 
@@ -80,10 +61,14 @@ def createNewSample(request):
 
 
 def getSampleCreatePage(request):
+    sampleTypesList = SampleType.objects.all()
+    regionsList = Region.objects.all()
     recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
     recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
     data = {'form': SampleForm(), 
-            'samplesJsonArray': recentSamplesJson}
+            'samplesJsonArray': recentSamplesJson, 
+            'types_list': sampleTypesList, 
+            'regions_list': regionsList}
     return render_to_response("xgds_sample/sampleCreate.html", data, 
                               context_instance=RequestContext(request))
 

@@ -21,6 +21,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
 from geocamUtil.modelJson import modelToDict
+from __builtin__ import classmethod
 
 
 class Region(models.Model):
@@ -51,6 +52,14 @@ class AbstractSample(models.Model):
     def buildName(self, inputName):
         name = inputName
         return name
+    
+    @classmethod
+    def createSampleFromName(cls, name):
+        pass
+    
+    @classmethod
+    def createSampleFromForm(cls, form):
+        pass
     
     def getPrintedLabelURL(self):
         return 'basalt.xgds.org/sample/' + self.name

@@ -51,21 +51,27 @@
 					<th><label for="id_type">Type:</label></th>
 					<td><select id="id_type" name="type">
 							<option value="" selected="selected">---------</option>
-							<option value="1">biology</option>
+							{% for type in types_list %}
+							<option value="{{ type.value }}">{{ type.display_name }}</option>
+							{% endfor %}
 					</select></td>
 				</tr>
 				<tr>
 					<th><label for="id_region">Region:</label></th>
 					<td><select id="id_region" name="region">
 							<option value="" selected="selected">---------</option>
-							<option value="1">Region object</option>
+							{% for region in regions_list %}
+							<option value="{{ region.shortName }}">{{ region.name }}</option>
+							{% endfor %}
 					</select></td>
 				</tr>
 				<tr>
-					<th><label for="id_location">Location:</label></th>
-					<td><select id="id_location" name="location">
-							<option value="" selected="selected">---------</option>
-					</select></td>
+					<th><label for="latitude">Location:</label></th>
+					<td><input id="latitude" name="latitude" type="number" step="any" placeholder='latitude' /></td>
+				</tr>
+				<tr>
+					<th></th>
+					<td><input id="longitude" name="longitude" type="number" step="any" placeholder='longitude' /></td>
 				</tr>
 				<tr>
 					<th><label for="id_number">Number:</label></th>
@@ -78,7 +84,13 @@
 				</tr>
 				<tr>
 					<th><label for="id_year">Year:</label></th>
-					<td><input id="id_year" min="0" name="year" type="number" /></td>
+					<td><select id="id_year" name="year">
+							<option value="" selected="selected">---------</option>
+							<option value="15">2015</option>
+							<option value="16">2016</option>
+							<option value="17">2017</option>
+							<option value="18">2018</option>
+					</select></td>
 				</tr>
 		</table>
 			{% csrf_token %}
