@@ -33,7 +33,6 @@ from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleType, Region
 
-import pydevd
 import json
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
