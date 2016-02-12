@@ -39,7 +39,14 @@ import json
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 
-def createNewSample(request):
+
+@login_required
+def getSampleCreatePage(request):
+    return render_to_response('xgds_sample/sampleCreate.html', 
+                              RequestContext(request, {}))
+
+    
+def createSample(request):
     if request.method == 'POST':
         labelNum = request.POST['labelNumber']
         # get the exiting sample that has this label.
@@ -58,44 +65,31 @@ def createNewSample(request):
                                                            'types_list': SampleType.objects.all(),
                                                            'regions_list': Region.objects.all()}))
 
-def updateSample(request):
-    #take info from form and update the sample
-    pass
 
-#     if request.method == 'POST':
-#         newSample = None
-#         try:
-#             name = request.POST['Name']
-#             newSample =SAMPLE_MODEL.get().createSampleFromName(name)
-#             if newSample:
-#                 newSample.save()
-#         except:
-#             samplesList = SAMPLE_MODEL.get().createSamplesFromForm(request.POST)
-#             if samplesList:
-#                 for sample in samplesList:
-#                     sample.save()
-#         messages.success(request, 'Sample data is successful recorded') 
-#         return HttpResponseRedirect(reverse('create_new_sample'))
-#     recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
-#     recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
-#     return render_to_response('xgds_sample/sampleCreate.html', 
-#                               RequestContext(request, {'form': SampleForm(), 
-#                                                        'samplesJsonArray': recentSamplesJson, 
-#                                                        'types_list': SampleType.objects.all(),
-#                                                        'regions_list': Region.objects.all()}))
-
-@login_required
-def getSampleCreatePage(request):
+def updateSample(request):    
+    #TODO: rewrite this so that it's updating an existing sample in the database.
+    if request.method == 'POST':
+        sample = None
+        try:
+            name = request.POST['Name']
+            newSample =SAMPLE_MODEL.get().createSampleFromName(name)
+            if newSample:
+                newSample.save()
+        except:
+            samplesList = SAMPLE_MODEL.get().createSamplesFromForm(request.POST)
+            if samplesList:
+                for sample in samplesList:
+                    sample.save()
+        messages.success(request, 'Sample data is successful recorded') 
+        return HttpResponseRedirect(reverse('create_new_sample'))
     recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
     recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
-    fullTemplateList = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
-    fullTemplateList.append(settings.XGDS_SAMPLE_HANDLEBARS_DIR[0])
-    data = {'form': SampleForm(), 
-            'samplesJsonArray': recentSamplesJson, 
-            'types_list': SampleType.objects.all(), 
-            'regions_list': Region.objects.all()}
-    return render_to_response("xgds_sample/sampleCreate.html", data, 
-                              context_instance=RequestContext(request))
+    return render_to_response('xgds_sample/sampleCreate.html', 
+                              RequestContext(request, {'form': SampleForm(), 
+                                                       'samplesJsonArray': recentSamplesJson, 
+                                                       'types_list': SampleType.objects.all(),
+                                                       'regions_list': Region.objects.all()}))
+
 
 @login_required
 def getSampleSearchPage(request):

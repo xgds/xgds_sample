@@ -98,7 +98,4 @@ class AbstractSample(models.Model):
     class Meta:
         abstract = True
 
-
-#class Sample(AbstractSample):
-#    pass
             
