@@ -62,31 +62,30 @@ def createSample(request):
             sample = SAMPLE_MODEL.get().objects.create(label=label)
         return render_to_response('xgds_sample/sampleCreateForm.html', 
                                   RequestContext(request, {'sample': sample,
+                                                           'form': SampleForm(),
                                                            'types_list': SampleType.objects.all(),
                                                            'regions_list': Region.objects.all()}))
 
 
 def updateSample(request):    
-    #TODO: rewrite this so that it's updating an existing sample in the database.
+    # USE SAMPLE_FORM
+    #TODO: createSample and updateSample should be combined.
     if request.method == 'POST':
-        sample = None
+        try: 
+            sampleId = request.POST['sampleId']
+            sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)
+        except: 
+            logging.error("sample not available. return error")
+            return HttpResponse("No sample available", content_type="text/plain")
         try:
             name = request.POST['Name']
-            newSample =SAMPLE_MODEL.get().createSampleFromName(name)
-            if newSample:
-                newSample.save()
+            sample.updateSampleFromName(name)
         except:
-            samplesList = SAMPLE_MODEL.get().createSamplesFromForm(request.POST)
-            if samplesList:
-                for sample in samplesList:
-                    sample.save()
+            sample.updateSampleFromForm(request.POST)
         messages.success(request, 'Sample data is successful recorded') 
         return HttpResponseRedirect(reverse('create_new_sample'))
-    recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
-    recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
-    return render_to_response('xgds_sample/sampleCreate.html', 
-                              RequestContext(request, {'form': SampleForm(), 
-                                                       'samplesJsonArray': recentSamplesJson, 
+    return render_to_response('xgds_sample/sampleCreateForm.html',
+                              RequestContext(request, {'sample': sample,
                                                        'types_list': SampleType.objects.all(),
                                                        'regions_list': Region.objects.all()}))
 

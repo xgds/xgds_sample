@@ -21,8 +21,6 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
 from geocamUtil.modelJson import modelToDict
-from __builtin__ import classmethod
-
 
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
@@ -40,11 +38,12 @@ class SampleType(AbstractEnumModel):
 class Triplicate(AbstractEnumModel):
     pass
     
- 
-class Label(AbstractEnumModel):
-    pass 
-    
-    
+
+class Label(models.Model):
+    number = models.IntegerField()
+    url = models.CharField(null=True)    
+     
+     
 class AbstractSample(models.Model):
     name = models.CharField(max_length=512, null=True) # 9 characters
     type = models.ForeignKey(SampleType, null=True)
@@ -63,15 +62,12 @@ class AbstractSample(models.Model):
         return name
     
     @classmethod
-    def createSampleFromName(cls, name):
+    def updateSampleFromName(cls, name):
         pass
     
     @classmethod
-    def createSamplesFromForm(cls, form):
+    def updateSampleFromForm(cls, form):
         pass
-    
-    def getPrintedLabelURL(self):
-        return 'basalt.xgds.org/sample/' + self.name
     
     def toMapDict(self):
         result = modelToDict(self)
