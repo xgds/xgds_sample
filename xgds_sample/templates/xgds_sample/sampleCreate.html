@@ -2,18 +2,11 @@
 
  {% block cssExtras %}
  {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}dropzone/dist/min/dropzone.min.css"></link>
  {% endblock cssExtras %}
 
 {% block jsInit %} 
 {{ block.super }}
 {% endblock jsInit %} 
-
-{% block scripts %}
-{{block.super}}
-	<script type="text/javascript" src='{{ EXTERNAL_URL }}dropzone/dist/dropzone.js'></script>
-{% endblock scripts %}
-
 
 {% block firstPackery %}
 	<div class='item auto lockAspect' id='item_sample_import' data-isStamped="false">
@@ -30,40 +23,8 @@
 		{% endif %}
 		
 		<form class="sampleCreate" id="sampleCreate" action="{% url 'create_new_sample' %}" method="post" enctype="multipart/form-data">
-			<table>
-				<tr><th><label for="id_name">Name:</label></th><td><input id="id_name" maxlength="512" name="name" type="text" /></td></tr>
-			</table>
-			{% csrf_token %}
-			<input type="submit" value="create"/> 
-		</form>
-
-		<div
-			style="width: 100%; height: 20px; border-bottom: 1.5px solid black; text-align: center; margin-bottom: 20px">
-			<span style="font-size: 15px; padding: 0 10px;">
-				<strong> Or </strong>
-			</span>
-		</div>
-	
-		<form class="sampleCreate" id="sampleCreate" action="{% url 'create_new_sample' %}" method="post" enctype="multipart/form-data">
-			<table>
-				<tr>
-					<th><label for="id_type">Type:</label></th>
-					<td><select id="id_type" name="type">
-							<option value="" selected="selected">---------</option>
-							{% for type in types_list %}
-							<option value="{{ type.value }}">{{ type.display_name }}</option>
-							{% endfor %}
-					</select></td>
-				</tr>
-				<tr>
-					<th><label for="id_region">Region:</label></th>
-					<td><select id="id_region" name="region">
-							<option value="" selected="selected">---------</option>
-							{% for region in regions_list %}
-							<option value="{{ region.shortName }}">{{ region.name }}</option>
-							{% endfor %}
-					</select></td>
-				</tr>
+		<table>
+		{{ form.as_table}}
 		</table>
 			{% csrf_token %}
 			<input type="submit" value="create"/> 

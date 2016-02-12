@@ -16,20 +16,18 @@
 		samplesArray.push(JSON.parse(this)); // parse json string
 	});
 	var aoColumns = [			   {"width": "20%", "mRender": function(data, type, full) {
+										console.log("full is ", full)
 	                            	   return "<img src='#'></img>"
 	                               }},
 	                               {"mRender":function(data, type, full){
+	                               		console.log("data is ", data);
 	                            	   var sampleName = full['name'];
 	                            	   var jsonString = JSON.stringify(full);
-	                                   return "<a onclick='#'>"<!-- + sampleName + -->"</a>"; <!-- construct sample view -->
+	                                   return "<a onclick='constructSampleView(" + jsonString + ")'>"+ sampleName + "</a>";
 	                               }},
-								   {"mData": "collector"},
 								   {"mData": "type"},
-	                               {"mData": "number"},
-	                               {"mData": "region"},
-	                               {"mData": "collection_time"},
 	];
-	setupTable('item_sample_table', 'sample_table', samplesArray, aoColumns);
+	setupTable('item_samples_table', 'samples_table', samplesArray, aoColumns);
 {% endblock jsInitPreApp %}
 
 {% block otherJSInit %}
@@ -39,6 +37,8 @@
 {% block scripts %}
 {{block.super}}
 	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleReview.js"></script>
+	
     <!--  load handlebars -->
 	{% for template_name, template in templates.items %}
 		<script type="text/handlebars" id="template-{{template_name}}">
@@ -50,19 +50,15 @@
 
 {% block firstPackery %}
 <!-- Samples table -->
-<div class='item w2 freeAspect' id='item_sample_table' data-isStamped="false">
+<div class='item w2 freeAspect' id='item_samples_table' data-isStamped="false">
 	<i class="icon-lock-open pinDiv"></i>
 	<div class="ttip" data-tooltip="remove selected samples"> <i class="icon-trash" id="delete_sample"></i> </div>
-		<table cellpadding="0" cellspacing="0" border="0"  id="sample_table">
+		<table cellpadding="0" cellspacing="0" border="0"  id="samples_table">
 			<thead class="table_header">
 				<tr>
 					<th></th>
 					<th>Name</th>
-					<th>Collector</th>
 					<th>Type</th>					
-				    <th>Number</th>
-				    <th>Region</th>
-				    <th>Collection time</th>
 			    </tr>
 			</thead>
 			<tbody>

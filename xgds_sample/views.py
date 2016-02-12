@@ -32,40 +32,64 @@ from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleType, Region
+import logging
 
 import json
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
-    
+LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 
-@login_required
 def createNewSample(request):
     if request.method == 'POST':
-        newSample = None
-        try:
-            name = request.POST['Name']
-            newSample =SAMPLE_MODEL.get().createSampleFromName(name)
-            if newSample:
-                newSample.save()
-        except:
-            samplesList = SAMPLE_MODEL.get().createSamplesFromForm(request.POST)
-            if samplesList:
-                for sample in samplesList:
-                    sample.save()
-        messages.success(request, 'Sample data is successful recorded') 
-        return HttpResponseRedirect(reverse('create_new_sample'))
-    recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
-    recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
-    return render_to_response('xgds_sample/sampleCreate.html', 
-                              RequestContext(request, {'form': SampleForm(), 
-                                                       'samplesJsonArray': recentSamplesJson, 
-                                                       'types_list': SampleType.objects.all(),
-                                                       'regions_list': Region.objects.all()}))
+        labelNum = request.POST['labelNumber']
+        # get the exiting sample that has this label.
+        sample = None
+        try: 
+            sample = SAMPLE_MODEL.get().objects.get(label__value=labelNum)
+        except: 
+            # create a new sample object and link the label.
+            try: 
+                label = LABEL_MODEL.get().objects.get(value = labelNum)
+            except: 
+                label = LABEL_MODEL.get().objects.create(value=labelNum, display_name=labelNum)
+            sample = SAMPLE_MODEL.get().objects.create(label=label)
+        return render_to_response('xgds_sample/sampleCreateForm.html', 
+                                  RequestContext(request, {'sample': sample,
+                                                           'types_list': SampleType.objects.all(),
+                                                           'regions_list': Region.objects.all()}))
 
+def updateSample(request):
+    #take info from form and update the sample
+    pass
 
+#     if request.method == 'POST':
+#         newSample = None
+#         try:
+#             name = request.POST['Name']
+#             newSample =SAMPLE_MODEL.get().createSampleFromName(name)
+#             if newSample:
+#                 newSample.save()
+#         except:
+#             samplesList = SAMPLE_MODEL.get().createSamplesFromForm(request.POST)
+#             if samplesList:
+#                 for sample in samplesList:
+#                     sample.save()
+#         messages.success(request, 'Sample data is successful recorded') 
+#         return HttpResponseRedirect(reverse('create_new_sample'))
+#     recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
+#     recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
+#     return render_to_response('xgds_sample/sampleCreate.html', 
+#                               RequestContext(request, {'form': SampleForm(), 
+#                                                        'samplesJsonArray': recentSamplesJson, 
+#                                                        'types_list': SampleType.objects.all(),
+#                                                        'regions_list': Region.objects.all()}))
+
+@login_required
 def getSampleCreatePage(request):
     recentSamples = SAMPLE_MODEL.get().objects.all().order_by('-collection_time')
     recentSamplesJson = [json.dumps(sample.toMapDict()) for sample in recentSamples]
+    fullTemplateList = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
+    fullTemplateList.append(settings.XGDS_SAMPLE_HANDLEBARS_DIR[0])
     data = {'form': SampleForm(), 
             'samplesJsonArray': recentSamplesJson, 
             'types_list': SampleType.objects.all(), 
@@ -73,7 +97,7 @@ def getSampleCreatePage(request):
     return render_to_response("xgds_sample/sampleCreate.html", data, 
                               context_instance=RequestContext(request))
 
-
+@login_required
 def getSampleSearchPage(request):
     theForm = SpecializedForm(SearchForm, SAMPLE_MODEL.get())
     theFormSetMaker = formset_factory(theForm, extra=0)
