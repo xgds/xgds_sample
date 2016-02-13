@@ -15,7 +15,7 @@
 # __END_LICENSE__
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response, render
+from django.shortcuts import render_to_response, render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.http import (HttpResponseRedirect, 
                          HttpResponseForbidden, 
@@ -31,7 +31,7 @@ from django.contrib import messages
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
-from xgds_sample.models import SampleType, Region
+from xgds_sample.models import SampleType, Region, Label
 import logging
 
 import json
@@ -44,50 +44,45 @@ LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 def getSampleCreatePage(request):
     return render_to_response('xgds_sample/sampleCreate.html', 
                               RequestContext(request, {}))
-
+  
     
 def createSample(request):
     if request.method == 'POST':
-        labelNum = request.POST['labelNumber']
-        # get the exiting sample that has this label.
-        sample = None
-        try: 
-            sample = SAMPLE_MODEL.get().objects.get(label__value=labelNum)
+        try:
+            labelNum = request.POST['labelNumber']
         except: 
-            # create a new sample object and link the label.
-            try: 
-                label = LABEL_MODEL.get().objects.get(value = labelNum)
-            except: 
-                label = LABEL_MODEL.get().objects.create(value=labelNum, display_name=labelNum)
-            sample = SAMPLE_MODEL.get().objects.create(label=label)
+            labelNum = None
+        form = SampleForm()
+        if labelNum:
+            # create a sample from label
+            try:
+                sample = SAMPLE_MODEL.get().objects.get(label__number=labelNum)
+            except:
+                label = LABEL_MODEL.get().objects.get(number=labelNum)
+                sample = SAMPLE_MODEL.get().objects.create(label=label)
+        else:
+            # update a sample from label.
+            sample = SAMPLE_MODEL.get().objects.get(id=request.POST['sampleId'])
+            if sample:
+                form = SampleForm(request.POST, instance=sample)
+                if form.is_valid():
+                    form.save()
+            else: 
+                return HttpResponse('Sample should exist but it does not', status=400)
         return render_to_response('xgds_sample/sampleCreateForm.html', 
                                   RequestContext(request, {'sample': sample,
-                                                           'form': SampleForm(),
+                                                           'form': form,
                                                            'types_list': SampleType.objects.all(),
-                                                           'regions_list': Region.objects.all()}))
+                                                           'regions_list': Region.objects.all(),
+                                                           'labels_list': Label.objects.all()
+                                                           }))
 
-
-def updateSample(request):    
-    # USE SAMPLE_FORM
-    #TODO: createSample and updateSample should be combined.
-    if request.method == 'POST':
-        try: 
-            sampleId = request.POST['sampleId']
-            sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)
-        except: 
-            logging.error("sample not available. return error")
-            return HttpResponse("No sample available", content_type="text/plain")
-        try:
-            name = request.POST['Name']
-            sample.updateSampleFromName(name)
-        except:
-            sample.updateSampleFromForm(request.POST)
-        messages.success(request, 'Sample data is successful recorded') 
-        return HttpResponseRedirect(reverse('create_new_sample'))
-    return render_to_response('xgds_sample/sampleCreateForm.html',
-                              RequestContext(request, {'sample': sample,
-                                                       'types_list': SampleType.objects.all(),
-                                                       'regions_list': Region.objects.all()}))
+def updateSample(sample):    
+    try:
+        name = request.POST['Name']
+        sample.updateSampleFromName(name)
+    except:
+        sample.updateSampleFromForm(request.POST)
 
 
 @login_required

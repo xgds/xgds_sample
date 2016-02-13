@@ -40,8 +40,8 @@ class Triplicate(AbstractEnumModel):
     
 
 class Label(models.Model):
-    number = models.IntegerField()
-    url = models.CharField(null=True)    
+    number = models.IntegerField(default=0)
+    url = models.CharField(null=True, max_length=512)    
      
      
 class AbstractSample(models.Model):
@@ -61,12 +61,10 @@ class AbstractSample(models.Model):
         name = inputName
         return name
     
-    @classmethod
-    def updateSampleFromName(cls, name):
+    def updateSampleFromName(self, name):
         pass
     
-    @classmethod
-    def updateSampleFromForm(cls, form):
+    def updateSampleFromForm(self, form):
         pass
     
     def toMapDict(self):
