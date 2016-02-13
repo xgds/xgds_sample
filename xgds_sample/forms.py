@@ -20,8 +20,6 @@ from django.forms import ModelForm
 from geocamUtil.loader import getModelByName
 
 class SampleForm(ModelForm):
-    
     class Meta: 
         model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
         exclude = ['creation_time', 'modification_time', 'collection_time', 'creator', 'modifier', 'collector']
-    

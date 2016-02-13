@@ -20,7 +20,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
-
+from geocamUtil.modelJson import modelToDict
 
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
@@ -33,12 +33,21 @@ class Region(models.Model):
 
 class SampleType(AbstractEnumModel):
     pass
+
+
+class Triplicate(AbstractEnumModel):
+    pass
     
-    
+
+class Label(models.Model):
+    number = models.IntegerField()
+    url = models.CharField(null=True, max_length=512)    
+     
+     
 class AbstractSample(models.Model):
-    name = models.CharField(max_length=512) # 9 characters
-    type = models.ForeignKey(SampleType)
-    region = models.ForeignKey(Region)
+    name = models.CharField(max_length=512, null=True) # 9 characters
+    type = models.ForeignKey(SampleType, null=True)
+    region = models.ForeignKey(Region, null=True)
     location = models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True)
     collector = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_collector") # person who collected the sample
     creator = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_creator") # person who entered sample data into Minerva
@@ -46,18 +55,43 @@ class AbstractSample(models.Model):
     collection_time = models.DateTimeField(blank=True, null=True, editable=False)
     creation_time = models.DateTimeField(blank=True, default=datetime.datetime.utcnow(), editable=False)
     modification_time = models.DateTimeField(blank=True, default=datetime.datetime.utcnow(), editable=False)
+    label = models.OneToOneField(Label, primary_key=True)
     
     def buildName(self, inputName):
         name = inputName
         return name
     
-    def getPrintedLabelURL(self):
-        return 'basalt.xgds.org/sample/' + self.name
+    @classmethod
+    def updateSampleFromName(cls, name):
+        pass
+    
+    @classmethod
+    def updateSampleFromForm(cls, form):
+        pass
+    
+    def toMapDict(self):
+        result = modelToDict(self)
+        print "result"
+        print result
+        if result: 
+            if self.collection_time:     
+                result['collection_time'] = self.collection_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+            else: 
+                result['collection_time'] = ""
+            if self.type:
+                result['type'] = self.type.display_name
+            else: 
+                result['type'] = ""
+            if self.region:
+                result['region'] = self.region.name
+            else:
+                result['region'] = ""
+            result['creator'] = self.creator
+            return result
+        else: 
+            return None
     
     class Meta:
         abstract = True
 
-
-class Sample(AbstractSample):
-    pass
             

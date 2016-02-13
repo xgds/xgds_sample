@@ -15,46 +15,88 @@
 # __END_LICENSE__
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404
-from django.http import HttpResponse
+from django.shortcuts import render_to_response, render
+from django.core.urlresolvers import reverse
+from django.http import (HttpResponseRedirect, 
+                         HttpResponseForbidden, 
+                         Http404, 
+                         HttpResponse, 
+                         HttpResponseNotAllowed)
 from django.template import RequestContext
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.forms.formsets import formset_factory
 from django.conf import settings
-from geocamUtil.loader import LazyGetModelByName
+from django.contrib import messages 
 
+from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
-from geocamUtil.loader import getClassByName
+from xgds_sample.models import SampleType, Region
+import logging
+
 import json
 
-
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
+LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 
 
 @login_required
-def createNewSample(request):
-    if request.method == 'POST':
-        form = SampleForm(request.POST)
-        if form.is_valid():
-            newSample = form.save()
-            return HttpResponse(json.dumps({'success':''}, content_type='application/json'),content_type='application/json')
-        else: 
-            return HttpResponse(json.dumps({'failed': 'Problem during creating new sample: ' + form.errors}), content_type='application/json', status=406)
-            
-
 def getSampleCreatePage(request):
-    data = {'form': SampleForm(), 
-            }
-    return render_to_response("xgds_sample/sampleCreate.html", data, 
-                              context_instance=RequestContext(request))
+    return render_to_response('xgds_sample/sampleCreate.html', 
+                              RequestContext(request, {}))
+
+    
+def createSample(request):
+    if request.method == 'POST':
+        labelNum = request.POST['labelNumber']
+        # get the exiting sample that has this label.
+        sample = None
+        try: 
+            sample = SAMPLE_MODEL.get().objects.get(label__value=labelNum)
+        except: 
+            # create a new sample object and link the label.
+            try: 
+                label = LABEL_MODEL.get().objects.get(value = labelNum)
+            except: 
+                label = LABEL_MODEL.get().objects.create(value=labelNum, display_name=labelNum)
+            sample = SAMPLE_MODEL.get().objects.create(label=label)
+        return render_to_response('xgds_sample/sampleCreateForm.html', 
+                                  RequestContext(request, {'sample': sample,
+                                                           'form': SampleForm(),
+                                                           'types_list': SampleType.objects.all(),
+                                                           'regions_list': Region.objects.all()}))
 
 
+def updateSample(request):    
+    # USE SAMPLE_FORM
+    #TODO: createSample and updateSample should be combined.
+    if request.method == 'POST':
+        try: 
+            sampleId = request.POST['sampleId']
+            sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)
+        except: 
+            logging.error("sample not available. return error")
+            return HttpResponse("No sample available", content_type="text/plain")
+        try:
+            name = request.POST['Name']
+            sample.updateSampleFromName(name)
+        except:
+            sample.updateSampleFromForm(request.POST)
+        messages.success(request, 'Sample data is successful recorded') 
+        return HttpResponseRedirect(reverse('create_new_sample'))
+    return render_to_response('xgds_sample/sampleCreateForm.html',
+                              RequestContext(request, {'sample': sample,
+                                                       'types_list': SampleType.objects.all(),
+                                                       'regions_list': Region.objects.all()}))
+
+
+@login_required
 def getSampleSearchPage(request):
     theForm = SpecializedForm(SearchForm, SAMPLE_MODEL.get())
     theFormSetMaker = formset_factory(theForm, extra=0)
     theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
-    data = {'formset': theFormSet}
+    samplesJson = [] #TODO
+    data = {'formset': theFormSet,
+            'samplesJsonArray': samplesJson}
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))

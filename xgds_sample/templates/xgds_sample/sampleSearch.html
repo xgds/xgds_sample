@@ -14,7 +14,6 @@
 {% endblock otherJSInit %} 
 
 {% block firstPackery %} 
-{{ block.super }}
 <div class='item auto lockAspect noresize' id='item_sample_search'>
 	<i class="icon-lock-open pinDiv"></i><br />
 	<form id="form-AbstractSample" action="" method="post">
@@ -30,4 +29,5 @@
 		<span class="alert" id="message"></span>
 	</form>
 </div>
+{{ block.super }}
 {% endblock firstPackery %}
