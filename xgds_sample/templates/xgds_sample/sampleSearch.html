@@ -1,0 +1,33 @@
+{% extends 'xgds_sample/sampleDashboardBase.html' %}
+
+{% block scripts %}
+{{block.super}}
+	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
+{% endblock scripts %} 
+
+{% block jsInit %} 
+{{ block.super }}
+	$("#item_image_search").submit(function(event) { doSearch(event); }); 
+{% endblock jsInit %} 
+
+{% block otherJSInit %} 
+{% endblock otherJSInit %} 
+
+{% block firstPackery %} 
+{{ block.super }}
+<div class='item auto lockAspect noresize' id='item_sample_search'>
+	<i class="icon-lock-open pinDiv"></i><br />
+	<form id="form-AbstractSample" action="" method="post">
+		{{ formset.management_form }} 
+		{% csrf_token %} 
+		{% for form in formset %}
+			<table> 
+			{{ form.as_table }}
+			</table>
+		{% endfor %} 
+		<input type="submit" id="doSearch" class="small" value="Search" /> 
+		&nbsp; 
+		<span class="alert" id="message"></span>
+	</form>
+</div>
+{% endblock firstPackery %}
