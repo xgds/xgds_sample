@@ -40,7 +40,7 @@ class Triplicate(AbstractEnumModel):
     
 
 class Label(models.Model):
-    number = models.IntegerField(default=0)
+    number = models.IntegerField()
     url = models.CharField(null=True, max_length=512)    
      
      
