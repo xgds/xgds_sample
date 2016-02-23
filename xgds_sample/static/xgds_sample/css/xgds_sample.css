@@ -4,3 +4,16 @@ hr {
     /* Set the hr color */
     background-color: #333; /* Modern Browsers */
 }
+
+#map {
+	width:550px;
+	height: 600px;
+}
+
+.sample_name_row td{
+    border-bottom: 2px solid black;
+}
+
+.sample_name_row th{
+    border-bottom: 2px solid black;
+}

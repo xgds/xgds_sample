@@ -33,7 +33,6 @@ from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleType, Region
 import logging
-
 import json
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
@@ -48,46 +47,36 @@ def getSampleCreatePage(request):
     
 def createSample(request):
     if request.method == 'POST':
-        labelNum = request.POST['labelNumber']
-        # get the exiting sample that has this label.
+        # if it's the sample create form
         sample = None
-        try: 
-            sample = SAMPLE_MODEL.get().objects.get(label__value=labelNum)
-        except: 
-            # create a new sample object and link the label.
-            try: 
-                label = LABEL_MODEL.get().objects.get(value = labelNum)
-            except: 
-                label = LABEL_MODEL.get().objects.create(value=labelNum, display_name=labelNum)
-            sample = SAMPLE_MODEL.get().objects.create(label=label)
-        return render_to_response('xgds_sample/sampleCreateForm.html', 
-                                  RequestContext(request, {'sample': sample,
-                                                           'form': SampleForm(),
-                                                           'types_list': SampleType.objects.all(),
-                                                           'regions_list': Region.objects.all()}))
+        labelNum = None
+        if 'labelNumber' in request.POST:    
+            labelNum = request.POST['labelNumber']
+            if not labelNum:
+                messages.error(request,'Please enter a valid integer label number')
+                return render_to_response('xgds_sample/sampleCreate.html',
+                                          RequestContext(request,{}))
+            label = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
+            sample = SAMPLE_MODEL.get().objects.get_or_create(label__number = labelNum)
 
-
-def updateSample(request):    
-    # USE SAMPLE_FORM
-    #TODO: createSample and updateSample should be combined.
-    if request.method == 'POST':
-        try: 
+        # if it's the sample update form
+        if 'sampleId' in request.POST:
             sampleId = request.POST['sampleId']
             sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)
-        except: 
-            logging.error("sample not available. return error")
-            return HttpResponse("No sample available", content_type="text/plain")
-        try:
-            name = request.POST['Name']
-            sample.updateSampleFromName(name)
-        except:
-            sample.updateSampleFromForm(request.POST)
-        messages.success(request, 'Sample data is successful recorded') 
-        return HttpResponseRedirect(reverse('create_new_sample'))
-    return render_to_response('xgds_sample/sampleCreateForm.html',
-                              RequestContext(request, {'sample': sample,
-                                                       'types_list': SampleType.objects.all(),
-                                                       'regions_list': Region.objects.all()}))
+            if sample: 
+                labelNum = sample.label.number
+                form = SampleForm(request.POST, instance=sample)
+                form.save()
+                messages.success(request, 'Sample data successfully updated.')
+            else: 
+                messages.error(request,'Sample data was not updated.')
+
+        return render_to_response('xgds_sample/sampleCreateForm.html', 
+                      RequestContext(request, {'sample': sample,
+                                               'form': SampleForm(),
+                                               'labelNum': labelNum,
+                                               'types_list': SampleType.objects.all(),
+                                               'regions_list': Region.objects.all()}))
 
 
 @login_required

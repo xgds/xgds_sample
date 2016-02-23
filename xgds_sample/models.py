@@ -22,6 +22,7 @@ from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
 from geocamUtil.modelJson import modelToDict
 
+
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
     name = models.CharField(max_length=128)
@@ -32,10 +33,6 @@ class Region(models.Model):
 
 
 class SampleType(AbstractEnumModel):
-    pass
-
-
-class Triplicate(AbstractEnumModel):
     pass
     
 
