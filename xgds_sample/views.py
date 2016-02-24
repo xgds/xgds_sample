@@ -34,6 +34,8 @@ from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleType, Region
 import logging
 import json
+from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
+
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
@@ -44,7 +46,7 @@ def getSampleCreatePage(request):
     return render_to_response('xgds_sample/sampleCreate.html', 
                               RequestContext(request, {}))
 
-    
+@login_required    
 def createSample(request):
     if request.method == 'POST':
         # if it's the sample update form
@@ -54,11 +56,9 @@ def createSample(request):
             if sample: 
                 labelNum = sample.label.number
                 form = SampleForm(request.POST, instance=sample)
-                errorString = form.errors
-                print "Form Errors"
-                print errorString
-                form.save()
-                messages.success(request, 'Sample data successfully updated.')
+                if form.is_valid():
+                    form.save()
+                    messages.success(request, 'Sample data successfully updated.')
             else: 
                 messages.error(request, 'Valid sample does not exist.')
         # if it's the sample create form
@@ -73,7 +73,7 @@ def createSample(request):
             if sampleCreated:
                 form = SampleForm()
             else: # sample already existed in the database
-                form = SampleForm(request.POST, instance=sample)
+                form = SampleForm(sample.toMapDict())
         return render_to_response('xgds_sample/sampleCreateForm.html', 
                       RequestContext(request, {'sample': sample,
                                                'form': form,
