@@ -47,18 +47,6 @@ def getSampleCreatePage(request):
     
 def createSample(request):
     if request.method == 'POST':
-        # if it's the sample create form
-        sample = None
-        labelNum = None
-        if 'labelNumber' in request.POST:    
-            labelNum = request.POST['labelNumber']
-            if not labelNum:
-                messages.error(request,'Please enter a valid integer label number')
-                return render_to_response('xgds_sample/sampleCreate.html',
-                                          RequestContext(request,{}))
-            label = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
-            sample = SAMPLE_MODEL.get().objects.get_or_create(label__number = labelNum)
-
         # if it's the sample update form
         if 'sampleId' in request.POST:
             sampleId = request.POST['sampleId']
@@ -66,14 +54,29 @@ def createSample(request):
             if sample: 
                 labelNum = sample.label.number
                 form = SampleForm(request.POST, instance=sample)
+                errorString = form.errors
+                print "Form Errors"
+                print errorString
                 form.save()
                 messages.success(request, 'Sample data successfully updated.')
             else: 
-                messages.error(request,'Sample data was not updated.')
-
+                messages.error(request, 'Valid sample does not exist.')
+        # if it's the sample create form
+        else: 
+            labelNum = request.POST['labelNumber']
+            if not labelNum:
+                messages.error(request,'Please enter a valid integer label number')
+                return render_to_response('xgds_sample/sampleCreate.html',
+                                          RequestContext(request,{}))
+            label, labelCreated = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
+            sample, sampleCreated = SAMPLE_MODEL.get().objects.get_or_create(label = label)
+            if sampleCreated:
+                form = SampleForm()
+            else: # sample already existed in the database
+                form = SampleForm(request.POST, instance=sample)
         return render_to_response('xgds_sample/sampleCreateForm.html', 
                       RequestContext(request, {'sample': sample,
-                                               'form': SampleForm(),
+                                               'form': form,
                                                'labelNum': labelNum,
                                                'types_list': SampleType.objects.all(),
                                                'regions_list': Region.objects.all()}))
