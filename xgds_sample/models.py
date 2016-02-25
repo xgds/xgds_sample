@@ -29,10 +29,15 @@ class Region(models.Model):
     siteFrameZone = models.CharField(max_length=32)
     siteFrameName = models.CharField(max_length=32)
     siteFrameTimeZone = models.CharField(max_length=64)
+    
+    def __unicode__(self):
+        return u'%s' % (self.name)
 
 
 class SampleType(AbstractEnumModel):
-    pass
+    
+    def __unicode__(self):
+        return u'%s' % (self.display_name)
     
 
 class Label(models.Model):
@@ -72,14 +77,6 @@ class AbstractSample(models.Model):
                 result['collection_time'] = self.collection_time.strftime("%Y-%m-%d %H:%M:%S UTC")
             else: 
                 result['collection_time'] = ""
-            if self.type:
-                result['type'] = self.type.display_name
-            else: 
-                result['type'] = ""
-            if self.region:
-                result['region'] = self.region.shortName
-            else:
-                result['region'] = ""
             result['creator'] = self.creator
             return result
         else: 

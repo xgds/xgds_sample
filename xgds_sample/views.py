@@ -55,9 +55,14 @@ def createSample(request):
             sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)
             if sample: 
                 labelNum = sample.label.number
+                print "request.POST returns"
+                print request.POST
                 form = SampleForm(request.POST, instance=sample)
                 if form.is_valid():
+                    print "form is"
+                    print(form)
                     form.save()
+                    # TODO: also save the collection time, lat and lon
                     messages.success(request, 'Sample data successfully updated.')
             else: 
                 messages.error(request, 'Valid sample does not exist.')
@@ -74,21 +79,14 @@ def createSample(request):
                 form = SampleForm()
             else: # sample already existed in the database
                 form = SampleForm(sample.toMapDict())
-        try: 
-            currentType = sample.type.display_name
-            currentRegion = sample.region.shortName
-        except: 
-            currentType = ""
-            currentRegion = ""
+                print "sample.toMapDict"
+                print sample.toMapDict()
         # check that the sample has region, type, 
         return render_to_response('xgds_sample/sampleCreateForm.html', 
                       RequestContext(request, {'sample': sample,
                                                'form': form,
                                                'labelNum': labelNum,
-                                               'currentType': currentType,
-                                               'currentRegion': currentRegion,
-                                               'types_list': SampleType.objects.all(),
-                                               'regions_list': Region.objects.all()}))
+                                               }))
 
 
 @login_required

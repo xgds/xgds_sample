@@ -18,10 +18,10 @@ from django.conf import settings
 from django import forms
 from django.forms import ModelForm
 from geocamUtil.loader import getModelByName
+from xgds_sample.models import SampleType, Region
+    
 
 class SampleForm(ModelForm):
-    #TODO: make custom fields - location, date, time
-    
     class Meta: 
         model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
         exclude = ['location', 
@@ -31,7 +31,5 @@ class SampleForm(ModelForm):
                    'collection_time',
                    'creator', 
                    'modifier', 
-                   'label', 
-                   'type',
-                   'region']
+                   'label']
     
