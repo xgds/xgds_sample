@@ -32,5 +32,6 @@ class SampleForm(ModelForm):
                    'creator', 
                    'modifier', 
                    'label', 
+                   'type',
                    'region']
     

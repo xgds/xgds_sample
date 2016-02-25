@@ -74,10 +74,19 @@ def createSample(request):
                 form = SampleForm()
             else: # sample already existed in the database
                 form = SampleForm(sample.toMapDict())
+        try: 
+            currentType = sample.type.display_name
+            currentRegion = sample.region.shortName
+        except: 
+            currentType = ""
+            currentRegion = ""
+        # check that the sample has region, type, 
         return render_to_response('xgds_sample/sampleCreateForm.html', 
                       RequestContext(request, {'sample': sample,
                                                'form': form,
                                                'labelNum': labelNum,
+                                               'currentType': currentType,
+                                               'currentRegion': currentRegion,
                                                'types_list': SampleType.objects.all(),
                                                'regions_list': Region.objects.all()}))
 

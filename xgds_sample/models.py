@@ -77,7 +77,7 @@ class AbstractSample(models.Model):
             else: 
                 result['type'] = ""
             if self.region:
-                result['region'] = self.region.name
+                result['region'] = self.region.shortName
             else:
                 result['region'] = ""
             result['creator'] = self.creator
