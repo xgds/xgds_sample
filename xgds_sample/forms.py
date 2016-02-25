@@ -26,9 +26,9 @@ class SampleForm(ModelForm):
         model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
         exclude = ['location', 
                    'name', 
-                    'creation_time', 
-                    'modification_time', 
-                    'collection_time',
+                   'creation_time', 
+                   'modification_time', 
+                   'collection_time',
                    'creator', 
                    'modifier', 
                    'label', 
