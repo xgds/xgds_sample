@@ -61,12 +61,7 @@ class AbstractSample(models.Model):
     def buildName(self):
         pass
     
-    @classmethod
-    def updateSampleFromName(cls, name):
-        pass
-    
-    @classmethod
-    def updateSampleFromForm(cls, form):
+    def updateSampleFromName(self, name):
         pass
     
     def toMapDict(self):

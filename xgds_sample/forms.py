@@ -47,9 +47,8 @@ class SampleForm(ModelForm):
                                                                 longitude = self.cleaned_data['longitude'],
                                                                 timestamp = self.cleaned_data['collection_time'],
                                                                 serverTimestamp = datetime.datetime.utcnow())
-        if not instance.name:
-            name = instance.buildName()
-            instance.name = name
+        if instance.name is None:
+            instance.name = instance.buildName()
           
         if commit:
             instance.save()
