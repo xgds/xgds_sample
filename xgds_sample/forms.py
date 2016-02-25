@@ -13,23 +13,45 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+import datetime
 
 from django.conf import settings
 from django import forms
 from django.forms import ModelForm
 from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region
-    
+from geocamUtil.loader import LazyGetModelByName
+
+
+LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 
 class SampleForm(ModelForm):
+    latitude = forms.CharField(required=False, label="Latitude:")
+    longitude = forms.CharField(required=False, label="Longitude:")
+    collection_time = forms.DateTimeField(required=False)
+    
     class Meta: 
         model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
         exclude = ['location', 
                    'name', 
                    'creation_time', 
                    'modification_time', 
-                   'collection_time',
                    'creator', 
                    'modifier', 
                    'label']
+    
+    def save(self, commit=True):
+        instance = super(SampleForm, self).save(commit=False)
+        instance.collection_time = self.cleaned_data['collection_time']
+        instance.location = LOCATION_MODEL.get().objects.create(latitude = self.cleaned_data['latitude'], 
+                                                                longitude = self.cleaned_data['longitude'],
+                                                                timestamp = self.cleaned_data['collection_time'],
+                                                                serverTimestamp = datetime.datetime.utcnow())
+        if not instance.name:
+            name = instance.buildName()
+            instance.name = name
+          
+        if commit:
+            instance.save()
+        return instance
     

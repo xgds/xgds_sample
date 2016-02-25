@@ -58,9 +58,8 @@ class AbstractSample(models.Model):
     modification_time = models.DateTimeField(blank=True, default=datetime.datetime.utcnow(), editable=False)
     label = models.OneToOneField(Label, primary_key=True)
     
-    def buildName(self, inputName):
-        name = inputName
-        return name
+    def buildName(self):
+        pass
     
     @classmethod
     def updateSampleFromName(cls, name):
@@ -77,6 +76,9 @@ class AbstractSample(models.Model):
                 result['collection_time'] = self.collection_time.strftime("%Y-%m-%d %H:%M:%S UTC")
             else: 
                 result['collection_time'] = ""
+            if self.location:
+                result['latitude'] = self.location.latitude
+                result['longitude'] = self.location.longitude
             result['creator'] = self.creator
             return result
         else: 
