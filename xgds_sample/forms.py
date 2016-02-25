@@ -24,5 +24,13 @@ class SampleForm(ModelForm):
     
     class Meta: 
         model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
-        exclude = ['location', 'name', 'creation_time', 'modification_time', 'creator', 'modifier', 'label']
+        exclude = ['location', 
+                   'name', 
+                    'creation_time', 
+                    'modification_time', 
+                    'collection_time',
+                   'creator', 
+                   'modifier', 
+                   'label', 
+                   'region']
     

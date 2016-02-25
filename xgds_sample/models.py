@@ -22,7 +22,6 @@ from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
 from geocamUtil.modelJson import modelToDict
 
-
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
     name = models.CharField(max_length=128)
@@ -68,8 +67,6 @@ class AbstractSample(models.Model):
     
     def toMapDict(self):
         result = modelToDict(self)
-        print "result"
-        print result
         if result: 
             if self.collection_time:     
                 result['collection_time'] = self.collection_time.strftime("%Y-%m-%d %H:%M:%S UTC")
