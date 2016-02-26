@@ -17,3 +17,7 @@ hr {
 .sample_name_row th{
     border-bottom: 2px solid black;
 }
+
+#update_submit_button {
+	float: right;
+}
