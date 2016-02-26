@@ -46,21 +46,34 @@ def getSampleCreatePage(request):
     return render_to_response('xgds_sample/sampleCreate.html', 
                               RequestContext(request, {}))
 
+
 @login_required    
-def createSample(request):
+def editSample(request, labelNum=None):
     if request.method == 'POST':
         # if it's the sample update form
         if 'sampleId' in request.POST:
             sampleId = request.POST['sampleId']
             sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)
+            print "sample is "
+            print sample
             if sample: 
                 labelNum = sample.label.number
                 form = SampleForm(request.POST, instance=sample)
                 if form.is_valid():
                     form.save()
+                    data = {'sample': sample,
+                            'form': form,
+                            'labelNum': labelNum}
                     messages.success(request, 'Sample data successfully updated.')
+                else:
+                    print "form is not valid"
+                    print form.errors
+                    messages.error(request, 'invalid form')
+                    data = {}
             else: 
+                print "sample does not exist"
                 messages.error(request, 'Valid sample does not exist.')
+                data = {}
         # if it's the sample create form
         else: 
             labelNum = request.POST['labelNumber']
@@ -74,12 +87,11 @@ def createSample(request):
                 form = SampleForm()
             else: # sample already existed in the database
                 form = SampleForm(sample.toMapDict())
-        # check that the sample has region, type, 
-        return render_to_response('xgds_sample/sampleCreateForm.html', 
-                      RequestContext(request, {'sample': sample,
-                                               'form': form,
-                                               'labelNum': labelNum,
-                                               }))
+            data = {'sample': sample,
+                    'form': form,
+                    'labelNum': labelNum}
+        return render_to_response('xgds_sample/sampleEditForm.html', 
+                                  RequestContext(request, data))
 
 
 @login_required
