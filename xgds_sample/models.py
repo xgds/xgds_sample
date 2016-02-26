@@ -68,7 +68,7 @@ class AbstractSample(models.Model):
         result = modelToDict(self)
         if result: 
             if self.collection_time:     
-                result['collection_time'] = self.collection_time.strftime("%Y-%m-%d %H:%M:%S UTC")
+                result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M")
             else: 
                 result['collection_time'] = ""
             if self.location:
