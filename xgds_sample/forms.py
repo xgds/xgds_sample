@@ -14,6 +14,7 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 import datetime
+import pytz
 
 from django.conf import settings
 from django import forms
@@ -46,7 +47,7 @@ class SampleForm(ModelForm):
         instance.location = LOCATION_MODEL.get().objects.create(latitude = self.cleaned_data['latitude'], 
                                                                 longitude = self.cleaned_data['longitude'],
                                                                 timestamp = self.cleaned_data['collection_time'],
-                                                                serverTimestamp = datetime.datetime.utcnow())
+                                                                serverTimestamp = datetime.datetime.now(pytz.utc))
         if instance.name is None:
             instance.name = instance.buildName()
           

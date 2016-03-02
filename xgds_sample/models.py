@@ -15,6 +15,9 @@
 #__END_LICENSE__
 
 import datetime
+import pytz
+from django.utils import timezone
+
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -54,8 +57,8 @@ class AbstractSample(models.Model):
     creator = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_creator") # person who entered sample data into Minerva
     modifier = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_modifier") # person who entered sample data into Minerva
     collection_time = models.DateTimeField(blank=True, null=True, editable=False)
-    creation_time = models.DateTimeField(blank=True, default=datetime.datetime.utcnow(), editable=False)
-    modification_time = models.DateTimeField(blank=True, default=datetime.datetime.utcnow(), editable=False)
+    creation_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
+    modification_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
     label = models.OneToOneField(Label, primary_key=True)
     
     def buildName(self):
