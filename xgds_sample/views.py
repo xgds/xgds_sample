@@ -40,24 +40,41 @@ from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 
-
-@login_required
-def getSampleCreatePage(request):
-    return render_to_response('xgds_sample/sampleCreate.html', 
-                              RequestContext(request, {}))
+# view helper
+def getSampleInfoFromLabelNum(labelNum):
+    # render sample edit (view) page
+    label, labelCreated = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
+    sample, sampleCreated = SAMPLE_MODEL.get().objects.get_or_create(label = label)
+    if sampleCreated:
+        form = SampleForm()
+        editFlag = True
+    else: # sample already existed in the database
+        form = SampleForm(sample.toMapDict())
+        editFlag = False
+    data = {'sample': sample,
+            'form': form,
+            'labelNum': labelNum, 
+            'editable': editFlag}
+    return data
 
 
 @login_required    
-def editSample(request, labelNum=None):
+def addOrUpdateSample(request, labelNum=None):
+    if request.method == 'GET':
+        if labelNum: 
+            data = getSampleInfoFromLabelNum(labelNum)
+            return render_to_response('xgds_sample/sampleEditForm.html', 
+                                      RequestContext(request, data))
+        else: 
+            # render the sample create form (just label number entry)
+            return render_to_response('xgds_sample/sampleCreate.html', 
+                                      RequestContext(request, {}))
     if request.method == 'POST':
-        # if it's the sample update form
-        if 'sampleId' in request.POST:
+        # Update sample data via the sample edit form
+        if labelNum:
             sampleId = request.POST['sampleId']
             sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)
-            print "sample is "
-            print sample
             if sample: 
-                labelNum = sample.label.number
                 form = SampleForm(request.POST, instance=sample)
                 if form.is_valid():
                     form.save()
@@ -74,22 +91,14 @@ def editSample(request, labelNum=None):
                 print "sample does not exist"
                 messages.error(request, 'Valid sample does not exist.')
                 data = {}
-        # if it's the sample create form
+        # Render sample edit form the sample create form
         else: 
             labelNum = request.POST['labelNumber']
             if not labelNum:
                 messages.error(request,'Please enter a valid integer label number')
                 return render_to_response('xgds_sample/sampleCreate.html',
                                           RequestContext(request,{}))
-            label, labelCreated = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
-            sample, sampleCreated = SAMPLE_MODEL.get().objects.get_or_create(label = label)
-            if sampleCreated:
-                form = SampleForm()
-            else: # sample already existed in the database
-                form = SampleForm(sample.toMapDict())
-            data = {'sample': sample,
-                    'form': form,
-                    'labelNum': labelNum}
+            data = getSampleInfoFromLabelNum(labelNum)
         return render_to_response('xgds_sample/sampleEditForm.html', 
                                   RequestContext(request, data))
 

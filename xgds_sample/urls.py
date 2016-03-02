@@ -20,7 +20,7 @@ from django.views.generic.base import TemplateView
 from xgds_sample import views
 
 
-urlpatterns = [url(r'editSample/$', views.editSample, {}, 'xgds_sample_edit'),
-               url(r'editSample/(?P<labelNum>[\d]+)$', views.editSample, {}, 'xgds_sample_edit'),
-               url(r'^create/', views.getSampleCreatePage, {}, 'xgds_sample_create'),
-               url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_search')]
+urlpatterns = [url(r'addNewSample/$', views.addOrUpdateSample, {}, 'xgds_sample_edit'),
+               url(r'sample/(?P<labelNum>[\d]+)$', views.addOrUpdateSample,{}, 'xgds_sample_edit'),
+               url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_search'),
+               ]
