@@ -15,7 +15,7 @@
 # __END_LICENSE__
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response, render
+from django.shortcuts import render_to_response, render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.http import (HttpResponseRedirect, 
                          HttpResponseForbidden, 
@@ -40,67 +40,74 @@ from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 
-# view helper
-def getSampleInfoFromLabelNum(labelNum):
-    # render sample edit (view) page
-    label, labelCreated = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
-    sample, sampleCreated = SAMPLE_MODEL.get().objects.get_or_create(label = label)
-    if sampleCreated:
-        form = SampleForm()
-        editFlag = True
-    else: # sample already existed in the database
-        form = SampleForm(sample.toMapDict())
-        editFlag = False
+
+def getSampleLookupPage(request):
+    return render_to_response('xgds_sample/sampleCreate.html', 
+                              RequestContext(request, {}))
+
+@login_required 
+def getSampleViewPage(request, labelNum):
+    label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
+    sample = get_object_or_404(SAMPLE_MODEL.get(), label = label)
+    return render_to_response('xgds_sample/sampleView.html', 
+                              RequestContext(request, {'sample': sample,
+                                                       'labelNum': labelNum}))
+
+@login_required 
+def getSampleEditPage(request, labelNum):
+    label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
+    sample = get_object_or_404(SAMPLE_MODEL.get(), label = label)
+    form = SampleForm(sample.toMapDict(), instance=sample)
     data = {'sample': sample,
             'form': form,
-            'labelNum': labelNum, 
-            'editable': editFlag}
-    return data
-
+            'labelNum': labelNum}
+    return render_to_response('xgds_sample/sampleEditForm.html',
+                              RequestContext(request,data))
+    
 
 @login_required    
 def addOrUpdateSample(request, labelNum=None):
-    if request.method == 'GET':
-        if labelNum: 
-            data = getSampleInfoFromLabelNum(labelNum)
-            return render_to_response('xgds_sample/sampleEditForm.html', 
-                                      RequestContext(request, data))
-        else: 
-            # render the sample create form (just label number entry)
-            return render_to_response('xgds_sample/sampleCreate.html', 
-                                      RequestContext(request, {}))
     if request.method == 'POST':
-        # Update sample data via the sample edit form
-        if labelNum:
-            sampleId = request.POST['sampleId']
-            sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)
-            if sample: 
-                form = SampleForm(request.POST, instance=sample)
-                if form.is_valid():
-                    form.save()
-                    data = {'sample': sample,
-                            'form': form,
-                            'labelNum': labelNum}
-                    messages.success(request, 'Sample data successfully updated.')
-                else:
-                    print "form is not valid"
-                    print form.errors
-                    messages.error(request, 'invalid form')
-                    data = {}
-            else: 
-                print "sample does not exist"
-                messages.error(request, 'Valid sample does not exist.')
-                data = {}
-        # Render sample edit form the sample create form
-        else: 
-            labelNum = request.POST['labelNumber']
+        # post request from the sample add or update form (just label num) 
+        if not labelNum: 
+            labelNum = request.POST['labelNum']
             if not labelNum:
                 messages.error(request,'Please enter a valid integer label number')
                 return render_to_response('xgds_sample/sampleCreate.html',
                                           RequestContext(request,{}))
-            data = getSampleInfoFromLabelNum(labelNum)
-        return render_to_response('xgds_sample/sampleEditForm.html', 
-                                  RequestContext(request, data))
+            label, labelCreated = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
+            sample, sampleCreated = SAMPLE_MODEL.get().objects.get_or_create(label = label)
+            if sampleCreated:
+                form = SampleForm()
+                templateName = 'xgds_sample/sampleEditForm.html'
+            else: 
+                form = SampleForm(sample.toMapDict())
+                templateName = 'xgds_sample/sampleView.html'
+            return render_to_response(templateName,
+                                     RequestContext(request, {'sample': sample,
+                                                              'form': form,
+                                                              'labelNum': labelNum}))
+        # post request sent from sample edit form. 
+        else: 
+            sampleId = request.POST['sampleId']
+            sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)   
+            if not sample:
+                messages.error(request,'Invalid sample with id %d' % sampleId)
+                data = {}
+            else: 
+                form = SampleForm(request.POST, instance=sample)
+                if form.is_valid():
+                    form.save()
+                    messages.success(request, 'Sample data successfully updated.')
+                    data = {'sample': sample,
+                            'form': form,
+                            'labelNum': labelNum}
+                else: 
+                    messages.error(request, 'invalid form')
+                    data = {}
+            return render_to_response('xgds_sample/sampleCreate.html',
+                                      RequestContext(request,data))
+
 
 
 @login_required

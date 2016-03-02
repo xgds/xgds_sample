@@ -43,10 +43,16 @@ class SampleForm(ModelForm):
     def save(self, commit=True):
         instance = super(SampleForm, self).save(commit=False)
         instance.collection_time = self.cleaned_data['collection_time']
-        instance.location = LOCATION_MODEL.get().objects.create(latitude = self.cleaned_data['latitude'], 
-                                                                longitude = self.cleaned_data['longitude'],
-                                                                timestamp = self.cleaned_data['collection_time'],
-                                                                serverTimestamp = datetime.datetime.utcnow())
+        if instance.location is None: 
+            instance.location = LOCATION_MODEL.get().objects.create(latitude = self.cleaned_data['latitude'], 
+                                                                    longitude = self.cleaned_data['longitude'],
+                                                                    timestamp = self.cleaned_data['collection_time'],
+                                                                    serverTimestamp = datetime.datetime.utcnow())
+        else:
+            instance.location.latitude = self.cleaned_data['latitude']
+            instance.location.longitude = self.cleaned_data['longitude']
+            instance.location.timestamp = self.cleaned_data['collection_time']
+            
         if instance.name is None:
             instance.name = instance.buildName()
           
