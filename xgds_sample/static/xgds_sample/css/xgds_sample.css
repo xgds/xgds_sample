@@ -18,10 +18,18 @@ hr {
     border-bottom: 2px solid black;
 }
 
-#update_submit_button {
+#sample-edit-button-group {
 	float: right;
 }
 
 #edit_sample_button {
 	float: right;
+}
+
+#record_sample_submit_btn {
+	float: right;
+}
+
+#messages {
+	heigth: 50px;
 }

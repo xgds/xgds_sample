@@ -20,12 +20,11 @@ from django.views.generic.base import TemplateView
 from xgds_sample import views
 
 
-urlpatterns = [
-#                url(r'addNewSample/$', views.addOrUpdateSample, {}, 'xgds_sample_edit'),
-                url(r'sampleAddOrUpdate$', views.addOrUpdateSample,{}, 'xgds_sample_add_or_update'),
-                url(r'sampleAddOrUpdate/(?P<labelNum>[\d]+)$', views.addOrUpdateSample,{}, 'xgds_sample_add_or_update'),
-               url(r'sampleLookup/$', views.getSampleLookupPage, {}, 'xgds_sample_lookup'),
+urlpatterns = [url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_search'),
+               url(r'recordSample', views.getRecordSamplePage,{}, 'xgds_sample_record'),
                url(r'sample/(?P<labelNum>[\d]+)$', views.getSampleViewPage, {}, 'xgds_sample_view'),
+               
+               url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_edit'),
                url(r'edit/(?P<labelNum>[\d]+)$', views.getSampleEditPage, {}, 'xgds_sample_edit'),
-               url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_search'),
+               url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_labels'),
                ]

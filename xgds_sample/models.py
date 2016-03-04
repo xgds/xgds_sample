@@ -46,6 +46,9 @@ class SampleType(AbstractEnumModel):
 class Label(models.Model):
     number = models.IntegerField()
     url = models.CharField(null=True, max_length=512)    
+    
+    def __unicode__(self):
+        return u'%s' % (self.number)
      
      
 class AbstractSample(models.Model):
@@ -77,7 +80,6 @@ class AbstractSample(models.Model):
             if self.location:
                 result['latitude'] = self.location.latitude
                 result['longitude'] = self.location.longitude
-            result['creator'] = self.creator
             return result
         else: 
             return None

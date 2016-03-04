@@ -41,75 +41,6 @@ SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 
 
-def getSampleLookupPage(request):
-    return render_to_response('xgds_sample/sampleCreate.html', 
-                              RequestContext(request, {}))
-
-@login_required 
-def getSampleViewPage(request, labelNum):
-    label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
-    sample = get_object_or_404(SAMPLE_MODEL.get(), label = label)
-    return render_to_response('xgds_sample/sampleView.html', 
-                              RequestContext(request, {'sample': sample,
-                                                       'labelNum': labelNum}))
-
-@login_required 
-def getSampleEditPage(request, labelNum):
-    label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
-    sample = get_object_or_404(SAMPLE_MODEL.get(), label = label)
-    form = SampleForm(sample.toMapDict(), instance=sample)
-    data = {'sample': sample,
-            'form': form,
-            'labelNum': labelNum}
-    return render_to_response('xgds_sample/sampleEditForm.html',
-                              RequestContext(request,data))
-    
-
-@login_required    
-def addOrUpdateSample(request, labelNum=None):
-    if request.method == 'POST':
-        # post request from the sample add or update form (just label num) 
-        if not labelNum: 
-            labelNum = request.POST['labelNum']
-            if not labelNum:
-                messages.error(request,'Please enter a valid integer label number')
-                return render_to_response('xgds_sample/sampleCreate.html',
-                                          RequestContext(request,{}))
-            label, labelCreated = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
-            sample, sampleCreated = SAMPLE_MODEL.get().objects.get_or_create(label = label)
-            if sampleCreated:
-                form = SampleForm()
-                templateName = 'xgds_sample/sampleEditForm.html'
-            else: 
-                form = SampleForm(sample.toMapDict())
-                templateName = 'xgds_sample/sampleView.html'
-            return render_to_response(templateName,
-                                     RequestContext(request, {'sample': sample,
-                                                              'form': form,
-                                                              'labelNum': labelNum}))
-        # post request sent from sample edit form. 
-        else: 
-            sampleId = request.POST['sampleId']
-            sample = SAMPLE_MODEL.get().objects.get(pk = sampleId)   
-            if not sample:
-                messages.error(request,'Invalid sample with id %d' % sampleId)
-                data = {}
-            else: 
-                form = SampleForm(request.POST, instance=sample)
-                if form.is_valid():
-                    form.save()
-                    messages.success(request, 'Sample data successfully updated.')
-                    data = {'sample': sample,
-                            'form': form,
-                            'labelNum': labelNum}
-                else: 
-                    messages.error(request, 'invalid form')
-                    data = {}
-            return render_to_response('xgds_sample/sampleCreate.html',
-                                      RequestContext(request,data))
-
-
-
 @login_required
 def getSampleSearchPage(request):
     theForm = SpecializedForm(SearchForm, SAMPLE_MODEL.get())
@@ -120,3 +51,104 @@ def getSampleSearchPage(request):
             'samplesJsonArray': samplesJson}
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))
+
+@login_required
+def getRecordSamplePage(request):
+    return render_to_response('xgds_sample/recordSample.html', 
+                              RequestContext(request, {}))
+
+
+def getSampleDictForSampleView(sample):
+    # return the displayable dict.
+    sampleDict = sample.toMapDict()
+    sampleDict['region'] = sample.region.name
+    sampleDict['type'] = sample.type.display_name
+    sampleDict['label'] = sample.number
+    sampleDict['triplicate'] = sample.triplicate.display_name
+    return sampleDict 
+
+    
+@login_required 
+def getSampleViewPage(request, labelNum):
+    label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
+    sample = get_object_or_404(SAMPLE_MODEL.get(), label = label)
+    sampleDict = getSampleDictForSampleView(sample)
+
+    return render_to_response('xgds_sample/sampleView.html', 
+                              RequestContext(request, {'sampleDict': sampleDict,
+                                                       'labelNum': labelNum}))
+
+@login_required 
+def getSampleEditPage(request, labelNum=None):
+    if labelNum: 
+        label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
+        sample = get_object_or_404(SAMPLE_MODEL.get(), label = label)
+        form = SampleForm(request.POST, instance=sample)
+        # if is updating the sample info from edit form
+        if request.POST: 
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Sample data successfully updated.')
+                return render_to_response('xgds_sample/recordSample.html',
+                                           RequestContext(request, {}))
+            else: 
+                messages.error(request, 'The form is not valid')
+                return render_to_response('xgds_sample/sampleEditForm.html',
+                                          RequestContext(request, {'sample': sample,
+                                                                   'form': form,
+                                                                   'labelNum': labelNum}))
+        # edit page opened via edit/<label number>
+        elif request.GET:
+            #TODO: HANDLE THE CASE WHEN YOU GET HERE FROM THE A HREF.
+            # be able to distinguish whether user directly typed in the url into the browser or wanted to create a new label or sample.
+            
+            data = {'sample': sample,
+                    'form': form,
+                    'labelNum': labelNum}
+            return render_to_response('xgds_sample/sampleEditForm.html',
+                                      RequestContext(request,data))
+    else: 
+        # if user entered sample name
+        numberOrName = request.POST['label_num_or_sample_name'] 
+        sample = None
+        form = None
+        labelNum = None
+        if numberOrName and numberOrName[0].isalpha():
+            try: 
+                sample = SAMPLE_MODEL.get().objects.get(name = numberOrName)
+                labelNum = sample.label.number
+            except: 
+                # If no sample with the given sample name, show an error. 
+                messages.error(request, 'No matching sample with given name %s. Please enter a label name first.' % numberOrName)
+                return render_to_response('xgds_sample/recordSample.html',
+                                           RequestContext(request, {}))
+                
+        # if user entered a label number
+        else: 
+            labelNum = numberOrName
+            label = LABEL_MODEL.get().objects.get(number=numberOrName)
+            if not label: 
+                messages.error(request, 'Label does not exist. Would you like to create one? <a href=edit/' + labelNum + '>create</a>',
+                               extra_tags='safe')
+                return render_to_response('xgds_sample/recordSample.html',
+                                          RequestContext(request, {}))
+            else: 
+                try: 
+                    sample = SAMPLE_MODEL.get().objects.get(label = label)
+                except: 
+                    messages.error(request, 'Sample does not exist. Would you like to create one? <a href=edit/' + labelNum + '>create</a>',
+                                   extra_tags='safe')
+                    return render_to_response('xgds_sample/recordSample.html',
+                                              RequestContext(request, {}))
+        form = SampleForm(sample.toMapDict(), instance=sample)
+    data = {'sample': sample,
+            'form': form,
+            'labelNum': labelNum}
+    return render_to_response('xgds_sample/sampleEditForm.html',
+                              RequestContext(request,data))
+    
+    
+@login_required
+def getSampleLabelsPage(request):
+    return render_to_response('xgds_sample/sampleLabels.html', 
+                              RequestContext(request,{}))
