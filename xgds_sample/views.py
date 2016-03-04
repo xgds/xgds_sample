@@ -145,7 +145,7 @@ def getSampleEditPage(request, labelNum=None):
                 try: 
                     sample = SAMPLE_MODEL.get().objects.get(label = label)
                 except: 
-                    messages.error(request, 'There is no matching sample. Would you like to create one? ' + labelNum + '>create</a>',
+                    messages.error(request, 'There is no matching sample. Would you like to create one? <a href=createSample/' + labelNum + '>create</a>',
                                    extra_tags='safe')
                     return render_to_response('xgds_sample/recordSample.html',
                                               RequestContext(request, {}))
