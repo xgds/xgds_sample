@@ -117,11 +117,17 @@ def getSampleEditPage(request, labelNum=None):
             return render_to_response('xgds_sample/sampleEditForm.html',
                                       RequestContext(request,data))
     else: 
-        # if user entered sample name
         numberOrName = request.POST['label_num_or_sample_name'] 
         sample = None
         form = None
         labelNum = None
+        # handle empty user input. 
+        if not numberOrName:
+            messages.error(request, 'Please enter a valid sample name or label number')
+            return render_to_response('xgds_sample/recordSample.html',
+                                       RequestContext(request, {}))
+        
+        # if user entered sample name
         if numberOrName and numberOrName[0].isalpha():
             try: 
                 sample = SAMPLE_MODEL.get().objects.get(name = numberOrName)
