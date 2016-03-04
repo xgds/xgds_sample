@@ -78,10 +78,22 @@ def getSampleViewPage(request, labelNum):
                               RequestContext(request, {'sampleDict': sampleDict,
                                                        'labelNum': labelNum}))
 
+def createSample(request, labelNum=None):
+    label = get_object_or_404(LABEL_MODEL.get(), number=labelNum) 
+    sample = SAMPLE_MODEL.get().objects.create(label=label)
+    return HttpResponseRedirect(reverse('xgds_sample_edit', kwargs={'labelNum': labelNum}))
+
+
+def createSampleFromLabel(request, labelNum = None):
+    label = LABEL_MODEL.get().objects.create(number = labelNum)
+    sample, create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
+    return HttpResponseRedirect(reverse('xgds_sample_edit', kwargs={'labelNum': labelNum}))
+
+
 @login_required 
 def getSampleEditPage(request, labelNum=None):
     if labelNum: 
-        label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
+        label = get_object_or_404(LABEL_MODEL.get(), number=labelNum) 
         sample = get_object_or_404(SAMPLE_MODEL.get(), label = label)
         form = SampleForm(request.POST, instance=sample)
         # if is updating the sample info from edit form
@@ -99,9 +111,6 @@ def getSampleEditPage(request, labelNum=None):
                                                                    'labelNum': labelNum}))
         # edit page opened via edit/<label number>
         elif request.GET:
-            #TODO: HANDLE THE CASE WHEN YOU GET HERE FROM THE A HREF.
-            # be able to distinguish whether user directly typed in the url into the browser or wanted to create a new label or sample.
-            
             data = {'sample': sample,
                     'form': form,
                     'labelNum': labelNum}
@@ -122,13 +131,13 @@ def getSampleEditPage(request, labelNum=None):
                 messages.error(request, 'No matching sample with given name %s. Please enter a label name first.' % numberOrName)
                 return render_to_response('xgds_sample/recordSample.html',
                                            RequestContext(request, {}))
-                
         # if user entered a label number
         else: 
             labelNum = numberOrName
-            label = LABEL_MODEL.get().objects.get(number=numberOrName)
-            if not label: 
-                messages.error(request, 'Label does not exist. Would you like to create one? <a href=edit/' + labelNum + '>create</a>',
+            try: 
+                label = LABEL_MODEL.get().objects.get(number=numberOrName)
+            except: 
+                messages.error(request, 'There is no matching sample. Would you like to create one?  <a href=createSampleFromLabel/' + labelNum + '>create</a>',
                                extra_tags='safe')
                 return render_to_response('xgds_sample/recordSample.html',
                                           RequestContext(request, {}))
@@ -136,7 +145,7 @@ def getSampleEditPage(request, labelNum=None):
                 try: 
                     sample = SAMPLE_MODEL.get().objects.get(label = label)
                 except: 
-                    messages.error(request, 'Sample does not exist. Would you like to create one? <a href=edit/' + labelNum + '>create</a>',
+                    messages.error(request, 'There is no matching sample. Would you like to create one? ' + labelNum + '>create</a>',
                                    extra_tags='safe')
                     return render_to_response('xgds_sample/recordSample.html',
                                               RequestContext(request, {}))

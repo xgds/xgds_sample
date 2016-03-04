@@ -27,4 +27,6 @@ urlpatterns = [url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_sear
                url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_edit'),
                url(r'edit/(?P<labelNum>[\d]+)$', views.getSampleEditPage, {}, 'xgds_sample_edit'),
                url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_labels'),
+               url(r'createSample/(?P<labelNum>[\d]+)$', views.createSample, {}, 'xgds_sample_create'),
+               url(r'createSampleFromLabel/(?P<labelNum>[\d]+)$', views.createSampleFromLabel, {}, 'xgds_sample_create_from_label')
                ]
