@@ -32,6 +32,7 @@ from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleType, Region
+from xgds_map_server.views import get_handlebars_templates
 import logging
 import json
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
@@ -47,8 +48,12 @@ def getSampleSearchPage(request):
     theFormSetMaker = formset_factory(theForm, extra=0)
     theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
     samplesJson = [] #TODO
+    fullTemplateList = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
+    fullTemplateList.append(settings.XGDS_SAMPLE_HANDLEBARS_DIR[0])
     data = {'formset': theFormSet,
-            'samplesJsonArray': samplesJson}
+            'samplesJsonArray': samplesJson, 
+            'templates': get_handlebars_templates(fullTemplateList)
+            }
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))
 
