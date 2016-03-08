@@ -1,0 +1,59 @@
+{% extends 'dashboard_base.html' %}
+
+{% block sitemenu-content-secondary %}
+	{% include "sample_subnav.html" %}
+{% endblock %}
+
+ {% block cssExtras %}
+ {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
+ {% endblock cssExtras %}
+
+{% block jsInitPreApp %}    
+	var labelsJson = {{ labelsJson|safe }};
+	var STATIC_URL = {{ STATIC_URL }};
+    var labelsArray = [];
+    $(labelsJson).each(function() {
+    	labelsArray.push(JSON.parse(this));
+    });
+	
+	var aoColumns = [			   {"mRender":function(data, type, full){
+	                                   return "<div> checkbox </div>";
+	                               }},
+								   {"mData": "label.number"},
+	                               {"mData": "name"},
+	                               {"mData": "date"}
+	];
+	setupTable('item_labels_table', 'labels_table', labelsArray, aoColumns);
+{% endblock jsInitPreApp %}
+
+{% block otherJSInit %}
+	matchWidth('item_sample_table','map');
+{% endblock otherJSInit %}
+
+{% block scripts %}
+{{block.super}}
+	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleLabel.js"></script>
+{% endblock scripts %}
+
+
+{% block firstPackery %}
+<!-- Labels table -->
+<div class='item w2 freeAspect' id='item_labels_table' data-isStamped="false">
+	<i class="icon-lock-open pinDiv"></i>
+		<table cellpadding="0" cellspacing="0" border="0"  id="labels_table">
+			<thead class="table_header">
+				<tr>
+					<th>Label Number</th>
+					<th>Sample Name</th>					
+				    <th>Printed Date</th>
+			    </tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+</div>
+{% endblock firstPackery %}
+
+		

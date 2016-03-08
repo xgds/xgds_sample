@@ -49,7 +49,11 @@ class Label(models.Model):
     
     def __unicode__(self):
         return u'%s' % (self.number)
-     
+    
+    def toMapDict(self):
+        result = modelToDict(self)
+        return result
+
      
 class AbstractSample(models.Model):
     name = models.CharField(max_length=512, null=True) # 9 characters

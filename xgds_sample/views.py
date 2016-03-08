@@ -36,6 +36,7 @@ from xgds_map_server.views import get_handlebars_templates
 import logging
 import json
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
+from siteSettings import STATIC_URL
 
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
@@ -170,5 +171,15 @@ def getSampleEditPage(request, labelNum=None):
     
 @login_required
 def getSampleLabelsPage(request):
+    labels = LABEL_MODEL.get().objects.all()
+    labelsJson = [json.dumps(label.toMapDict()) for label in labels] 
+    
+    samples = SAMPLE_MODEL.get().objects.all()
+    samplesJson = [json.dumps(sample.toMapDict()) for sample in samples]
+    
+    # add sample name and printed date to the array.
     return render_to_response('xgds_sample/sampleLabels.html', 
-                              RequestContext(request,{}))
+                              RequestContext(request,
+                                             {'labelsJson': labelsJson,
+                                              'samplesJson': samplesJson,
+                                              'STATIC_URL': STATIC_URL}))
