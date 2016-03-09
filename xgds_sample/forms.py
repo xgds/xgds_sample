@@ -14,6 +14,7 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 import datetime
+import pytz
 
 from django.conf import settings
 from django import forms
@@ -21,18 +22,27 @@ from django.forms import ModelForm
 from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region
 from geocamUtil.loader import LazyGetModelByName
+from geocamTrack.views import getClosestPosition
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 
 
 class SampleForm(ModelForm):
-    latitude = forms.CharField(required=False, label="Latitude:")
-    longitude = forms.CharField(required=False, label="Longitude:")
-    collection_time = forms.DateTimeField(required=False)
+    latitude = forms.FloatField(required=False, label="Latitude:")
+    longitude = forms.FloatField(required=False, label="Longitude:")
+    altitude = forms.FloatField(required=False, label="Altitude:")
+    date_formats = list(forms.DateTimeField.input_formats) + [
+        '%Y/%m/%d %H:%M:%S',
+        '%Y-%m-%d %H:%M:%S',
+        '%m/%d/%Y %H:%M'
+    ]
+    collection_time = forms.DateTimeField(required=False, input_formats=date_formats)
+    collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
     class Meta: 
         model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
-        exclude = ['location', 
+        exclude = ['track_position', 
+                   'user_position', 
                    'name', 
                    'creation_time', 
                    'modification_time', 
@@ -40,20 +50,36 @@ class SampleForm(ModelForm):
                    'modifier', 
                    'label']
     
+    # populate the event time with NOW if it is blank.
+    def clean_collection_time(self):
+        ctime = self.cleaned_data['collection_time']
+        
+        if not ctime:
+            return None
+        else:
+            ctimezone = self.cleaned_data['collection_timezone']
+            tz = pytz.timezone(ctimezone)
+            localizedTime = tz.localize(ctime)
+            return localizedTime.astimezone(pytz.utc)
+    
     def save(self, commit=True):
         instance = super(SampleForm, self).save(commit=False)
-        if self.cleaned_data['collection_time']:
-            instance.collection_time = self.cleaned_data['collection_time']
+        if instance.resource and instance.collection_time:
+            instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
+
         if self.cleaned_data['latitude'] and self.cleaned_data['longitude']:
             if instance.location is None:
-                instance.location = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.utcnow(),
-                                                                        timestamp = datetime.datetime.now(),
-                                                                        latitude = self.cleaned_data['latitude'],
-                                                                        longitude = self.cleaned_data['longitude'])
+                instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
+                                                                             timestamp = datetime.datetime.now(pytz.utc),
+                                                                             latitude = self.cleaned_data['latitude'],
+                                                                             longitude = self.cleaned_data['longitude'])
+                if self.cleaned_data['altitude']:
+                    instance.user_position.altitude = self.cleaned_data['altitude'] 
             else:
-                instance.location.latitude = self.cleaned_data['latitude']
-                instance.location.longitude = self.cleaned_data['longitude']
-                instance.location.timestamp = datetime.datetime.now()
+                instance.user_position.latitude = self.cleaned_data['latitude']
+                instance.user_position.longitude = self.cleaned_data['longitude']
+                if self.cleaned_data['altitude']:
+                    instance.user_position.altitude = self.cleaned_data['altitude'] 
         if instance.name is None:
             instance.name = instance.buildName()
           

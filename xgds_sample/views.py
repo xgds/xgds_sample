@@ -17,10 +17,10 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, render, get_object_or_404
 from django.core.urlresolvers import reverse
-from django.http import (HttpResponseRedirect, 
-                         HttpResponseForbidden, 
-                         Http404, 
-                         HttpResponse, 
+from django.http import (HttpResponseRedirect,
+                         HttpResponseForbidden,
+                         Http404,
+                         HttpResponse,
                          HttpResponseNotAllowed)
 from django.template import RequestContext
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -48,11 +48,11 @@ def getSampleSearchPage(request):
     theForm = SpecializedForm(SearchForm, SAMPLE_MODEL.get())
     theFormSetMaker = formset_factory(theForm, extra=0)
     theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
-    samplesJson = [] #TODO
+    samplesJson = []  # TODO
     fullTemplateList = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
     fullTemplateList.append(settings.XGDS_SAMPLE_HANDLEBARS_DIR[0])
     data = {'formset': theFormSet,
-            'samplesJsonArray': samplesJson, 
+            'samplesJsonArray': samplesJson,
             'templates': get_handlebars_templates(fullTemplateList)
             }
     return render_to_response("xgds_sample/sampleSearch.html", data,
@@ -60,7 +60,7 @@ def getSampleSearchPage(request):
 
 @login_required
 def getRecordSamplePage(request):
-    return render_to_response('xgds_sample/recordSample.html', 
+    return render_to_response('xgds_sample/recordSample.html',
                               RequestContext(request, {}))
 
 
@@ -77,10 +77,10 @@ def getSampleDictForSampleView(sample):
 @login_required 
 def getSampleViewPage(request, labelNum):
     label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
-    sample = get_object_or_404(SAMPLE_MODEL.get(), label = label)
+    sample = get_object_or_404(SAMPLE_MODEL.get(), label=label)
     sampleDict = getSampleDictForSampleView(sample)
 
-    return render_to_response('xgds_sample/sampleView.html', 
+    return render_to_response('xgds_sample/sampleView.html',
                               RequestContext(request, {'sampleDict': sampleDict,
                                                        'labelNum': labelNum}))
 
@@ -90,8 +90,8 @@ def createSample(request, labelNum=None):
     return HttpResponseRedirect(reverse('xgds_sample_edit', kwargs={'labelNum': labelNum}))
 
 
-def createSampleFromLabel(request, labelNum = None):
-    label = LABEL_MODEL.get().objects.create(number = labelNum)
+def createSampleFromLabel(request, labelNum=None):
+    label = LABEL_MODEL.get().objects.create(number=labelNum)
     sample, create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
     return HttpResponseRedirect(reverse('xgds_sample_edit', kwargs={'labelNum': labelNum}))
 
@@ -100,7 +100,7 @@ def createSampleFromLabel(request, labelNum = None):
 def getSampleEditPage(request, labelNum=None):
     if labelNum: 
         label = get_object_or_404(LABEL_MODEL.get(), number=labelNum) 
-        sample = get_object_or_404(SAMPLE_MODEL.get(), label = label)
+        sample = get_object_or_404(SAMPLE_MODEL.get(), label=label)
         form = SampleForm(request.POST, instance=sample)
         # if is updating the sample info from edit form
         if request.POST: 
@@ -121,7 +121,7 @@ def getSampleEditPage(request, labelNum=None):
                     'form': form,
                     'labelNum': labelNum}
             return render_to_response('xgds_sample/sampleEditForm.html',
-                                      RequestContext(request,data))
+                                      RequestContext(request, data))
     else: 
         numberOrName = request.POST['label_num_or_sample_name'] 
         sample = None
@@ -136,7 +136,7 @@ def getSampleEditPage(request, labelNum=None):
         # if user entered sample name
         if numberOrName and numberOrName[0].isalpha():
             try: 
-                sample = SAMPLE_MODEL.get().objects.get(name = numberOrName)
+                sample = SAMPLE_MODEL.get().objects.get(name=numberOrName)
                 labelNum = sample.label.number
             except: 
                 # If no sample with the given sample name, show an error. 
@@ -155,7 +155,7 @@ def getSampleEditPage(request, labelNum=None):
                                           RequestContext(request, {}))
             else: 
                 try: 
-                    sample = SAMPLE_MODEL.get().objects.get(label = label)
+                    sample = SAMPLE_MODEL.get().objects.get(label=label)
                 except: 
                     messages.error(request, 'There is no matching sample. Would you like to create one? <a href=createSample/' + labelNum + '>create</a>',
                                    extra_tags='safe')
@@ -166,7 +166,7 @@ def getSampleEditPage(request, labelNum=None):
             'form': form,
             'labelNum': labelNum}
     return render_to_response('xgds_sample/sampleEditForm.html',
-                              RequestContext(request,data))
+                              RequestContext(request, data))
     
     
 @login_required
@@ -178,7 +178,7 @@ def getSampleLabelsPage(request):
     samplesJson = [json.dumps(sample.toMapDict()) for sample in samples]
     
     # add sample name and printed date to the array.
-    return render_to_response('xgds_sample/sampleLabels.html', 
+    return render_to_response('xgds_sample/sampleLabels.html',
                               RequestContext(request,
                                              {'labelsJson': labelsJson,
                                               'samplesJson': samplesJson,

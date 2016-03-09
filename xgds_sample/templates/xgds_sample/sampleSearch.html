@@ -8,6 +8,7 @@
 
 {% block jsInit %} 
 {{ block.super }}
+	var sampleModel = '{{ settings.XGDS_SAMPLE_SAMPLE_MODEL }}';
 	$("#samples_simple_search_btn").submit(function(event){
 		doSimpleSearch(event);
 	});	

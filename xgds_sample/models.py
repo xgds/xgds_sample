@@ -24,6 +24,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
 from geocamUtil.modelJson import modelToDict
+from geocamUtil.UserUtil import getUserName
 
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
@@ -46,6 +47,7 @@ class SampleType(AbstractEnumModel):
 class Label(models.Model):
     number = models.IntegerField()
     url = models.CharField(null=True, max_length=512)    
+    last_printed = models.DateTimeField(blank=True, null=True, editable=False)
     
     def __unicode__(self):
         return u'%s' % (self.number)
@@ -59,11 +61,14 @@ class AbstractSample(models.Model):
     name = models.CharField(max_length=512, null=True) # 9 characters
     type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
-    location = models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True)
+    resource = models.ForeignKey(settings.GEOCAM_TRACK_RESOURCE_MODEL, null=True, blank=True)
+    track_position = models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True)
+    user_position = models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True, related_name="sample_user_set" )
     collector = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_collector") # person who collected the sample
     creator = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_creator") # person who entered sample data into Minerva
     modifier = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_modifier") # person who entered sample data into Minerva
     collection_time = models.DateTimeField(blank=True, null=True, editable=False)
+    collection_timezone = models.CharField(null=True, blank=False, max_length=128, default=settings.TIME_ZONE)
     creation_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
     modification_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
     label = models.OneToOneField(Label, primary_key=True)
@@ -74,16 +79,48 @@ class AbstractSample(models.Model):
     def updateSampleFromName(self, name):
         pass
     
+    def finish_initialization(self, request):
+        ''' during construction, if you have extra data to fill in you can override this method'''
+        pass
+    
+    def getPositionDict(self):
+        ''' override if you want to change the logic for how the positions are prioritized in JSON.
+        Right now track_position is from the track, and user_position stores any hand edits.
+        track provides lat lon and altitude and heading, and user trumps all.
+        '''
+        result = {}
+        result['altitude'] = ""
+
+        if self.user_position:
+            result['lat'] = self.user_position.latitude
+            result['lon'] = self.user_position.longitude
+            if hasattr(self.user_position, 'altitude'):
+                result['altitude'] = self.user_position.altitude
+            return result
+        
+        result['position_id'] = ""
+        if self.track_position:
+            result['lat'] = self.track_position.latitude
+            result['lon'] = self.track_position.longitude
+            if self.track_position.altitude:
+                result['altitude'] = self.track_position.altitude
+            return result
+        else: 
+            result['lat'] = ""
+            result['lon'] = ""
+            
+        return result
+    
     def toMapDict(self):
         result = modelToDict(self)
         if result: 
+            if self.collector:
+                result['collector'] = getUserName(self.collector)
             if self.collection_time:     
                 result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M")
             else: 
                 result['collection_time'] = ""
-            if self.location:
-                result['latitude'] = self.location.latitude
-                result['longitude'] = self.location.longitude
+            result.update(self.getPositionDict())
             return result
         else: 
             return None
