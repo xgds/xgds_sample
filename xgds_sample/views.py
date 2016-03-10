@@ -155,10 +155,15 @@ def getSampleEditPage(request):
 @login_required 
 def updateSampleRecord(request, labelNum):
     label = get_object_or_404(LABEL_MODEL.get(), number=labelNum) 
-    sample = label.sample
+    try: 
+        sample = label.sample
+    except: 
+        messages.error(request, 'There is no matching sample. Would you like to create one?  <a href=createSample/' + str(labelNum) + '>create</a>',extra_tags='safe')
+        return render_to_response('xgds_sample/recordSample.html',
+                                  RequestContext(request, {}))
     form = SampleForm(request.POST, instance=sample)
     # if is updating the sample info from edit form
-    if request.POST:
+    if request.method == "POST":
         if form.is_valid():
             form.save()
             messages.success(request, 'Sample data successfully updated.')
@@ -171,12 +176,12 @@ def updateSampleRecord(request, labelNum):
                                                                'form': form,
                                                                'labelNum': labelNum}))
     # edit page opened via edit/<label number>
-    elif request.GET:
+    elif request.method == "GET":
         data = {'form': form}
         return render_to_response('xgds_sample/sampleEditForm.html',
                                   RequestContext(request, data))
     else: 
-        return HttpResponseBadRequest("Request type invalid.")
+        return HttpResponseBadRequest("Request type %s is invalid." % request.method)
     
     
 @login_required

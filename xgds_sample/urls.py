@@ -22,7 +22,7 @@ from xgds_sample import views
 
 urlpatterns = [url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_search'),
                url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_labels'),
-               url(r'sample/(?P<labelNum>[\d]+)$', views.getSampleViewPage, {}, 'xgds_sample_view'),
+               url(r'sample/(?P<labelNum>[\d]+)$', views.getSampleViewPage, {}, 'xgds_sample_search_view'),
                url(r'createSample/(?P<labelNum>[\d]+)$', views.createSample, {}, 'xgds_sample_create'),
                url(r'recordSample', views.getRecordSamplePage,{}, 'xgds_sample_record'),
                url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_record_edit'),
