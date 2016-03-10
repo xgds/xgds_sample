@@ -71,7 +71,7 @@ class AbstractSample(models.Model):
     collection_timezone = models.CharField(null=True, blank=False, max_length=128, default=settings.TIME_ZONE)
     creation_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
     modification_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
-    label = models.OneToOneField(Label, primary_key=True)
+    label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     
     def buildName(self):
         pass

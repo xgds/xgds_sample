@@ -21,12 +21,10 @@ from xgds_sample import views
 
 
 urlpatterns = [url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_search'),
-               url(r'recordSample', views.getRecordSamplePage,{}, 'xgds_sample_record'),
-               url(r'sample/(?P<labelNum>[\d]+)$', views.getSampleViewPage, {}, 'xgds_sample_view'),
-               
-               url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_edit'),
-               url(r'edit/(?P<labelNum>[\d]+)$', views.getSampleEditPage, {}, 'xgds_sample_edit'),
                url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_labels'),
+               url(r'sample/(?P<labelNum>[\d]+)$', views.getSampleViewPage, {}, 'xgds_sample_view'),
                url(r'createSample/(?P<labelNum>[\d]+)$', views.createSample, {}, 'xgds_sample_create'),
-               url(r'createSampleFromLabel/(?P<labelNum>[\d]+)$', views.createSampleFromLabel, {}, 'xgds_sample_create_from_label')
+               url(r'recordSample', views.getRecordSamplePage,{}, 'xgds_sample_record'),
+               url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_record_edit'),
+               url(r'edit/(?P<labelNum>[\d]+)$', views.updateSampleRecord, {}, 'xgds_sample_record_update')
                ]

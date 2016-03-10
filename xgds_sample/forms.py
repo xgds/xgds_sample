@@ -53,22 +53,24 @@ class SampleForm(ModelForm):
     # populate the event time with NOW if it is blank.
     def clean_collection_time(self):
         ctime = self.cleaned_data['collection_time']
-        
         if not ctime:
             return None
         else:
             ctimezone = self.cleaned_data['collection_timezone']
             tz = pytz.timezone(ctimezone)
-            localizedTime = tz.localize(ctime)
-            return localizedTime.astimezone(pytz.utc)
+            naiveTime = ctime.replace(tzinfo = None)
+            localizedTime = tz.localize(naiveTime)
+            utcTime = localizedTime.astimezone(pytz.utc)
+            return utcTime
     
     def save(self, commit=True):
         instance = super(SampleForm, self).save(commit=False)
+        instance.collection_time = self.cleaned_data['collection_time']
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
 
         if self.cleaned_data['latitude'] and self.cleaned_data['longitude']:
-            if instance.location is None:
+            if instance.user_position is None:
                 instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
                                                                              timestamp = datetime.datetime.now(pytz.utc),
                                                                              latitude = self.cleaned_data['latitude'],

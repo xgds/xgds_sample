@@ -19,6 +19,7 @@ from django.shortcuts import render_to_response, render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.http import (HttpResponseRedirect,
                          HttpResponseForbidden,
+                         HttpResponseBadRequest,
                          Http404,
                          HttpResponse,
                          HttpResponseNotAllowed)
@@ -58,11 +59,6 @@ def getSampleSearchPage(request):
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))
 
-@login_required
-def getRecordSamplePage(request):
-    return render_to_response('xgds_sample/recordSample.html',
-                              RequestContext(request, {}))
-
 
 def getSampleDictForSampleView(sample):
     # return the displayable dict.
@@ -77,62 +73,38 @@ def getSampleDictForSampleView(sample):
 @login_required 
 def getSampleViewPage(request, labelNum):
     label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
-    sample = get_object_or_404(SAMPLE_MODEL.get(), label=label)
+    sample = label.sample
+    # TODO just pass the sample
     sampleDict = getSampleDictForSampleView(sample)
 
     return render_to_response('xgds_sample/sampleView.html',
                               RequestContext(request, {'sampleDict': sampleDict,
                                                        'labelNum': labelNum}))
 
+
 def createSample(request, labelNum=None):
-    label = get_object_or_404(LABEL_MODEL.get(), number=labelNum) 
-    sample = SAMPLE_MODEL.get().objects.create(label=label)
-    return HttpResponseRedirect(reverse('xgds_sample_edit', kwargs={'labelNum': labelNum}))
-
-
-def createSampleFromLabel(request, labelNum=None):
-    label = LABEL_MODEL.get().objects.create(number=labelNum)
+    label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
     sample, create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
-    return HttpResponseRedirect(reverse('xgds_sample_edit', kwargs={'labelNum': labelNum}))
+    form = SampleForm(instance=sample)
+    data = {'form': form}
+    return render_to_response('xgds_sample/sampleEditForm.html',
+                              RequestContext(request, data))
 
 
+@login_required
+def getRecordSamplePage(request):
+    return render_to_response('xgds_sample/recordSample.html',
+                              RequestContext(request, {}))
+    
+    
 @login_required 
-def getSampleEditPage(request, labelNum=None):
-    if labelNum: 
-        label = get_object_or_404(LABEL_MODEL.get(), number=labelNum) 
-        sample = get_object_or_404(SAMPLE_MODEL.get(), label=label)
-        form = SampleForm(request.POST, instance=sample)
-        # if is updating the sample info from edit form
-        if request.POST: 
-            if form.is_valid():
-                form.save()
-                messages.success(request, 'Sample data successfully updated.')
-                return render_to_response('xgds_sample/recordSample.html',
-                                           RequestContext(request, {}))
-            else: 
-                messages.error(request, 'The form is not valid')
-                return render_to_response('xgds_sample/sampleEditForm.html',
-                                          RequestContext(request, {'sample': sample,
-                                                                   'form': form,
-                                                                   'labelNum': labelNum}))
-        # edit page opened via edit/<label number>
-        elif request.GET:
-            data = {'sample': sample,
-                    'form': form,
-                    'labelNum': labelNum}
-            return render_to_response('xgds_sample/sampleEditForm.html',
-                                      RequestContext(request, data))
-    else: 
+def getSampleEditPage(request):
+    if request.POST:
         numberOrName = request.POST['label_num_or_sample_name'] 
-        sample = None
-        form = None
-        labelNum = None
-        # handle empty user input. 
         if not numberOrName:
             messages.error(request, 'Please enter a valid sample name or label number')
             return render_to_response('xgds_sample/recordSample.html',
                                        RequestContext(request, {}))
-        
         # if user entered sample name
         if numberOrName and numberOrName[0].isalpha():
             try: 
@@ -143,30 +115,61 @@ def getSampleEditPage(request, labelNum=None):
                 messages.error(request, 'No matching sample with given name %s. Please enter a label name first.' % numberOrName)
                 return render_to_response('xgds_sample/recordSample.html',
                                            RequestContext(request, {}))
-        # if user entered a label number
-        else: 
-            labelNum = numberOrName
+        else: # expecting a number
             try: 
-                label = LABEL_MODEL.get().objects.get(number=numberOrName)
-            except: 
-                messages.error(request, 'There is no matching sample. Would you like to create one?  <a href=createSampleFromLabel/' + labelNum + '>create</a>',
+                labelNum = int(numberOrName)
+            except:
+                messages.error(request, 'Invalid entry; label number must be a number or enter sample name.',
                                extra_tags='safe')
                 return render_to_response('xgds_sample/recordSample.html',
                                           RequestContext(request, {}))
-            else: 
-                try: 
-                    sample = SAMPLE_MODEL.get().objects.get(label=label)
-                except: 
-                    messages.error(request, 'There is no matching sample. Would you like to create one? <a href=createSample/' + labelNum + '>create</a>',
-                                   extra_tags='safe')
-                    return render_to_response('xgds_sample/recordSample.html',
-                                              RequestContext(request, {}))
-        form = SampleForm(sample.toMapDict(), instance=sample)
-    data = {'sample': sample,
-            'form': form,
-            'labelNum': labelNum}
-    return render_to_response('xgds_sample/sampleEditForm.html',
-                              RequestContext(request, data))
+            try:
+                label = LABEL_MODEL.get().objects.get(number=labelNum)
+            except: 
+                messages.error(request, 'There is no matching sample. Would you like to create one?  <a href=createSample/' + str(labelNum) + '>create</a>',
+                               extra_tags='safe')
+                return render_to_response('xgds_sample/recordSample.html',
+                                          RequestContext(request, {}))
+        try: 
+            sample = SAMPLE_MODEL.get().objects.get(label=label)
+        except: 
+            messages.error(request, 'There is no matching sample. Would you like to create one? <a href=createSample/' + str(labelNum) + '>create</a>',
+                           extra_tags='safe')
+            return render_to_response('xgds_sample/recordSample.html',
+                                      RequestContext(request, {})) 
+        form = SampleForm(instance=sample)
+        data = {'form': form}
+        return render_to_response('xgds_sample/sampleEditForm.html',
+                                  RequestContext(request, data))
+    else: 
+        return HttpResponseBadRequest("Request.%s not allowed" % request.method)
+
+
+@login_required 
+def updateSampleRecord(request, labelNum):
+    label = get_object_or_404(LABEL_MODEL.get(), number=labelNum) 
+    sample = label.sample
+    form = SampleForm(request.POST, instance=sample)
+    # if is updating the sample info from edit form
+    if request.POST:
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Sample data successfully updated.')
+            return render_to_response('xgds_sample/recordSample.html',
+                                       RequestContext(request, {}))
+        else: 
+            messages.error(request, 'The form is not valid')
+            return render_to_response('xgds_sample/sampleEditForm.html',
+                                      RequestContext(request, {'sample': sample,
+                                                               'form': form,
+                                                               'labelNum': labelNum}))
+    # edit page opened via edit/<label number>
+    elif request.GET:
+        data = {'form': form}
+        return render_to_response('xgds_sample/sampleEditForm.html',
+                                  RequestContext(request, data))
+    else: 
+        return HttpResponseBadRequest("Request type invalid.")
     
     
 @login_required
