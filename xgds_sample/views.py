@@ -130,15 +130,22 @@ def getSampleEditPage(request):
                                extra_tags='safe')
                 return render_to_response('xgds_sample/recordSample.html',
                                           RequestContext(request, {}))
-        try: 
-            sample = SAMPLE_MODEL.get().objects.get(label=label)
-        except: 
-            messages.error(request, 'There is no matching sample. Would you like to create one? <a href=createSample/' + str(labelNum) + '>create</a>',
-                           extra_tags='safe')
-            return render_to_response('xgds_sample/recordSample.html',
-                                      RequestContext(request, {})) 
+            try: 
+                sample = SAMPLE_MODEL.get().objects.get(label=label)
+            except: 
+                messages.error(request, 'There is no matching sample. Would you like to create one? <a href=createSample/' + str(labelNum) + '>create</a>',
+                               extra_tags='safe')
+                return render_to_response('xgds_sample/recordSample.html',
+                                          RequestContext(request, {})) 
         form = SampleForm(instance=sample)
-        data = {'form': form}
+        # set custom field values with existing data.
+        if sample.user_position:
+            form.fields['latitude'].initial = sample.user_position.latitude
+            form.fields['longitude'].initial = sample.user_position.longitude
+            form.fields['altitude'].initial = sample.user_position.altitude
+        if sample.collection_time:
+            form.fields['collection_time'].initial = sample.collection_time
+        data = {'form': form} 
         return render_to_response('xgds_sample/sampleEditForm.html',
                                   RequestContext(request, data))
     else: 

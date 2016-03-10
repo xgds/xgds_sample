@@ -24,6 +24,7 @@ from xgds_sample.models import SampleType, Region
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.views import getClosestPosition
 
+
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 
 
@@ -39,19 +40,8 @@ class SampleForm(ModelForm):
     collection_time = forms.DateTimeField(required=False, input_formats=date_formats)
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
-    class Meta: 
-        model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
-        exclude = ['track_position', 
-                   'user_position', 
-                   'name', 
-                   'creation_time', 
-                   'modification_time', 
-                   'creator', 
-                   'modifier', 
-                   'label']
-    
     # populate the event time with NOW if it is blank.
-    def clean_collection_time(self):
+    def clean_collection_time(self): 
         ctime = self.cleaned_data['collection_time']
         if not ctime:
             return None
@@ -68,7 +58,6 @@ class SampleForm(ModelForm):
         instance.collection_time = self.cleaned_data['collection_time']
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
-
         if self.cleaned_data['latitude'] and self.cleaned_data['longitude']:
             if instance.user_position is None:
                 instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
@@ -88,4 +77,16 @@ class SampleForm(ModelForm):
         if commit:
             instance.save()
         return instance
+
+    class Meta: 
+        model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
+        exclude = ['track_position', 
+                   'user_position', 
+                   'name', 
+                   'creation_time', 
+                   'modification_time', 
+                   'creator', 
+                   'modifier', 
+                   'label']
+
     
