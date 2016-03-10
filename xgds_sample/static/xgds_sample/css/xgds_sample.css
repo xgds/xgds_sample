@@ -33,3 +33,15 @@ hr {
 #messages {
 	heigth: 50px;
 }
+
+#labels_messages {
+	height: 20px;
+}
+
+.error-message {
+	color: red;
+}
+
+.success-message {
+	color: green;
+}

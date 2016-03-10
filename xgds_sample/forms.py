@@ -20,7 +20,7 @@ from django.conf import settings
 from django import forms
 from django.forms import ModelForm
 from geocamUtil.loader import getModelByName
-from xgds_sample.models import SampleType, Region
+from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.views import getClosestPosition
 
@@ -58,22 +58,19 @@ class SampleForm(ModelForm):
         instance.collection_time = self.cleaned_data['collection_time']
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
-        if self.cleaned_data['latitude'] and self.cleaned_data['longitude']:
+        if (self.cleaned_data['latitude'] or self.cleaned_data['longitude']) or self.cleaned_data['altitude']:
             if instance.user_position is None:
                 instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
                                                                              timestamp = datetime.datetime.now(pytz.utc),
                                                                              latitude = self.cleaned_data['latitude'],
-                                                                             longitude = self.cleaned_data['longitude'])
-                if self.cleaned_data['altitude']:
-                    instance.user_position.altitude = self.cleaned_data['altitude'] 
+                                                                             longitude = self.cleaned_data['longitude'], 
+                                                                             altitude = self.cleaned_data['altitude'])
             else:
                 instance.user_position.latitude = self.cleaned_data['latitude']
                 instance.user_position.longitude = self.cleaned_data['longitude']
-                if self.cleaned_data['altitude']:
-                    instance.user_position.altitude = self.cleaned_data['altitude'] 
+                instance.user_position.longitude = self.cleaned_data['altitude']
         if instance.name is None:
             instance.name = instance.buildName()
-          
         if commit:
             instance.save()
         return instance

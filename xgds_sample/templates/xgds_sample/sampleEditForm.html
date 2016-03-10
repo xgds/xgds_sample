@@ -1,0 +1,78 @@
+{% extends 'dashboard_base.html' %}
+
+{% block sitemenu-content-secondary %}
+	{% include "sample_subnav.html" %}
+    {% load nav %}
+{% endblock %}
+
+ {% block cssExtras %}
+ {{ block.super }}
+<style type="text/css" title="currentStyle">
+	@import "{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.css";
+	@import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
+</style>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
+ {% endblock cssExtras %}
+
+
+{% block scripts %}
+{{block.super}}
+	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
+	{% include "xgds_core/timeJS.html" %}
+	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
+	<script type="text/javascript" src='{{ STATIC_URL }}xgds_core/js/datetimepickerUtils.js'></script>
+	
+    <!--  load handlebars -->
+	{% for template_name, template in templates.items %}
+		<script type="text/handlebars" id="template-{{template_name}}">
+			{{template|safe}}
+		</script>
+	{% endfor %}
+{% endblock scripts %}
+
+{% block jsInit %} 
+{{ block.super }}
+addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
+{% endblock jsInit %} 
+
+{% block otherJSInit %} 
+{% endblock otherJSInit %} 
+
+{% load xgds_sample_extras %}
+
+{% block firstPackery %} 
+<div class='item auto lockAspect' id='item_sample_create' tedata-isStamped="false">
+	<div class="error-message upload-error"></div>
+	<i class="icon-lock-open pinDiv"></i><br />
+	<div id="save-status"> {{status}} </div>
+	
+	{% if messages %}
+	<div id="messages">
+  		{% for message in messages %}
+    	<p>{{ message }}</p>
+    	{% endfor %}
+	</div>
+	{% endif %}
+	
+	<form class="updateSample" id="updateSampleForm" action="{% url 'xgds_sample_record_update' form.instance.label.number %}" method="post" enctype="multipart/form-data">
+		<input type=hidden name=sampleId value="{{ form.instance.pk }}">
+		<table>
+			<tr>
+				<th><label for="id_label_number">Label Number:</label></th>
+				<td><input id="id_label_number" maxlength="512" name="labelNum" type="text" value="{{ form.instance.label.number }}" readonly /></td>
+			</tr>
+			<tr class="sample_name_row">
+				<th><label for="id_name">Name:</label></th>
+				<td><input id="id_name" maxlength="512" name="name" type="text" placeholder="i.e NC16B001A" value="{{ form.instance.name }}"/></td>
+			</tr>
+			{{ form.as_table }}
+		</table>
+		{% csrf_token %}
+		<div id="sample-edit-button-group">
+		<a href="recordSample" class="mybutton">Cancel</a>
+		<input id="sample-info-submit" type="submit" value="Save"/>
+		</div>
+	</form>
+</div>
+{{ block.super }}
+{% endblock firstPackery %}

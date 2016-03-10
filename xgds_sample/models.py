@@ -54,6 +54,10 @@ class Label(models.Model):
     
     def toMapDict(self):
         result = modelToDict(self)
+        try:
+            result['sampleName'] = self.sample.name
+        except: 
+            result['sampleName'] = ""
         return result
 
      

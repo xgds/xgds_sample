@@ -183,13 +183,39 @@ def updateSampleRecord(request, labelNum):
 def getSampleLabelsPage(request):
     labels = LABEL_MODEL.get().objects.all()
     labelsJson = [json.dumps(label.toMapDict()) for label in labels] 
-    
-    samples = SAMPLE_MODEL.get().objects.all()
-    samplesJson = [json.dumps(sample.toMapDict()) for sample in samples]
-    
     # add sample name and printed date to the array.
     return render_to_response('xgds_sample/sampleLabels.html',
                               RequestContext(request,
                                              {'labelsJson': labelsJson,
-                                              'samplesJson': samplesJson,
-                                              'STATIC_URL': STATIC_URL}))
+                                              'STATIC_URL': STATIC_URL,
+                                              'createLabelUrl': reverse('xgds_sample_labels_create')}))
+    
+    
+def createSampleLabels(request):
+    if request.POST:
+        try: 
+            startNum = int(request.POST['start_number'])
+        except: 
+            return HttpResponse(json.dumps({'status': 'error', 'message': 'Invalid argument. Please enter an integer.'}), 
+                         content_type = 'application/json')
+        try: 
+            quantity = int(request.POST['quantity'])
+        except: 
+            return HttpResponse(json.dumps({'status': 'error', 'message': 'Invalid argument. Please enter an integer.'}), 
+                         content_type = 'application/json')
+        # create multiple labels
+        newLabels = []
+        for labelNum in range(startNum, startNum + quantity):
+            label, created = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
+            if created:
+                newLabels.append(json.dumps(label.toMapDict()))
+        if newLabels:
+            return HttpResponse(json.dumps({'status': 'success', 
+                                            'message': 'Successfully created the labels',
+                                            'newLabels': newLabels}), 
+                                    content_type='application/json')
+        else: 
+            return HttpResponse(json.dumps({'status': '', 
+                                'message': 'No new labels to create.',
+                                'newLabels': newLabels}), 
+                                content_type='application/json') 

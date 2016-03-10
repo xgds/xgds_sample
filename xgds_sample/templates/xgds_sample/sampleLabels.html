@@ -10,19 +10,27 @@
  {% endblock cssExtras %}
 
 {% block jsInitPreApp %}    
+	var STATIC_URL = "{{ STATIC_URL }}";
+	var createLabelUrl = "{{ createLabelUrl }}";
+	
 	var labelsJson = {{ labelsJson|safe }};
-	var STATIC_URL = {{ STATIC_URL }};
     var labelsArray = [];
     $(labelsJson).each(function() {
     	labelsArray.push(JSON.parse(this));
     });
 	
-	var aoColumns = [			   {"mRender":function(data, type, full){
-	                                   return "<div> checkbox </div>";
+	var aoColumns = [			   {"mData":function(data, type, full){
+	                                   return "<input type='checkbox' name='label_checkbox' value='" + data["id"] +"'>";
 	                               }},
-								   {"mData": "label.number"},
-	                               {"mData": "name"},
-	                               {"mData": "date"}
+								   {"mData": function(data, type, full) {
+								   		return data["number"];
+								   }},
+	                               {"mData": function(data, type, full) {
+									   	return "<a href=sample/" + data['number'] + ">" + data['sampleName'] + "</a>";
+								   }},
+	                               {"mData": function(data, type, full) {
+								   		return "";
+								   }}
 	];
 	setupTable('item_labels_table', 'labels_table', labelsArray, aoColumns);
 {% endblock jsInitPreApp %}
@@ -34,17 +42,37 @@
 {% block scripts %}
 {{block.super}}
 	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleLabel.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleLabels.js"></script>
 {% endblock scripts %}
 
 
 {% block firstPackery %}
+<div class='item auto freeAspect' id='item_labels_table' data-isStamped="false">
+	<i class="icon-lock-open pinDiv"></i>
+	<form class="create_labels_form" id="create_labels_form" action="" method="post">
+		<strong> Create Labels </strong>
+			<div id="labels_messages"></div>
+		<table>
+			<tr>
+				<th><label for="id_start_number">Start number:</label></th>
+				<td><input id="id_start_number" maxlength="512" name="start_number" type="text" /></td>
+			</tr>
+			<tr>
+				<th><label for="id_quantity">Quantity:</label></th>
+				<td><input id="id_quantity" maxlength="512" name="quantity" type="text" /></td>
+			</tr>
+		</table>
+		{% csrf_token %} <input id="create_labels_btn" type="submit" value="Create" />
+	</form>
+</div>
+
 <!-- Labels table -->
 <div class='item w2 freeAspect' id='item_labels_table' data-isStamped="false">
 	<i class="icon-lock-open pinDiv"></i>
 		<table cellpadding="0" cellspacing="0" border="0"  id="labels_table">
 			<thead class="table_header">
 				<tr>
+					<th></th>
 					<th>Label Number</th>
 					<th>Sample Name</th>					
 				    <th>Printed Date</th>
