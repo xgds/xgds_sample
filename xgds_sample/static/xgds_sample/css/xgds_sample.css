@@ -53,3 +53,7 @@ hr {
 #hide_printed {
 	border-right:10px;
 }
+
+#edit_sample_button {
+	float: right;
+}

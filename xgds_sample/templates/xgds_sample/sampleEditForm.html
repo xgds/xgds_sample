@@ -38,9 +38,28 @@ addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
 
 // initialize the notes when the window is ready
 $(document).ready(function() {
-	var container = $('#notes_input');
-//	initializeNotesReference(container, imageJson['app_label'], imageJson['model_type'], imageJson['id'], imageJson['acquisition_time'], imageJson['acquisition_timezone']);
-//	getNotesForObject(imageJson['app_label'], imageJson['model_type'], imageJson['id'], 'notes_content', dt);
+	var container = $('#notes_content');
+	var tbl = container.find('table#notes_list');
+	if ( $.fn.DataTable.isDataTable( tbl) ) {
+	    var dt = $(tbl).dataTable();
+	    dt.fnClearTable();
+	}
+	initializeNotesReference(container, '{{form.instance.modelAppLabel}}', '{{form.instance.modelTypeName}}', '{{form.instance.pk }}', '{{form.instance.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{form.instance.collection_timezone}}');
+	getNotesForObject('{{form.instance.modelAppLabel}}', '{{form.instance.modelTypeName}}', '{{form.instance.pk }}', 'notes_content', tbl);
+	
+	// show the notes div
+	var notes_input_div = $("#notes_input");
+	notes_input_div.removeAttr('hidden');
+	notes_input_div.show();
+	
+    initializeTags();
+	var taginput = notes_input_div.find('.taginput');
+	initializeInput($(taginput)[0]);
+	hookNoteSubmit();
+	
+	//TODO this is a hack, for some reason the tags input is there twice but only the second one is valid
+//	var notes_content_div = $("#notes_content");
+//	notes_content_div.find(".bootstrap-tagsinput")[0].remove();
 });
 {% endblock jsInit %} 
 
@@ -48,9 +67,9 @@ $(document).ready(function() {
 {% load xgds_sample_extras %}
 
 {% block firstPackery %} 
-<div class='item auto lockAspect' id='item_sample_create' tedata-isStamped="false">
+<div class='item w2 lockAspect' id='item_sample_create' data-isStamped="false">
+	<i class="icon-lock-open pinDiv"></i>
 	<div class="error-message upload-error"></div>
-	<i class="icon-lock-open pinDiv"></i><br />
 	<div id="save-status"> {{status}} </div>
 	
 	{% if messages %}
@@ -60,7 +79,7 @@ $(document).ready(function() {
     	{% endfor %}
 	</div>
 	{% endif %}
-	
+	<div><strong> Editing sample </strong></div>
 	<form class="updateSample" id="updateSampleForm" action="{% url 'xgds_sample_record_update' form.instance.label.number %}" method="post" enctype="multipart/form-data">
 		<input type=hidden name=sampleId value="{{ form.instance.pk }}">
 		<table>
@@ -81,15 +100,13 @@ $(document).ready(function() {
 		</div>
 	</form>
 	
-	<div>
+	<div id="complete_notes">
 	<strong>Notes</strong>
-	<div id="notes_content" class="tab-content active"></div>
+	<div id="notes_content" class="tab-content active">
+	{% include 'xgds_notes2/notes_input_include.html' %}
+	{% include 'xgds_notes2/notes_table_small.html' %}
+	</div>
 	</div>
 </div>
 {{ block.super }}
 {% endblock firstPackery %}
-
-{% block lastPackery %}
-{% include 'xgds_notes2/notes_input_include.html' %}
-{% include 'xgds_notes2/notes_table_small.html' %}
-{% endblock lastPackery %}

@@ -82,6 +82,18 @@ class AbstractSample(models.Model):
     modification_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     
+    @property
+    def modelAppLabel(self):
+        return self._meta.app_label
+    
+    @property
+    def modelTypeName(self):
+        t = type(self)
+        if t._deferred:
+            t = t.__base__
+        
+        return t._meta.object_name
+    
     def buildName(self):
         pass
     
