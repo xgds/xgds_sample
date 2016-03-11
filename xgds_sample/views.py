@@ -59,14 +59,21 @@ def getSampleSearchPage(request):
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))
 
+
 @login_required 
 def getSampleViewPage(request, labelNum):
     label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
-    sample = label.sample
-    data = {'sample': sample} 
-    return render_to_response('xgds_sample/sampleView.html',
+    try:
+        sample = label.sample
+        data = {'sample': sample} 
+        return render_to_response('xgds_sample/sampleView.html',
                               RequestContext(request, data))
-    
+    except: 
+        messages.error(request, 'There is no matching sample. Would you like to create one?  <a href=createSample/' + str(labelNum) + '>create</a>',
+                       extra_tags='safe')
+        return render_to_response('xgds_sample/recordSample.html',
+                                  RequestContext(request, {}))
+        
 
 def createSample(request, labelNum=None):
     label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)

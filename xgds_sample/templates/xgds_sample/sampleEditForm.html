@@ -95,17 +95,17 @@ $(document).ready(function() {
 		</table>
 		{% csrf_token %}
 		<div id="sample-edit-button-group">
-		<a href="recordSample" class="mybutton">Cancel</a>
-		<input id="sample-info-submit" type="submit" value="Save"/>
+		<a href="recordSample" class="mybutton small">Cancel</a>
+		<input class="mybutton small" id="sample-info-submit" type="submit" value="Save"/>
 		</div>
 	</form>
-	
+	<br><hr>
 	<div id="complete_notes">
-	<strong>Notes</strong>
-	<div id="notes_content" class="tab-content active">
-	{% include 'xgds_notes2/notes_input_include.html' %}
-	{% include 'xgds_notes2/notes_table_small.html' %}
-	</div>
+		<strong>Notes</strong>
+		<div id="notes_content" class="tab-content active">
+		{% include 'xgds_notes2/notes_input_include.html' %}
+		{% include 'xgds_notes2/notes_table_small.html' %}
+		</div>
 	</div>
 </div>
 {{ block.super }}
