@@ -7,6 +7,7 @@
 
  {% block cssExtras %}
  {{ block.super }}
+ {% include "xgds_notes2/NoteCSS.html" %}
 <style type="text/css" title="currentStyle">
 	@import "{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.css";
 	@import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
@@ -17,6 +18,7 @@
 
 {% block scripts %}
 {{block.super}}
+	{% include "xgds_notes2/NoteJS.html" %}
 	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
 	{% include "xgds_core/timeJS.html" %}
 	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
@@ -33,10 +35,15 @@
 {% block jsInit %} 
 {{ block.super }}
 addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
+
+// initialize the notes when the window is ready
+$(document).ready(function() {
+	var container = $('#notes_input');
+//	initializeNotesReference(container, imageJson['app_label'], imageJson['model_type'], imageJson['id'], imageJson['acquisition_time'], imageJson['acquisition_timezone']);
+//	getNotesForObject(imageJson['app_label'], imageJson['model_type'], imageJson['id'], 'notes_content', dt);
+});
 {% endblock jsInit %} 
 
-{% block otherJSInit %} 
-{% endblock otherJSInit %} 
 
 {% load xgds_sample_extras %}
 
@@ -73,6 +80,16 @@ addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
 		<input id="sample-info-submit" type="submit" value="Save"/>
 		</div>
 	</form>
+	
+	<div>
+	<strong>Notes</strong>
+	<div id="notes_content" class="tab-content active"></div>
+	</div>
 </div>
 {{ block.super }}
 {% endblock firstPackery %}
+
+{% block lastPackery %}
+{% include 'xgds_notes2/notes_input_include.html' %}
+{% include 'xgds_notes2/notes_table_small.html' %}
+{% endblock lastPackery %}
