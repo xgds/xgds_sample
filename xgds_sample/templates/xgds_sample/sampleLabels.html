@@ -69,6 +69,15 @@
 <!-- Labels table -->
 <div class='item w2 freeAspect' id='item_labels_table' data-isStamped="false">
 	<i class="icon-lock-open pinDiv"></i>
+	<form class="labels_table_form" id="labels_table_form" action="" method="post">
+		<div id="labels_table_button_group"> 
+			  <label class="checkbox" for="hide_printed">
+			    <input name="hide_printed" id="hide_printed" value="hide_printed" type="checkbox">
+			    <span></span> Hide Printed
+			  </label>
+			<input type="submit" class="mybutton small right" id="delete_button" value="Delete Selected" ></input>
+			<input type="submit" class="mybutton small right" id="print_button" value="Print Selected" ></input>
+		</div>
 		<table cellpadding="0" cellspacing="0" border="0"  id="labels_table">
 			<thead class="table_header">
 				<tr>
@@ -81,6 +90,7 @@
 			<tbody>
 			</tbody>
 		</table>
+	</form>
 </div>
 {% endblock firstPackery %}
 

@@ -59,28 +59,14 @@ def getSampleSearchPage(request):
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))
 
-
-def getSampleDictForSampleView(sample):
-    # return the displayable dict.
-    sampleDict = sample.toMapDict()
-    sampleDict['region'] = sample.region.name
-    sampleDict['type'] = sample.type.display_name
-    sampleDict['label'] = sample.number
-    sampleDict['triplicate'] = sample.triplicate.display_name
-    return sampleDict 
-
-    
 @login_required 
 def getSampleViewPage(request, labelNum):
     label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
     sample = label.sample
-    # TODO just pass the sample
-    sampleDict = getSampleDictForSampleView(sample)
-
+    data = {'sample': sample} 
     return render_to_response('xgds_sample/sampleView.html',
-                              RequestContext(request, {'sampleDict': sampleDict,
-                                                       'labelNum': labelNum}))
-
+                              RequestContext(request, data))
+    
 
 def createSample(request, labelNum=None):
     label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
@@ -97,6 +83,17 @@ def getRecordSamplePage(request):
                               RequestContext(request, {}))
     
     
+def setSampleCustomFields(form, sample):       
+    # set custom field values with existing data.
+    if sample.user_position:
+        form.fields['latitude'].initial = sample.user_position.latitude
+        form.fields['longitude'].initial = sample.user_position.longitude
+        form.fields['altitude'].initial = sample.user_position.altitude
+    if sample.collection_time:
+        form.fields['collection_time'].initial = sample.collection_time
+    return form
+
+
 @login_required 
 def getSampleEditPage(request):
     if request.POST:
@@ -139,12 +136,7 @@ def getSampleEditPage(request):
                                           RequestContext(request, {})) 
         form = SampleForm(instance=sample)
         # set custom field values with existing data.
-        if sample.user_position:
-            form.fields['latitude'].initial = sample.user_position.latitude
-            form.fields['longitude'].initial = sample.user_position.longitude
-            form.fields['altitude'].initial = sample.user_position.altitude
-        if sample.collection_time:
-            form.fields['collection_time'].initial = sample.collection_time
+        form = setSampleCustomFields(form, sample)
         data = {'form': form} 
         return render_to_response('xgds_sample/sampleEditForm.html',
                                   RequestContext(request, data))
@@ -161,9 +153,9 @@ def updateSampleRecord(request, labelNum):
         messages.error(request, 'There is no matching sample. Would you like to create one?  <a href=createSample/' + str(labelNum) + '>create</a>',extra_tags='safe')
         return render_to_response('xgds_sample/recordSample.html',
                                   RequestContext(request, {}))
-    form = SampleForm(request.POST, instance=sample)
     # if is updating the sample info from edit form
     if request.method == "POST":
+        form = SampleForm(request.POST, instance=sample)
         if form.is_valid():
             form.save()
             messages.success(request, 'Sample data successfully updated.')
@@ -177,6 +169,8 @@ def updateSampleRecord(request, labelNum):
                                                                'labelNum': labelNum}))
     # edit page opened via edit/<label number>
     elif request.method == "GET":
+        form = SampleForm(instance=sample) 
+        form = setSampleCustomFields(form, sample)
         data = {'form': form}
         return render_to_response('xgds_sample/sampleEditForm.html',
                                   RequestContext(request, data))
