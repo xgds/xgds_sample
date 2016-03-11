@@ -60,14 +60,19 @@ class Label(models.Model):
             result['sampleName'] = ""
         return result
 
-     
+
+DEFAULT_RESOURCE_FIELD = lambda: models.ForeignKey('geocamTrack.Resource', null=True, blank=True)
+DEFAULT_TRACK_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourcePosition', null=True, blank=True)
+DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourcePosition', null=True, blank=True, related_name="sample_user_set" )
+
+
 class AbstractSample(models.Model):
     name = models.CharField(max_length=512, null=True) # 9 characters
     type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
-    resource = models.ForeignKey(settings.GEOCAM_TRACK_RESOURCE_MODEL, null=True, blank=True)
-    track_position = models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True)
-    user_position = models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True, related_name="sample_user_set" )
+    resource = 'set to DEFAULT_RESOURCE_FIELD() or similar in derived classes'
+    track_position = 'set to DEFAULT_TRACK_POSITION_FIELD() or similar in derived classes'
+    user_position = 'set to DEFAULT_USER_POSITION_FIELD() or similar in derived classes'
     collector = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_collector") # person who collected the sample
     creator = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_creator") # person who entered sample data into Minerva
     modifier = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_modifier") # person who entered sample data into Minerva
