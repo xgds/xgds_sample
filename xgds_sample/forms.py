@@ -22,7 +22,7 @@ from django.forms import ModelForm
 from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
-from geocamTrack.views import getClosestPosition
+from geocamTrack.utils import getClosestPosition
 
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
