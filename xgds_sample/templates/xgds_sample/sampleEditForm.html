@@ -8,10 +8,8 @@
  {% block cssExtras %}
  {{ block.super }}
  {% include "xgds_notes2/NoteCSS.html" %}
-<style type="text/css" title="currentStyle">
-	@import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
-</style>
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
+  <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}queryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css"></link>
+  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
  {% endblock cssExtras %}
 
 
@@ -37,18 +35,24 @@ addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
 
 // initialize the notes when the window is ready
 $(document).ready(function() {
+	
+	// show existing notes
 	var container = $('#notes_content');
 	var tbl = container.find('table#notes_list');
 	initializeNotesReference(container, '{{form.instance.modelAppLabel}}', '{{form.instance.modelTypeName}}', '{{form.instance.pk }}', '{{form.instance.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{form.instance.collection_timezone}}');
 	getNotesForObject('{{form.instance.modelAppLabel}}', '{{form.instance.modelTypeName}}', '{{form.instance.pk }}', 'notes_content', tbl);
-	
+
 	// show the notes div
 	var notes_input_div = $("#notes_input");
 	notes_input_div.removeAttr('hidden');
+	notes_input_div.show();
 	
     initializeTags();
-    initializeInput();
+    var taginput = container.find('.taginput');
+	initializeInput($(taginput)[0]);
  	hookNoteSubmit();
+
+ 	
 });
 {% endblock jsInit %} 
 
@@ -69,6 +73,7 @@ $(document).ready(function() {
 	</div>
 	{% endif %}
 	<div><strong> Editing sample </strong></div>
+	
 	<form class="updateSample" id="updateSampleForm" action="{% url 'xgds_sample_record_update' form.instance.label.number %}" method="post" enctype="multipart/form-data">
 		<input type=hidden name=sampleId value="{{ form.instance.pk }}">
 		<table>
