@@ -46,7 +46,7 @@ var Sample = {
         constructMapElement:function(sampleJson){
             var coords = transform([sampleJson.lon, sampleJson.lat]);
             var feature = new ol.Feature({
-                name: sampleJson.qrCode,
+                name: sampleJson.name,
                 geometry: new ol.geom.Point(coords)
             });
             feature.setStyle(this.getStyles(sampleJson));
@@ -56,7 +56,7 @@ var Sample = {
         getStyles: function(sampleJson) {
             var styles = [this.styles['iconStyle']];
             var theText = new ol.style.Text(this.styles['text']);
-            theText.setText(sampleJson.qrCode.toString());
+            theText.setText(sampleJson.name);
             var textStyle = new ol.style.Style({
                 text: theText
             });
@@ -66,20 +66,17 @@ var Sample = {
         setupPopup: function(feature, sampleJson) {
             var trString = "<tr><td>%s</td><td>%s</td></tr>";
             var formattedString = "<table>";
-            for (j = 0; j< 10; j++){
+            for (j = 0; j< 7; j++){
                 formattedString = formattedString + trString;
             }
             formattedString = formattedString + "</table>";
-            var data = ["QR Code:", sampleJson.qrCode,
-                        "Type:", sampleJson.type,
-                        "Name:", sampleJson.name ? sampleJson.name : "",
-                        "Notes:", sampleJson.notes ? sampleJson.notes : "",
-                        "Description:", sampleJson.description ? sampleJson.description : "",
-                        "Lat:", sampleJson.lat,
-                        "Lon:", sampleJson.lon,
-                        "Depth:", sampleJson.depth + 'm',
-                        "Time:", sampleJson.time,
-                        "Location:", sampleJson.location];
+            var data = ["Label:", sampleJson.label,
+                        "Name:", sampleJson.name ? sampleJson.name : '',
+                        "Type:", sampleJson.sample_type,
+                        "Region:", sampleJson.region,
+                        "Collector:", sampleJson.collector ? sampleJson.collector: '',
+                        "Time:", sampleJson.collection_time ? getLocalTimeString(sampleJson.collection_time, sampleJson.collection_timezone):'',
+                        "Description:", sampleJson.description ? sampleJson.description : ''];
             var popupContents = vsprintf(formattedString, data);
             feature['popup'] = popupContents;
         }

@@ -11,8 +11,8 @@
 		<form action="{{ updateSampleInfo }}" id="sample-info-form" method="post">
 		<table>
 			<tr>
-				<th><label for="id_type">Type:</label></th>
-				<td><select id="id_type" name="type">
+				<th><label for="id_sample_type">Type:</label></th>
+				<td><select id="id_sample_type" name="type">
 						<option value="" selected="selected">---------</option> 
 						{% for type in types_list %}
 						<option value="{{ type.value }}">{{ type.display_name }}</option>

@@ -68,7 +68,7 @@ DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourc
 
 class AbstractSample(models.Model):
     name = models.CharField(max_length=512, null=True) # 9 characters
-    type = models.ForeignKey(SampleType, null=True)
+    sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
     resource = 'set to DEFAULT_RESOURCE_FIELD() or similar in derived classes'
     track_position = 'set to DEFAULT_TRACK_POSITION_FIELD() or similar in derived classes'
@@ -144,6 +144,19 @@ class AbstractSample(models.Model):
             else: 
                 result['collection_time'] = ""
             result.update(self.getPositionDict())
+            del result['user_position']
+            del result['track_position']
+            if result['resource']:
+                result['resource'] = self.resource.name
+            if self.label:
+                result['label'] = self.label.number
+            
+            if self.sample_type:
+                result['sample_type'] = self.sample_type.display_name
+            if self.region:
+                result['region'] = self.region.name
+            del result['modifier']
+            del result['creator']
             return result
         else: 
             return None

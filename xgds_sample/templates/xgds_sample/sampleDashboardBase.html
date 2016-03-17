@@ -15,14 +15,14 @@
 	$(samplesJsonArray).each(function() {
 		samplesArray.push(JSON.parse(this)); // parse json string
 	});
-	var aoColumns = [			   {"mRender":function(data, type, full){
+	var aoColumns = [			   {"mRender":function(data, sample_type, full){
 	                            	   var sampleName = full['name'];
 	                            	   var jsonString = JSON.stringify(full);
 	                                   return "<a onclick='constructSampleView(" + jsonString + ")'>"+ sampleName + "</a>";
 	                               }},
 								   {"mData": "collection_time"},
 	                               {"mData": "region"},
-	                               {"mData": "type"}
+	                               {"mData": "sample_type"}
 	];
 	setupTable('item_samples_table', 'samples_table', samplesArray, aoColumns);
 {% endblock jsInitPreApp %}
