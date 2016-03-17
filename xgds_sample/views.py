@@ -14,6 +14,9 @@
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
+from datetime import datetime, timedelta
+import pytz
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, render, get_object_or_404
 from django.core.urlresolvers import reverse
@@ -28,6 +31,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from django.forms.formsets import formset_factory
 from django.conf import settings
 from django.contrib import messages 
+from django.views.decorators.cache import never_cache
+
 
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
@@ -76,6 +81,9 @@ def getSampleViewPage(request, labelNum):
         
 
 def createSample(request, labelNum=None):
+    """
+    Create a label and/or sample based on the requested label number
+    """
     label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
     sample, create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
     form = SampleForm(instance=sample)
@@ -92,10 +100,12 @@ def getRecordSamplePage(request):
     
 def setSampleCustomFields(form, sample):       
     # set custom field values with existing data.
-    if sample.user_position:
-        form.fields['latitude'].initial = sample.user_position.latitude
-        form.fields['longitude'].initial = sample.user_position.longitude
-        form.fields['altitude'].initial = sample.user_position.altitude
+    positionDict = sample.getPositionDict()
+    form.fields['latitude'].initial = positionDict['lat']
+    form.fields['longitude'].initial = positionDict['lon']
+    if 'altitude' in positionDict:
+        form.fields['altitude'].initial = positionDict['altitude']
+        
     if sample.collection_time:
         form.fields['collection_time'].initial = sample.collection_time
     return form
@@ -153,6 +163,9 @@ def getSampleEditPage(request):
 
 @login_required 
 def updateSampleRecord(request, labelNum):
+    """ make changes to a sample based on form inputs and save,
+    OR open the edit page
+    """
     label = get_object_or_404(LABEL_MODEL.get(), number=labelNum) 
     try: 
         sample = label.sample
@@ -225,3 +238,48 @@ def createSampleLabels(request):
                                 'message': 'No new labels to create.',
                                 'newLabels': newLabels}), 
                                 content_type='application/json') 
+
+@never_cache
+def getSamplesJson(request, filter=None, range=0, isLive=1):
+    """ Get the sample json information to show in table or map views.
+    """
+    try:
+        isLive = int(isLive)
+        if filter:
+            splits = str(filter).split(":")
+            filterDict = {splits[0]: splits[1]}
+
+        range = int(range)
+        if isLive or range:
+            if range==0:
+                range = 6
+            now = datetime.now(pytz.utc)
+            yesterday = now - timedelta(seconds=3600 * range)
+            if not filter:
+                samples = SAMPLE_MODEL.get().objects.filter(creation_time__lte=now).filter(creation_time__gte=yesterday)
+            else:
+                allSamples = SAMPLE_MODEL.get().objects.filter(**filterDict)
+                samples = allSamples.filter(creation_time__lte=now).filter(creation_time__gte=yesterday)
+        elif filter:
+            samples = SAMPLE_MODEL.get().objects.filter(**filterDict)
+        else:
+            samples = SAMPLE_MODEL.get().objects.all()
+    except:
+        return HttpResponse(json.dumps({'error': {'message': 'I think you passed in an invalid filter.',
+                                                  'filter': filter}
+                                        }),
+                            content_type='application/json')
+
+    if samples:
+        keepers = []
+        for sample in samples:
+            resultDict = sample.toMapDict()
+            keepers.append(resultDict)
+        json_data = json.dumps(keepers, indent=4, cls=DatetimeJsonEncoder)
+        return HttpResponse(content=json_data,
+                            content_type="application/json")
+    else:
+        return HttpResponse(json.dumps({'error': {'message': 'No samples found.',
+                                                  'filter': filter}
+                                        }),
+                            content_type='application/json')

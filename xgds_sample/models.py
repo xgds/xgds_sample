@@ -81,6 +81,8 @@ class AbstractSample(models.Model):
     creation_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
     modification_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
+    description = models.CharField(null=True, blank=True, max_length=1024)
+    
     
     @property
     def modelAppLabel(self):

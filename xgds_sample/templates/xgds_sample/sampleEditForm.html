@@ -8,7 +8,7 @@
  {% block cssExtras %}
  {{ block.super }}
  {% include "xgds_notes2/NoteCSS.html" %}
-  <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}queryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css"></link>
+  <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css"></link>
   <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
  {% endblock cssExtras %}
 
@@ -20,6 +20,7 @@
 	{% include "xgds_core/timeJS.html" %}
 	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
 	<script type="text/javascript" src='{{ STATIC_URL }}xgds_core/js/datetimepickerUtils.js'></script>
+	<script type="text/javascript" src='{{ STATIC_URL }}xgds_sample/js/sampleReview.js'></script>
 	
     <!--  load handlebars -->
 	{% for template_name, template in templates.items %}
@@ -35,6 +36,8 @@ addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
 
 // initialize the notes when the window is ready
 $(document).ready(function() {
+	// hook position editing to set flag
+	hookEditingPosition($('#updateSampleForm'));
 	
 	// show existing notes
 	var container = $('#notes_content');
@@ -76,6 +79,9 @@ $(document).ready(function() {
 	
 	<form class="updateSample" id="updateSampleForm" action="{% url 'xgds_sample_record_update' form.instance.label.number %}" method="post" enctype="multipart/form-data">
 		<input type=hidden name=sampleId value="{{ form.instance.pk }}">
+		{% for hidden in form.hidden_fields %}
+		{{ hidden }}
+		{% endfor %}
 		<table>
 			<tr>
 				<th><label for="id_label_number">Label Number:</label></th>

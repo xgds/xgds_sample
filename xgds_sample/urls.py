@@ -14,6 +14,7 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 
+from django.conf import settings
 from django.conf.urls import patterns, include, url
 
 from django.views.generic.base import TemplateView
@@ -27,5 +28,8 @@ urlpatterns = [url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_sear
                url(r'recordSample', views.getRecordSamplePage,{}, 'xgds_sample_record'),
                url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_record_edit'),
                url(r'edit/(?P<labelNum>[\d]+)$', views.updateSampleRecord, {}, 'xgds_sample_record_update'), 
-               url(r'labels/create$', views.createSampleLabels, {}, 'xgds_sample_labels_create')
+               url(r'labels/create$', views.createSampleLabels, {}, 'xgds_sample_labels_create'),
+               url(r'^samplesJson/(?P<filter>[\w]+:[\w]+)$', views.getSamplesJson, {'isLive':settings.GEOCAM_UTIL_LIVE_MODE}, 'xgds_samples_samplesJson'),
+               url(r'^samplesJson/(?P<range>[\d]+)$', views.getSamplesJson, {'isLive':settings.GEOCAM_UTIL_LIVE_MODE}, 'xgds_samples_samplesJson_range'),
+               url(r'^samplesJson', views.getSamplesJson, {'range':0, 'isLive':settings.GEOCAM_UTIL_LIVE_MODE}, 'xgds_samples_samplesJson_default'),
                ]

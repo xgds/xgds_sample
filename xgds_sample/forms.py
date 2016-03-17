@@ -29,6 +29,7 @@ LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 
 
 class SampleForm(ModelForm):
+    changed_position= forms.IntegerField(widget=forms.HiddenInput(), initial=0)
     latitude = forms.FloatField(required=False, label="Latitude:")
     longitude = forms.FloatField(required=False, label="Longitude:")
     altitude = forms.FloatField(required=False, label="Altitude:")
@@ -58,17 +59,18 @@ class SampleForm(ModelForm):
         instance.collection_time = self.cleaned_data['collection_time']
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
-        if (self.cleaned_data['latitude'] or self.cleaned_data['longitude']) or self.cleaned_data['altitude']:
-            if instance.user_position is None:
-                instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
-                                                                             timestamp = datetime.datetime.now(pytz.utc),
-                                                                             latitude = self.cleaned_data['latitude'],
-                                                                             longitude = self.cleaned_data['longitude'], 
-                                                                             altitude = self.cleaned_data['altitude'])
-            else:
-                instance.user_position.latitude = self.cleaned_data['latitude']
-                instance.user_position.longitude = self.cleaned_data['longitude']
-                instance.user_position.longitude = self.cleaned_data['altitude']
+        if self.cleaned_data['changed_position'] == 1:
+            if (self.cleaned_data['latitude'] or self.cleaned_data['longitude']) or self.cleaned_data['altitude']:
+                if instance.user_position is None:
+                    instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
+                                                                                 timestamp = instance.collection_time,
+                                                                                 latitude = self.cleaned_data['latitude'],
+                                                                                 longitude = self.cleaned_data['longitude'], 
+                                                                                 altitude = self.cleaned_data['altitude'])
+                else:
+                    instance.user_position.latitude = self.cleaned_data['latitude']
+                    instance.user_position.longitude = self.cleaned_data['longitude']
+                    instance.user_position.longitude = self.cleaned_data['altitude']
         if instance.name is None:
             instance.name = instance.buildName()
         if commit:
