@@ -42,7 +42,6 @@ from xgds_map_server.views import get_handlebars_templates
 import logging
 import json
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
-from siteSettings import STATIC_URL
 
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
@@ -206,7 +205,7 @@ def getSampleLabelsPage(request):
     return render_to_response('xgds_sample/sampleLabels.html',
                               RequestContext(request,
                                              {'labelsJson': labelsJson,
-                                              'STATIC_URL': STATIC_URL,
+                                              'STATIC_URL': settings.STATIC_URL, #TODO you don't need to do this, you can access all settings in the template ie {{ STATIC_URL }}
                                               'createLabelUrl': reverse('xgds_sample_labels_create')}))
     
     

@@ -15,10 +15,15 @@
 #__END_LICENSE__
 
 import os
+from geocamUtil.SettingsUtil import getOrCreateDict
 
-XGDS_SAMPLE_BOWER_INSTALLED_APPS = ()
 XGDS_SAMPLE_SAMPLE_MODEL = 'xgds_sample.Sample'
 XGDS_SAMPLE_LABEL_MODEL = 'xgds_sample.Label'
 
 XGDS_SAMPLE_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 XGDS_SAMPLE_HANDLEBARS_DIR = [os.path.join('xgds_sample', 'templates', 'handlebars')]
+
+XGDS_MAP_SERVER_JS_MAP = getOrCreateDict('XGDS_MAP_SERVER_JS_MAP')
+XGDS_MAP_SERVER_JS_MAP['Sample'] = {'ol': 'xgds_sample/js/olSampleMap.js',
+                                    'model': XGDS_SAMPLE_SAMPLE_MODEL,
+                                    'hiddenColumns': []}
