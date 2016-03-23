@@ -28,3 +28,9 @@ function hookEditingPosition(container) {
 	$(container).find("#id_longitude").change(function() {setChangedPosition(1, container)});
 	$(container).find("#id_altitude").change(function() {setChangedPosition(1, container)});
 }
+
+
+function showOnMap(data){
+	app.vent.trigger("mapSearch:found", data);
+	app.vent.trigger('mapSearch:fit');
+}

@@ -53,11 +53,9 @@ def getSampleSearchPage(request):
     theForm = SpecializedForm(SearchForm, SAMPLE_MODEL.get())
     theFormSetMaker = formset_factory(theForm, extra=0)
     theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
-    samplesJson = []  # TODO
     fullTemplateList = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
     fullTemplateList.append(settings.XGDS_SAMPLE_HANDLEBARS_DIR[0])
     data = {'formset': theFormSet,
-            'samplesJsonArray': samplesJson,
             'templates': get_handlebars_templates(fullTemplateList)
             }
     return render_to_response("xgds_sample/sampleSearch.html", data,
@@ -69,7 +67,8 @@ def getSampleViewPage(request, labelNum):
     label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
     try:
         sample = label.sample
-        data = {'sample': sample} 
+        data = {'sample': sample,
+                'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder)} 
         return render_to_response('xgds_sample/sampleView.html',
                               RequestContext(request, data))
     except: 
@@ -86,8 +85,9 @@ def createSample(request, labelNum=None):
     label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
     sample, create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
     form = SampleForm(instance=sample)
-    data = {'form': form}
-    return render_to_response('xgds_sample/sampleEditForm.html',
+    data = {'form': form,
+            'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder)}
+    return render_to_response('xgds_sample/sampleEdit.html',
                               RequestContext(request, data))
 
 
@@ -153,8 +153,9 @@ def getSampleEditPage(request):
         form = SampleForm(instance=sample)
         # set custom field values with existing data.
         form = setSampleCustomFields(form, sample)
-        data = {'form': form} 
-        return render_to_response('xgds_sample/sampleEditForm.html',
+        data = {'form': form,
+                'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder)} 
+        return render_to_response('xgds_sample/sampleEdit.html',
                                   RequestContext(request, data))
     else: 
         return HttpResponseBadRequest("Request.%s not allowed" % request.method)
@@ -182,16 +183,18 @@ def updateSampleRecord(request, labelNum):
                                        RequestContext(request, {}))
         else: 
             messages.error(request, 'The form is not valid')
-            return render_to_response('xgds_sample/sampleEditForm.html',
-                                      RequestContext(request, {'sample': sample,
+            return render_to_response('xgds_sample/sampleEdit.html',
+                                      RequestContext(request, {'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder), 
                                                                'form': form,
                                                                'labelNum': labelNum}))
     # edit page opened via edit/<label number>
     elif request.method == "GET":
         form = SampleForm(instance=sample) 
         form = setSampleCustomFields(form, sample)
-        data = {'form': form}
-        return render_to_response('xgds_sample/sampleEditForm.html',
+        data = {'form': form,
+                'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder)
+                } 
+        return render_to_response('xgds_sample/sampleEdit.html',
                                   RequestContext(request, data))
     else: 
         return HttpResponseBadRequest("Request type %s is invalid." % request.method)

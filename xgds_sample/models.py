@@ -112,7 +112,7 @@ class AbstractSample(models.Model):
         track provides lat lon and altitude and heading, and user trumps all.
         '''
         result = {}
-        result['altitude'] = ""
+        result['altitude'] = ''
 
         if self.user_position:
             result['lat'] = self.user_position.latitude
@@ -121,7 +121,7 @@ class AbstractSample(models.Model):
                 result['altitude'] = self.user_position.altitude
             return result
         
-        result['position_id'] = ""
+        result['position_id'] = ''
         if self.track_position:
             result['lat'] = self.track_position.latitude
             result['lon'] = self.track_position.longitude
@@ -129,8 +129,8 @@ class AbstractSample(models.Model):
                 result['altitude'] = self.track_position.altitude
             return result
         else: 
-            result['lat'] = ""
-            result['lon'] = ""
+            result['lat'] = ''
+            result['lon'] = ''
             
         return result
     
@@ -142,14 +142,18 @@ class AbstractSample(models.Model):
             if self.collection_time:     
                 result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M")
             else: 
-                result['collection_time'] = ""
+                result['collection_time'] = ''
+            if self.collection_timezone:     
+                result['collection_timezone'] = str(self.collection_timezone)
+            else: 
+                result['collection_timezone'] = ''
             result.update(self.getPositionDict())
             del result['user_position']
             del result['track_position']
             if result['resource']:
                 result['resource'] = self.resource.name
             if self.label:
-                result['label'] = self.label.number
+                result['label'] = int(self.label.number)
             
             if self.sample_type:
                 result['sample_type'] = self.sample_type.display_name
@@ -159,7 +163,7 @@ class AbstractSample(models.Model):
             del result['creator']
             return result
         else: 
-            return None
+            return ''
     
     class Meta:
         abstract = True

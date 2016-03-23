@@ -36,6 +36,10 @@ addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
 
 // initialize the notes when the window is ready
 $(document).ready(function() {
+	{% if sampleJson %}
+		showOnMap([{{ sampleJson|safe }}]);
+	{% endif %}
+	
 	// hook position editing to set flag
 	hookEditingPosition($('#updateSampleForm'));
 	

@@ -11,7 +11,12 @@
 
 {% block jsInit %} 
 {{ block.super }}
-	$('#map').hide(); 
+	// why are we hiding the map?
+	// $('#map').hide(); 
+	{% if sample %}
+		var sampleJson = JSON.parse("{{ sample.toMapDict|escapejs }}");
+		showOnMap();
+	{% endif %}
 {% endblock jsInit %} 
 
 {% block firstPackery %}

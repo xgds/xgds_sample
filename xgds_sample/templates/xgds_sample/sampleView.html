@@ -1,0 +1,134 @@
+{% extends 'dashboard_base.html' %}
+{% load tz %}
+{% block sitemenu-content-secondary %}
+	{% include "sample_subnav.html" %}
+{% endblock %}
+
+ {% block cssExtras %}
+ {{ block.super }}
+  {% include "xgds_notes2/NoteCSS.html" %}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
+ {% endblock cssExtras %}
+
+
+{% block scripts %}
+{{block.super}}
+	{% include "xgds_notes2/NoteJS.html" %}
+	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
+	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
+    <!--  load handlebars -->
+	{% for template_name, template in templates.items %}
+		<script type="text/handlebars" id="template-{{template_name}}">
+			{{template|safe}}
+		</script>
+	{% endfor %}
+{% endblock scripts %}
+
+{% block jsInit %} 
+{{ block.super }}
+
+// initialize the notes when the window is ready
+$(document).ready(function() {
+	{% if sampleJson %}
+		showOnMap([{{ sampleJson|safe }}]);
+	{% endif %}
+	var container = $('#notes_content');
+	var tbl = container.find('table#notes_list');
+	if ( $.fn.DataTable.isDataTable( tbl) ) {
+	    var dt = $(tbl).dataTable();
+	    dt.fnClearTable();
+	}
+	initializeNotesReference(container, '{{sample.modelAppLabel}}', '{{sample.modelTypeName}}', '{{sample.pk }}', '{{sample.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{sample.collection_timezone}}');
+	getNotesForObject('{{sample.modelAppLabel}}', '{{sample.modelTypeName}}', '{{sample.pk }}', 'notes_content', tbl);
+	
+	// show the notes div
+	var notes_input_div = $("#notes_input");
+	notes_input_div.removeAttr('hidden');
+	notes_input_div.show();
+	
+    initializeTags();
+	var taginput = notes_input_div.find('.taginput');
+	initializeInput($(taginput)[0]);
+	hookNoteSubmit();
+	
+	//TODO this is a hack, for some reason the tags input is there twice but only the second one is valid
+//	var notes_content_div = $("#notes_content");
+//	notes_content_div.find(".bootstrap-tagsinput")[0].remove();
+});
+
+{% endblock jsInit %} 
+
+{% block otherJSInit %} 
+{% endblock otherJSInit %} 
+
+{% load xgds_sample_extras %}
+
+{% block firstPackery %} 
+<div class='item w2 lockAspect' id='item_sample_create' data-isStamped="false">
+	<div class="error-message upload-error"></div>
+	<i class="icon-lock-open pinDiv"></i><br />
+	<div id="save-status"> {{status}} </div>
+	
+	{% if messages %}
+	<div id="messages">
+  		{% for message in messages %}
+    	<p>{{ message }}</p>
+    	{% endfor %}
+	</div>
+	{% endif %}
+	
+	<div> <strong> Viewing sample</strong> <a id="edit_sample_button" href="../edit/{{ sample.label.number }}" class="mybutton small">Edit</a> </div>
+	<input type=hidden name=sampleId value="{{ sample.pk }}">
+	<table>
+		<tr>
+			<th><label for="id_name">Name:</label></th>
+			<td> {{ sample.name }}</td>
+		</tr>
+		<tr>
+			<th><label for="id_type">Type:</label></th>
+			<td> {{ sample.type.display_name }}</td>
+		</tr>
+		<tr>
+			<th><label for="id_region">Region:</label></th>
+			<td>{{ sample.region.name }}</td>
+		</tr>
+		<tr>
+			<th><label for="id_resource">Resource:</label></th>
+			<td>{{ sample.resource.name }}</td>
+		</tr>
+		<tr>
+			<th><label for="id_collector">Collector:</label></th>
+			<td>{{ sample.collector }}</td>
+		</tr>
+		<tr>
+			<th><label for="id_number">Number:</label></th>
+			<td>{{ sample.label.number }}</td>
+		</tr>
+		<tr>
+			<th><label for="id_latitude">Latitude:</label></th>
+			<td>{{ sample.user_position.latitude }}</td>
+		</tr>
+		<tr>
+			<th><label for="id_longitude">Longitude:</label></th>
+			<td>{{ sample.user_position.longitude }}</td>
+		</tr>
+		<tr>
+			<th><label for="id_altitude">Altitude:</label></th>
+			<td>{{ sample.user_position.altitude }}</td>
+		</tr>
+		<tr>
+			<th><label for="id_collection_time">Collection time:</label></th>
+			<td>{% timezone sample.collection_timezone %}{{ sample.collection_time|date:"Y-m-d H:i e" }}{% endtimezone %}</td>
+		</tr>
+	</table>
+	<div id="complete_notes">
+		<strong>Notes</strong>
+		<div id="notes_content" class="tab-content active">
+		{% include 'xgds_notes2/notes_input_include.html' %}
+		{% include 'xgds_notes2/notes_table_small.html' %}
+		</div>
+	</div>
+	{% csrf_token %}	
+</div>
+{{ block.super }}
+{% endblock firstPackery %}
