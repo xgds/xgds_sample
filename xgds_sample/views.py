@@ -67,11 +67,10 @@ def getSampleViewPage(request, labelNum):
     label = get_object_or_404(LABEL_MODEL.get(), number=labelNum)
     try:
         sample = label.sample
-        data = {'sample': sample,
-                'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder)} 
+        data = {'sample': sample} 
         return render_to_response('xgds_sample/sampleView.html',
                               RequestContext(request, data))
-    except: 
+    except:
         messages.error(request, 'There is no matching sample. Would you like to create one?  <a href=createSample/' + str(labelNum) + '>create</a>',
                        extra_tags='safe')
         return render_to_response('xgds_sample/recordSample.html',
@@ -86,7 +85,7 @@ def createSample(request, labelNum=None):
     sample, create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
     form = SampleForm(instance=sample)
     data = {'form': form,
-            'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder)}
+            }
     return render_to_response('xgds_sample/sampleEdit.html',
                               RequestContext(request, data))
 
@@ -154,7 +153,7 @@ def getSampleEditPage(request):
         # set custom field values with existing data.
         form = setSampleCustomFields(form, sample)
         data = {'form': form,
-                'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder)} 
+                }
         return render_to_response('xgds_sample/sampleEdit.html',
                                   RequestContext(request, data))
     else: 
@@ -184,15 +183,13 @@ def updateSampleRecord(request, labelNum):
         else: 
             messages.error(request, 'The form is not valid')
             return render_to_response('xgds_sample/sampleEdit.html',
-                                      RequestContext(request, {'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder), 
-                                                               'form': form,
+                                      RequestContext(request, {'form': form,
                                                                'labelNum': labelNum}))
     # edit page opened via edit/<label number>
     elif request.method == "GET":
         form = SampleForm(instance=sample) 
         form = setSampleCustomFields(form, sample)
         data = {'form': form,
-                'sampleJson': json.dumps(sample.toMapDict(), cls=DatetimeJsonEncoder)
                 } 
         return render_to_response('xgds_sample/sampleEdit.html',
                                   RequestContext(request, data))

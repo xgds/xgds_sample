@@ -1,5 +1,7 @@
 {% extends 'dashboard_base.html' %}
 {% load tz %}
+{% load json_dumps %}
+
 {% block sitemenu-content-secondary %}
 	{% include "sample_subnav.html" %}
 {% endblock %}
@@ -29,8 +31,8 @@
 
 // initialize the notes when the window is ready
 $(document).ready(function() {
-	{% if sampleJson %}
-		showOnMap([{{ sampleJson|safe }}]);
+	{% if sample %}
+		showOnMap([{{sample.toMapDict|json_dumps|safe}}]);
 	{% endif %}
 	var container = $('#notes_content');
 	var tbl = container.find('table#notes_list');

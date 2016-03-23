@@ -1,5 +1,7 @@
 {% extends 'dashboard_base.html' %}
 
+{% load json_dumps %}
+
 {% block sitemenu-content-secondary %}
 	{% include "sample_subnav.html" %}
     {% load nav %}
@@ -36,8 +38,8 @@ addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
 
 // initialize the notes when the window is ready
 $(document).ready(function() {
-	{% if sampleJson %}
-		showOnMap([{{ sampleJson|safe }}]);
+	{% if form.instance %}
+		showOnMap([{{form.instance.toMapDict|json_dumps|safe}}]);
 	{% endif %}
 	
 	// hook position editing to set flag
