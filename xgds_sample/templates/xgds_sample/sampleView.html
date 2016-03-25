@@ -66,20 +66,19 @@ $(document).ready(function() {
 {% load xgds_sample_extras %}
 
 {% block firstPackery %} 
+{% if messages %}
+		<div id="messages" class='item '>
+	  		{% for message in messages %}
+	    	<p>{{ message }}</p>
+	    	{% endfor %}
+		</div>
+	{% endif %}
 <div class='item w2 lockAspect' id='item_sample_create' data-isStamped="false">
 	<div class="error-message upload-error"></div>
 	<i class="icon-lock-open pinDiv"></i><br />
 	<div id="save-status"> {{status}} </div>
 	
-	{% if messages %}
-	<div id="messages">
-  		{% for message in messages %}
-    	<p>{{ message }}</p>
-    	{% endfor %}
-	</div>
-	{% endif %}
-	
-	<div> <strong> Viewing sample</strong> <a id="edit_sample_button" href="../edit/{{ sample.label.number }}" class="mybutton small">Edit</a> </div>
+	<div> <strong> Viewing sample</strong> <a id="edit_sample_button" href="{% url 'xgds_sample_record_update' sample.label.number %}" class="mybutton small">Edit</a> </div>
 	<input type=hidden name=sampleId value="{{ sample.pk }}">
 	<table>
 		<tr>

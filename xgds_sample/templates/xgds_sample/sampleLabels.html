@@ -1,4 +1,5 @@
-{% extends 'dashboard_base.html' %}
+{% extends 'dashboard_no_map.html' %}
+{% load json_dumps %}
 
 {% block sitemenu-content-secondary %}
 	{% include "sample_subnav.html" %}
@@ -9,45 +10,43 @@
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
  {% endblock cssExtras %}
 
-{% block jsInitPreApp %}    
-	var STATIC_URL = "{{ STATIC_URL }}";
-	var createLabelUrl = "{{ createLabelUrl }}";
+{% block prePackery %}    
+	var labelsArray = [];
+    
+    var count = {{ labels.count }};
+	{% for label in labels %}
+		labelsArray.push({{label.toMapDict|json_dumps|safe}});
+	{% endfor %}
 	
-	var labelsJson = {{ labelsJson|safe }};
-    var labelsArray = [];
-    $(labelsJson).each(function() {
-    	labelsArray.push(JSON.parse(this));
-    });
-	
-	var aoColumns = [			   {"mData":function(data, type, full){
-	                                   return "<input type='checkbox' name='label_checkbox' value='" + data["id"] +"'>";
-	                               }},
-								   {"mData": function(data, type, full) {
-								   		return data["number"];
-								   }},
-	                               {"mData": function(data, type, full) {
-									   	return "<a href=sample/" + data['number'] + ">" + data['sampleName'] + "</a>";
-								   }},
-	                               {"mData": function(data, type, full) {
-								   		return "";
-								   }}
-	];
+var aoColumns = [{"mData":function(data, type, full){
+                                return "<input type='checkbox' name='label_checkbox' value='" + data["id"] +"'>";
+                            }},
+				   {"mData": function(data, type, full) {
+				   		return "<a href='label/sample/" + data['number'] + "'>" + data["number"]+ "</a>";
+				   }},
+                   {"mData": function(data, type, full) {
+					   	return "<a href=" + data['url'] + ">" + data['sampleName'] + "</a>";
+				   }},
+                            {"mData": function(data, type, full) {
+				   		return "";
+				   }}
+				];
 	setupTable('item_labels_table', 'labels_table', labelsArray, aoColumns);
-{% endblock jsInitPreApp %}
+{% endblock prePackery %}
 
-{% block otherJSInit %}
-	matchWidth('item_sample_table','map');
-{% endblock otherJSInit %}
 
 {% block scripts %}
 {{block.super}}
 	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
+	<script type="text/javascript">
+	var createLabelUrl = "{% url 'xgds_sample_labels_create' %}";
+	</script>
     <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleLabels.js"></script>
 {% endblock scripts %}
 
 
 {% block firstPackery %}
-<div class='item auto freeAspect' id='item_labels_table' data-isStamped="false">
+<div class='item auto freeAspect' id='create_labels_div' data-isStamped="false">
 	<i class="icon-lock-open pinDiv"></i>
 	<form class="create_labels_form" id="create_labels_form" action="" method="post">
 		<strong> Create Labels </strong>
@@ -55,7 +54,7 @@
 		<table>
 			<tr>
 				<th><label for="id_start_number">Start number:</label></th>
-				<td><input id="id_start_number" maxlength="512" name="start_number" type="text" /></td>
+				<td><input id="id_start_number" maxlength="512" name="start_number" type="text" value="{{startNum}}" /></td>
 			</tr>
 			<tr>
 				<th><label for="id_quantity">Quantity:</label></th>

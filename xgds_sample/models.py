@@ -97,9 +97,11 @@ class AbstractSample(models.Model):
         return t._meta.object_name
     
     def buildName(self):
+        #TODO implement for your model if you want a custom name
         pass
     
     def updateSampleFromName(self, name):
+        #TODO implement for your model if you want fields to change based on name change
         pass
     
     def finish_initialization(self, request):

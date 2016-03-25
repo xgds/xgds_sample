@@ -23,9 +23,11 @@ from xgds_sample import views
 
 urlpatterns = [url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_search'),
                url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_labels'),
-               url(r'sample/(?P<labelNum>[\d]+)$', views.getSampleViewPage, {}, 'xgds_sample_search_view'),
+               url(r'label/sample/(?P<labelNum>[\d]+)$', views.viewSampleByLabel, {}, 'xgds_sample_search_view'),
+               url(r'sample/(?P<pk>[\d]+)$', views.getSampleViewPage, {}, 'xgds_sample_view'),
                url(r'createSample/(?P<labelNum>[\d]+)$', views.createSample, {}, 'xgds_sample_create'),
-               url(r'recordSample', views.getRecordSamplePage,{}, 'xgds_sample_record'),
+               url(r'deleteLabel/(?P<labelNum>[\d]+)$', views.deleteLabelAndSample, {}, 'xgds_sample_delete_label'),
+               url(r'recordSample', TemplateView.as_view(template_name='xgds_sample/recordSample.html'), {}, 'xgds_sample_record'),
                url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_record_edit'),
                url(r'edit/(?P<labelNum>[\d]+)$', views.updateSampleRecord, {}, 'xgds_sample_record_update'), 
                url(r'labels/create$', views.createSampleLabels, {}, 'xgds_sample_labels_create'),

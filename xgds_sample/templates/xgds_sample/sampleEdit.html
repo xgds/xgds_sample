@@ -101,7 +101,8 @@ $(document).ready(function() {
 		</table>
 		{% csrf_token %}
 		<div id="sample-edit-button-group">
-		<a href="recordSample" class="mybutton small">Cancel</a>
+		<a href="{% url 'xgds_sample_delete_label' form.instance.label.number %}" onclick="return confirm('Are you sure you want to permanently delete this sample and label?')"class="mybutton small">Delete</a>
+		<a href="{% url 'xgds_sample_view' form.instance.pk %}" class="mybutton small">Cancel</a>
 		<input class="mybutton small" id="sample-info-submit" type="submit" value="Save"/>
 		</div>
 	</form>
@@ -114,5 +115,32 @@ $(document).ready(function() {
 		</div>
 	</div>
 </div>
-{{ block.super }}
+
+<div class='item auto lockAspect' id='create_sample_from_label_num' data-isStamped="false">
+		<i class="icon-lock-open pinDiv"></i><br />
+		<ul>
+			{% for message in messages %}
+			<li class="{{ message.tags }}">
+			{% if 'safe' in message.tags %} 
+				{{message|safe|linebreaks }} 
+			{% else %} 
+				{{ message|linebreaks }} 
+			{% endif %}
+			</li> 
+			{% endfor %}
+		</ul>
+	
+		<form class="label_number_form" id="label_number_form" action="{% url 'xgds_sample_record_edit' %}" method="post" enctype="multipart/form-data">
+			<strong> Look up sample </strong>
+			<table>
+				<tr>
+					<th><label for="id_label_number">Label # or sample name:</label></th>
+					<td><input id="id_label_number" maxlength="512" name="label_num_or_sample_name" type="text" /></td>
+				</tr>
+			</table>
+			{% csrf_token %}
+			<input id="record_sample_submit_btn" type="submit" value="Open"/> 
+		</form>
+	</div>
 {% endblock firstPackery %}
+

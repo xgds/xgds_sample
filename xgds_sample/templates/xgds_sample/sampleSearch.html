@@ -19,8 +19,27 @@
 	});
 {% endblock jsInit %} 
 
-{% block otherJSInit %} 
-{% endblock otherJSInit %} 
+{% block jsInitPreApp %}    
+	var samplesJsonArray = {{ samplesJsonArray|safe }};
+	var samplesArray = [];
+	$(samplesJsonArray).each(function() {
+		samplesArray.push(JSON.parse(this)); // parse json string
+	});
+	var aoColumns = [			   {"mRender":function(data, sample_type, full){
+	                            	   var sampleName = full['name'];
+	                            	   var jsonString = JSON.stringify(full);
+	                                   return "<a onclick='constructSampleView(" + jsonString + ")'>"+ sampleName + "</a>";
+	                               }},
+								   {"mData": "collection_time"},
+	                               {"mData": "region"},
+	                               {"mData": "sample_type"}
+	];
+	setupTable('item_samples_table', 'samples_table', samplesArray, aoColumns);
+{% endblock jsInitPreApp %}
+
+{% block otherJSInit %}
+	matchWidth('item_sample_table','map');
+{% endblock otherJSInit %}
 
 {% block content %}
 {{ block.super }} 
