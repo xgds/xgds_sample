@@ -118,18 +118,6 @@ $(document).ready(function() {
 
 <div class='item auto lockAspect' id='create_sample_from_label_num' data-isStamped="false">
 		<i class="icon-lock-open pinDiv"></i><br />
-		<ul>
-			{% for message in messages %}
-			<li class="{{ message.tags }}">
-			{% if 'safe' in message.tags %} 
-				{{message|safe|linebreaks }} 
-			{% else %} 
-				{{ message|linebreaks }} 
-			{% endif %}
-			</li> 
-			{% endfor %}
-		</ul>
-	
 		<form class="label_number_form" id="label_number_form" action="{% url 'xgds_sample_record_edit' %}" method="post" enctype="multipart/form-data">
 			<strong> Look up sample </strong>
 			<table>

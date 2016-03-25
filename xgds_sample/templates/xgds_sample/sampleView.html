@@ -17,20 +17,12 @@
 {{block.super}}
 	{% include "xgds_notes2/NoteJS.html" %}
 	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
-	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
-    <!--  load handlebars -->
-	{% for template_name, template in templates.items %}
-		<script type="text/handlebars" id="template-{{template_name}}">
-			{{template|safe}}
-		</script>
-	{% endfor %}
+	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleReview.js"></script>
 {% endblock scripts %}
 
-{% block jsInit %} 
-{{ block.super }}
+{% block otherJSInit %} 
 
 // initialize the notes when the window is ready
-$(document).ready(function() {
 	{% if sample %}
 		showOnMap([{{sample.toMapDict|json_dumps|safe}}]);
 	{% endif %}
@@ -52,18 +44,8 @@ $(document).ready(function() {
 	var taginput = notes_input_div.find('.taginput');
 	initializeInput($(taginput)[0]);
 	hookNoteSubmit();
-	
-	//TODO this is a hack, for some reason the tags input is there twice but only the second one is valid
-//	var notes_content_div = $("#notes_content");
-//	notes_content_div.find(".bootstrap-tagsinput")[0].remove();
-});
 
-{% endblock jsInit %} 
-
-{% block otherJSInit %} 
 {% endblock otherJSInit %} 
-
-{% load xgds_sample_extras %}
 
 {% block firstPackery %} 
 {% if messages %}
@@ -131,5 +113,19 @@ $(document).ready(function() {
 	</div>
 	{% csrf_token %}	
 </div>
-{{ block.super }}
+
+<div class='item auto lockAspect' id='create_sample_from_label_num' data-isStamped="false">
+		<i class="icon-lock-open pinDiv"></i><br />
+		<form class="label_number_form" id="label_number_form" action="{% url 'xgds_sample_record_edit' %}" method="post" enctype="multipart/form-data">
+			<strong> Look up sample </strong>
+			<table>
+				<tr>
+					<th><label for="id_label_number">Label # or sample name:</label></th>
+					<td><input id="id_label_number" maxlength="512" name="label_num_or_sample_name" type="text" /></td>
+				</tr>
+			</table>
+			{% csrf_token %}
+			<input id="record_sample_submit_btn" type="submit" value="Open"/> 
+		</form>
+	</div>
 {% endblock firstPackery %}

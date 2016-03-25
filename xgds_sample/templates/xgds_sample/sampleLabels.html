@@ -25,7 +25,11 @@ var aoColumns = [{"mData":function(data, type, full){
 				   		return "<a href='label/sample/" + data['number'] + "'>" + data["number"]+ "</a>";
 				   }},
                    {"mData": function(data, type, full) {
-					   	return "<a href=" + data['url'] + ">" + data['sampleName'] + "</a>";
+                   		if (data['sampleName'] != ''){
+						   	return "<a href=" + data['url'] +  ">" + data['sampleName']   + "</a>";
+						} else {
+							return '';
+						}
 				   }},
                             {"mData": function(data, type, full) {
 				   		return "";
@@ -58,7 +62,7 @@ var aoColumns = [{"mData":function(data, type, full){
 			</tr>
 			<tr>
 				<th><label for="id_quantity">Quantity:</label></th>
-				<td><input id="id_quantity" maxlength="512" name="quantity" type="text" /></td>
+				<td><input id="id_quantity" maxlength="512" name="quantity" type="text" value="1"/></td>
 			</tr>
 		</table>
 		{% csrf_token %} <input id="create_labels_btn" type="submit" value="Create" />
@@ -69,14 +73,14 @@ var aoColumns = [{"mData":function(data, type, full){
 <div class='item w2 freeAspect' id='item_labels_table' data-isStamped="false">
 	<i class="icon-lock-open pinDiv"></i>
 	<form class="labels_table_form" id="labels_table_form" action="" method="post">
-		<div id="labels_table_button_group"> 
+		<!-- <div id="labels_table_button_group"> 
 			  <label class="checkbox" for="hide_printed">
 			    <input name="hide_printed" id="hide_printed" value="hide_printed" type="checkbox">
 			    <span></span> Hide Printed
 			  </label>
 			<input type="submit" class="mybutton small right" id="delete_button" value="Delete Selected" ></input>
 			<input type="submit" class="mybutton small right" id="print_button" value="Print Selected" ></input>
-		</div>
+		</div> -->
 		<table cellpadding="0" cellspacing="0" border="0"  id="labels_table">
 			<thead class="table_header">
 				<tr>

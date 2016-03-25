@@ -72,7 +72,10 @@ class SampleForm(ModelForm):
                     instance.user_position.longitude = self.cleaned_data['longitude']
                     instance.user_position.longitude = self.cleaned_data['altitude']
         if instance.name is None:
-            instance.name = instance.buildName()
+            try:
+                instance.name = instance.buildName()
+            except:
+                instance.name = None
         if commit:
             instance.save()
         return instance
