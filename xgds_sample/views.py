@@ -83,6 +83,7 @@ def getSampleViewPage(request, pk):
     return render_to_response('xgds_sample/sampleView.html',
                           RequestContext(request, data))
 
+
 def createSample(request, labelNum, label=None):
     """
     Create a label and/or sample based on the requested label number
@@ -112,6 +113,7 @@ def setSampleCustomFields(form, sample):
         form.fields['collection_time'].initial = sample.collection_time
     return form
 
+
 @login_required 
 def getSampleEditPage(request):
     label = None
@@ -121,7 +123,6 @@ def getSampleEditPage(request):
             messages.error(request, 'Please enter a valid sample name or label number')
             return render_to_response('xgds_sample/recordSample.html',
                                        RequestContext(request, {}))
-        
         labelNum = None
         label = None
         sample = None 
@@ -143,14 +144,11 @@ def getSampleEditPage(request):
                 sample = label.sample
             except:
                 return createSample(request, labelNum, label)
-                
-                
         form = SampleForm(instance=sample)
         # set custom field values with existing data.
         form = setSampleCustomFields(form, sample)
         return render_to_response('xgds_sample/sampleEdit.html',
                                   RequestContext(request, {'form': form}))                
-
         
 
 

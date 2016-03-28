@@ -19,17 +19,15 @@ import pytz
 from django.conf import settings
 from django import forms
 from django.forms import ModelForm
+from django.core.exceptions import ValidationError
 from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
 
-
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 
-
 class SampleForm(ModelForm):
-    changed_position= forms.IntegerField(widget=forms.HiddenInput(), initial=0)
     latitude = forms.FloatField(required=False, label="Latitude:")
     longitude = forms.FloatField(required=False, label="Longitude:")
     altitude = forms.FloatField(required=False, label="Altitude:")
@@ -54,23 +52,43 @@ class SampleForm(ModelForm):
             utcTime = localizedTime.astimezone(pytz.utc)
             return utcTime
     
+    
+    def clean(self):
+        """
+        Checks that both lat and lon are entered (or both are empty)
+        Checks that collection time is entered if user is entering position for the first time.
+        """
+        cleaned_data = super(SampleForm, self).clean()
+        latitude = cleaned_data.get("latitude")
+        longitude = cleaned_data.get("longitude")
+        if (latitude and not longitude) or (not latitude and longitude):  # if only one of them is filled in
+            msg = "Must enter both latitude and longitude or leave both blank."
+            self.add_error('latitude', msg)
+            self.add_error('longitude', msg)
+        if latitude and longitude:
+            instance = super(SampleForm, self).save(commit=False)
+            if instance.user_position is None:
+                if not self.cleaned_data['collection_time']:
+                    msg = "Must enter collection time to record position"
+                    self.add_error('collection_time', msg)
+                
+    
     def save(self, commit=True):
         instance = super(SampleForm, self).save(commit=False)
         instance.collection_time = self.cleaned_data['collection_time']
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
-        if self.cleaned_data['changed_position'] == 1:
-            if (self.cleaned_data['latitude'] or self.cleaned_data['longitude']) or self.cleaned_data['altitude']:
-                if instance.user_position is None:
-                    instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
-                                                                                 timestamp = instance.collection_time,
-                                                                                 latitude = self.cleaned_data['latitude'],
-                                                                                 longitude = self.cleaned_data['longitude'], 
-                                                                                 altitude = self.cleaned_data['altitude'])
-                else:
-                    instance.user_position.latitude = self.cleaned_data['latitude']
-                    instance.user_position.longitude = self.cleaned_data['longitude']
-                    instance.user_position.longitude = self.cleaned_data['altitude']
+        if (('latitude' in self.changed_data) and ('longitude' in self.changed_data)) or ('altitude' in self.changed_data):
+            if instance.user_position is None:
+                instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
+                                                                             timestamp = instance.collection_time,
+                                                                             latitude = self.cleaned_data['latitude'],
+                                                                             longitude = self.cleaned_data['longitude'], 
+                                                                             altitude = self.cleaned_data['altitude'])
+            else:
+                instance.user_position.latitude = self.cleaned_data['latitude']
+                instance.user_position.longitude = self.cleaned_data['longitude']
+                instance.user_position.longitude = self.cleaned_data['altitude']
         if instance.name is None:
             try:
                 instance.name = instance.buildName()

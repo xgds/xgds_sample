@@ -42,9 +42,6 @@ $(document).ready(function() {
 		showOnMap([{{form.instance.toMapDict|json_dumps|safe}}]);
 	{% endif %}
 	
-	// hook position editing to set flag
-	hookEditingPosition($('#updateSampleForm'));
-	
 	// show existing notes
 	var container = $('#notes_content');
 	var tbl = container.find('table#notes_list');

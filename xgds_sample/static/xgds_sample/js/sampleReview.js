@@ -13,18 +13,3 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //__END_LICENSE__
-
-function setChangedPosition(value, container) {
-	$(container).find('#id_changed_position').attr('value', value);
-}
-
-
-/**
- * Set the changed_position to true if the user edits any of the position fields.
- * @param container
- */
-function hookEditingPosition(container) {
-	$(container).find("#id_latitude").change(function() {setChangedPosition(1, container)});
-	$(container).find("#id_longitude").change(function() {setChangedPosition(1, container)});
-	$(container).find("#id_altitude").change(function() {setChangedPosition(1, container)});
-}
