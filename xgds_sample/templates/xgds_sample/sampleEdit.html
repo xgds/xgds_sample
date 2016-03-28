@@ -69,17 +69,15 @@ $(document).ready(function() {
 <div class='item w2 lockAspect' id='item_sample_create' data-isStamped="false">
 	<i class="icon-lock-open pinDiv"></i>
 	<div class="error-message upload-error"></div>
-	<div id="save-status"> {{status}} </div>
-	
 	{% if messages %}
-	<div id="messages">
-  		{% for message in messages %}
-    	<p>{{ message }}</p>
-    	{% endfor %}
-	</div>
+	<ul class="messages">
+	    {% for message in messages %}
+	    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+	    {% endfor %}
+	</ul>
 	{% endif %}
-	<div><strong> Editing sample </strong></div>
 	
+	<div><strong> Editing sample </strong></div>
 	<form class="updateSample" id="updateSampleForm" action="{% url 'xgds_sample_record_update' form.instance.label.number %}" method="post" enctype="multipart/form-data">
 		<input type=hidden name=sampleId value="{{ form.instance.pk }}">
 		{% for hidden in form.hidden_fields %}
@@ -103,7 +101,7 @@ $(document).ready(function() {
 		<input class="mybutton small" id="sample-info-submit" type="submit" value="Save"/>
 		</div>
 	</form>
-	<br><hr>
+	<hr>
 	<div id="complete_notes">
 		<strong>Notes</strong>
 		<div id="notes_content" class="tab-content active">
