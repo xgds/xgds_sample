@@ -208,12 +208,12 @@ def createSampleLabels(request):
         try: 
             startNum = int(request.POST['start_number'])
         except: 
-            return HttpResponse(json.dumps({'status': 'error', 'message': 'Invalid argument. Please enter an integer.'}), 
+            return HttpResponse(json.dumps({'message': 'Invalid argument. Please enter an integer.'}), 
                          content_type = 'application/json')
         try: 
             quantity = int(request.POST['quantity'])
         except: 
-            return HttpResponse(json.dumps({'status': 'error', 'message': 'Invalid argument. Please enter an integer.'}), 
+            return HttpResponse(json.dumps({'message': 'Invalid argument. Please enter an integer.'}), 
                          content_type = 'application/json')
         # create multiple labels
         newLabels = []
@@ -222,13 +222,11 @@ def createSampleLabels(request):
             if created:
                 newLabels.append(json.dumps(label.toMapDict()))
         if newLabels:
-            return HttpResponse(json.dumps({'status': 'success', 
-                                            'message': 'Successfully created the labels',
+            return HttpResponse(json.dumps({'message': 'Successfully created the labels',
                                             'newLabels': newLabels}), 
                                     content_type='application/json')
         else: 
-            return HttpResponse(json.dumps({'status': '', 
-                                'message': 'No new labels to create.',
+            return HttpResponse(json.dumps({'message': 'No new labels to create.',
                                 'newLabels': newLabels}), 
                                 content_type='application/json') 
 

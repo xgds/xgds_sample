@@ -34,11 +34,11 @@ hr {
 	height: 20px;
 }
 
-.error-message {
+li.error {
 	color: red;
 }
 
-.success-message {
+li.success {
 	color: green;
 }
 
