@@ -88,7 +88,7 @@ class SampleForm(ModelForm):
             else:
                 instance.user_position.latitude = self.cleaned_data['latitude']
                 instance.user_position.longitude = self.cleaned_data['longitude']
-                instance.user_position.longitude = self.cleaned_data['altitude']
+                instance.user_position.altitude = self.cleaned_data['altitude']
         if instance.name is None:
             try:
                 instance.name = instance.buildName()
@@ -108,5 +108,3 @@ class SampleForm(ModelForm):
                    'creator', 
                    'modifier', 
                    'label']
-
-    
