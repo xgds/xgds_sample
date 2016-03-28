@@ -79,9 +79,15 @@ def viewSampleByLabel(request, labelNum):
 @login_required 
 def getSampleViewPage(request, pk):
     sample = get_object_or_404(SAMPLE_MODEL.get(), pk=pk)
-    data = {'sample': sample} 
-    return render_to_response('xgds_sample/sampleView.html',
-                          RequestContext(request, data))
+    if not sample.sample_type:
+        form = SampleForm(instance=sample)
+        # set custom field values with existing data.
+        form = setSampleCustomFields(form, sample)
+        return render_to_response('xgds_sample/sampleEdit.html',
+                                  RequestContext(request, {'form': form}))
+    else:
+        return render_to_response('xgds_sample/sampleView.html',
+                                  RequestContext(request, {'sample': sample}))
 
 
 def createSample(request, labelNum, label=None):
