@@ -31,6 +31,9 @@ class SampleForm(ModelForm):
     latitude = forms.FloatField(required=False, label="Latitude:")
     longitude = forms.FloatField(required=False, label="Longitude:")
     altitude = forms.FloatField(required=False, label="Altitude:")
+    description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
+    name = forms.CharField(required=False, label="Name")  # name may be constructed in the save method
+    
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
         '%Y-%m-%d %H:%M:%S',
@@ -38,6 +41,20 @@ class SampleForm(ModelForm):
     ]
     collection_time = forms.DateTimeField(required=False, input_formats=date_formats)
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
+    #IMPORTANT: do not add collection_time and timezone to the field order. It will error.
+    field_order = ['name',
+                   'sample_type', 
+                   'region', 
+                   'number',
+                   'triplicate', 
+                   'year', 
+                   'resource', 
+                   'collector', 
+                   'flight', 
+                   'latitude', 
+                   'longitude', 
+                   'altitude', 
+                   'description']
     
     # populate the event time with NOW if it is blank.
     def clean_collection_time(self): 
@@ -71,8 +88,8 @@ class SampleForm(ModelForm):
                 if not self.cleaned_data['collection_time']:
                     msg = "Must enter collection time to record position"
                     self.add_error('collection_time', msg)
-                
-    
+                    
+                    
     def save(self, commit=True):
         instance = super(SampleForm, self).save(commit=False)
         instance.collection_time = self.cleaned_data['collection_time']
@@ -89,20 +106,33 @@ class SampleForm(ModelForm):
                 instance.user_position.latitude = self.cleaned_data['latitude']
                 instance.user_position.longitude = self.cleaned_data['longitude']
                 instance.user_position.altitude = self.cleaned_data['altitude']
-        if instance.name is None:
-            try:
-                instance.name = instance.buildName()
-            except:
-                instance.name = None
+        # if fields changed, validate against the name
+        if ('region' in self.changed_data) or ('year' in self.changed_data) or ('type' in self.changed_data) \
+            or ('number' in self.changed_data) or ('triplicate' in self.changed_data):
+            builtName = instance.buildName()
+            if instance.name != builtName:
+                instance.name = builtName 
+                self.errors['warning'] = "Name has been updated to %s." % builtName
+        # if name changed, validate against the fields.
+        if 'name' in self.changed_data:
+            builtName = instance.buildName()
+            if instance.name != builtName: #TODO check that instance name is
+                try: 
+                    instance.updateSampleFromName(self.cleaned_data['name'])
+                    self.errors['warning'] = "Fields have been updated to reflect the new name."
+                except: 
+                    # if validation fails, return without saving
+                    self.errors['error'] = "Save Failed. Name does not validate against the fields. "
+                    return instance
         if commit:
             instance.save()
         return instance
+
 
     class Meta: 
         model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
         exclude = ['track_position', 
                    'user_position', 
-                   'name', 
                    'creation_time', 
                    'modification_time', 
                    'creator', 

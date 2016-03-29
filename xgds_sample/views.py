@@ -155,7 +155,6 @@ def getSampleEditPage(request):
         form = setSampleCustomFields(form, sample)
         return render_to_response('xgds_sample/sampleEdit.html',
                                   RequestContext(request, {'form': form}))                
-        
 
 
 @login_required 
@@ -168,13 +167,19 @@ def updateSampleRecord(request, labelNum):
         sample = label.sample
     except: 
         return createSample(request, labelNum, label)
-
     # if is updating the sample info from edit form
     if request.method == "POST":
         form = SampleForm(request.POST, instance=sample)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Sample data successfully updated.')
+            if form.errors:
+                for key, msg in form.errors.items():
+                    if key == 'warning':
+                        messages.warning(request, msg)
+                    elif key == 'error': 
+                        messages.error(request, msg)
+            else:
+                messages.success(request, 'Sample data successfully updated.')
             return render_to_response('xgds_sample/sampleView.html',
                                        RequestContext(request, {'sample': form.instance}))
         else: 

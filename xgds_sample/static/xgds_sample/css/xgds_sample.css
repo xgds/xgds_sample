@@ -10,14 +10,6 @@ hr {
 	height: 600px;
 }
 
-.sample_name_row td{
-    border-bottom: 2px solid black;
-}
-
-.sample_name_row th{
-    border-bottom: 2px solid black;
-}
-
 #edit_sample_button {
 	float: right;
 }

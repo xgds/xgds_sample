@@ -57,8 +57,7 @@ $(document).ready(function() {
     var taginput = container.find('.taginput');
 	initializeInput($(taginput)[0]);
  	hookNoteSubmit();
-
- 	
+	hookEditingName($("#updateSampleForm"));
 });
 {% endblock jsInit %} 
 
@@ -78,19 +77,19 @@ $(document).ready(function() {
 	{% endif %}
 	
 	<div><strong> Editing sample </strong></div>
+	{% if form.errors %}
+    <ol>
+    {% for error in form.errors %}
+        <li><strong>{{ error|escape }}</strong></li>
+    {% endfor %}
+    </ol>
+	{% endif %}
 	<form class="updateSample" id="updateSampleForm" action="{% url 'xgds_sample_record_update' form.instance.label.number %}" method="post" enctype="multipart/form-data">
 		<input type=hidden name=sampleId value="{{ form.instance.pk }}">
-		{% for hidden in form.hidden_fields %}
-		{{ hidden }}
-		{% endfor %}
 		<table>
 			<tr>
 				<th><label for="id_label_number">Label Number:</label></th>
-				<td><input id="id_label_number" maxlength="512" name="labelNum" type="text" value="{{ form.instance.label.number }}" readonly /></td>
-			</tr>
-			<tr class="sample_name_row">
-				<th><label for="id_name">Name:</label></th>
-				<td><input id="id_name" maxlength="512" name="name" type="text" placeholder="i.e NC16B001A" value="{{ form.instance.name }}"/></td>
+				<td>{{ form.instance.label.number }} </td>
 			</tr>
 			{{ form.as_table }}
 		</table>
