@@ -24,7 +24,7 @@ from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
-import pydevd
+
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 
@@ -108,7 +108,7 @@ class SampleForm(ModelForm):
                 instance.user_position.longitude = self.cleaned_data['longitude']
                 instance.user_position.altitude = self.cleaned_data['altitude']
         # if fields changed, validate against the name
-        if ('region' in self.changed_data) or ('year' in self.changed_data) or ('type' in self.changed_data) \
+        if ('region' in self.changed_data) or ('year' in self.changed_data) or ('sample_type' in self.changed_data) \
             or ('number' in self.changed_data) or ('triplicate' in self.changed_data):
             builtName = instance.buildName()
             if instance.name != builtName:
