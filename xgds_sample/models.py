@@ -83,6 +83,14 @@ class AbstractSample(models.Model):
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
     
+    @property
+    def view_url(self):
+        return reverse('xgds_sample_view', kwargs={'pk':self.pk})
+    
+    @property
+    def thumbnail_url(self):
+        # TODO when we have image support for samples return the first image's thumbnail
+        return ''
     
     @property
     def modelAppLabel(self):
