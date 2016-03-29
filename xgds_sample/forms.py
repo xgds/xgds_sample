@@ -24,6 +24,7 @@ from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
+import pydevd
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 
@@ -33,7 +34,6 @@ class SampleForm(ModelForm):
     altitude = forms.FloatField(required=False, label="Altitude:")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
     name = forms.CharField(required=False, label="Name")  # name may be constructed in the save method
-    
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
         '%Y-%m-%d %H:%M:%S',
@@ -55,6 +55,7 @@ class SampleForm(ModelForm):
                    'longitude', 
                    'altitude', 
                    'description']
+    
     
     # populate the event time with NOW if it is blank.
     def clean_collection_time(self): 
