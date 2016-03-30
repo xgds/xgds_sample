@@ -12,13 +12,12 @@
 
 {% block prePackery %}    
 	var labelsArray = [];
-    
     var count = {{ labels.count }};
 	{% for label in labels %}
 		labelsArray.push({{label.toMapDict|json_dumps|safe}});
 	{% endfor %}
 	
-var aoColumns = [{"mData":function(data, type, full){
+	var aoColumns = [{"mData":function(data, type, full){
                                 return "<input type='checkbox' name='label_checkbox' value='" + data["id"] +"'>";
                             }},
 				   {"mData": function(data, type, full) {
@@ -43,7 +42,8 @@ var aoColumns = [{"mData":function(data, type, full){
 {{block.super}}
 	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
 	<script type="text/javascript">
-	var createLabelUrl = "{% url 'xgds_sample_labels_create' %}";
+		var printLabelsUrl = "{% url 'xgds_sample_labels_print' %}";
+		var createLabelUrl = "{% url 'xgds_sample_labels_create' %}";
 	</script>
     <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleLabels.js"></script>
 {% endblock scripts %}
@@ -73,14 +73,14 @@ var aoColumns = [{"mData":function(data, type, full){
 <div class='item w2 freeAspect' id='item_labels_table' data-isStamped="false">
 	<i class="icon-lock-open pinDiv"></i>
 	<form class="labels_table_form" id="labels_table_form" action="" method="post">
-		<!-- <div id="labels_table_button_group"> 
+		<div id="labels_table_button_group"> 
 			  <label class="checkbox" for="hide_printed">
 			    <input name="hide_printed" id="hide_printed" value="hide_printed" type="checkbox">
 			    <span></span> Hide Printed
 			  </label>
 			<input type="submit" class="mybutton small right" id="delete_button" value="Delete Selected" ></input>
 			<input type="submit" class="mybutton small right" id="print_button" value="Print Selected" ></input>
-		</div> -->
+		</div>
 		<table cellpadding="0" cellspacing="0" border="0"  id="labels_table">
 			<thead class="table_header">
 				<tr>

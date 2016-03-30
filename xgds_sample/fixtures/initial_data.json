@@ -1,0 +1,28 @@
+[
+    {
+        "pk": 1,
+        "model": "xgds_sample.samplelabelsize",
+        "fields": {
+            "name": "small",
+            "width": 101.6,
+            "height": 50.8,
+            "unit": "mm",
+            "orientation": "P",
+            "paragraphWidth": 25,
+            "templateElements": "xgds_sample.labelTemplates.small"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "xgds_sample.samplelabelsize",
+        "fields": {
+            "name": "medium",
+            "width": 76.2,
+            "height": 76.2,
+            "unit": "mm",
+            "orientation": "P",
+            "paragraphWidth": 25,
+            "templateElements": "xgds_sample.labelTemplates.medium"
+        }
+    }
+]

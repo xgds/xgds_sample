@@ -31,4 +31,5 @@ urlpatterns = [url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_sear
                url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_record_edit'),
                url(r'edit/(?P<labelNum>[\d]+)$', views.updateSampleRecord, {}, 'xgds_sample_record_update'), 
                url(r'labels/create$', views.createSampleLabels, {}, 'xgds_sample_labels_create'),
+               url(r'labels/print$', views.printSampleLabels, {}, 'xgds_sample_labels_print')
                ]

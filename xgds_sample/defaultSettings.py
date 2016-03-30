@@ -20,6 +20,7 @@ from geocamUtil.SettingsUtil import getOrCreateDict
 XGDS_SAMPLE_SAMPLE_MODEL = 'xgds_sample.Sample'
 XGDS_SAMPLE_LABEL_MODEL = 'xgds_sample.Label'
 
+XGDS_SAMPLE_PDF_DIR = "xgds_sample/labels"
 XGDS_SAMPLE_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 XGDS_SAMPLE_HANDLEBARS_DIR = [os.path.join('xgds_sample', 'templates', 'handlebars')]
 

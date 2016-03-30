@@ -27,10 +27,12 @@ from django.db.models import Max
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
-from xgds_sample.models import SampleType, Region
+from xgds_sample.models import SampleType, Region, SampleLabelSize
 from xgds_map_server.views import get_handlebars_templates
 import json
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
+from django.views.static import serve
+from xgds_sample.labels import *
 
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
@@ -235,3 +237,16 @@ def createSampleLabels(request):
                                 'newLabels': newLabels}), 
                                 content_type='application/json') 
 
+
+def printSampleLabels(request):
+    if request.method == 'POST': 
+        data = json.loads(request.body)
+        labelNums = [data[str(i)] for i in range(0, data['length'])]
+        labels = LABEL_MODEL.get().objects.filter(number__in=labelNums)
+        if labels:
+            size = SampleLabelSize.objects.get(name="small")
+            pdfFile = generateMultiPDF(labels, size)
+    return HttpResponse(json.dumps({'success': 'printed labels'}), content_type="application/json")
+
+
+    

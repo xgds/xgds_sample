@@ -48,6 +48,7 @@ class Label(models.Model):
     number = models.IntegerField()
     url = models.CharField(null=True, max_length=512)    
     last_printed = models.DateTimeField(blank=True, null=True, editable=False)
+    printableFile = models.CharField(max_length=256, blank=True, null=True)
     
     def __unicode__(self):
         return u'%s' % (self.number)
@@ -178,4 +179,47 @@ class AbstractSample(models.Model):
     class Meta:
         abstract = True
 
-            
+
+class SampleLabelSize(models.Model):
+    """
+    Represents available choices of sample label size.
+    """
+    name = models.CharField(max_length=80)
+    # The label vendor, e.g. Avery
+    labelVendor = models.CharField(max_length=80, null=True, blank=True)
+
+    # The label type/model e.g. 5160
+    labelType = models.CharField(max_length=80, null=True, blank=True)
+
+    width = models.FloatField(null=True, blank=True)
+    height = models.FloatField(null=True, blank=True)
+    unit = models.CharField(max_length=16, default="mm")
+    orientation = models.CharField(max_length=1, default="L")  # can be L or P for landscape or portrait
+    paragraphWidth = models.IntegerField(default=22)
+
+    # python class containing the elements to define this template
+    templateElements = models.TextField(null=True, blank=True)
+    templateInitialized = False
+
+    def __unicode__(self):
+        return '%s (%s %s) (%d%s x %d%s)' % (self.name, self.labelVendor,
+                                             self.labelType, self.width, self.unit,
+                                             self.height, self.unit)
+
+    def getTemplate(self):
+        if not self.templateInitialized:
+            if self.unit == "mm":
+                mmWidth = self.width
+                mmHeight = self.height
+            elif self.unit == "in":
+                mmWidth = self.width / 0.03937
+                mmHeight = self.height / 0.03937
+
+        if self.templateElements:
+            elements = getClassByName(self.templateElements)
+            if elements:
+                template = Template(format=[mmWidth, mmHeight], orientation=self.orientation, elements=elements)
+                template.add_page()
+                return template
+
+        raise LabelTemplateException("No Template found for label " + self.name)       
