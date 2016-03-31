@@ -54,6 +54,7 @@ class SampleForm(ModelForm):
                    'latitude', 
                    'longitude', 
                    'altitude', 
+                   'marker_id',
                    'description']
     
     
