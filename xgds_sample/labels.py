@@ -95,6 +95,5 @@ def generateQRCode(data, label_id):
     img = qr.make_image()
     filename = "qrcode_%d.png" % label_id
     imgFilename = os.path.join(settings.MEDIA_ROOT, settings.XGDS_SAMPLE_PDF_DIR, filename)
-#     img.save(filename)
     img.save(imgFilename)
     return imgFilename
