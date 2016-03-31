@@ -244,11 +244,10 @@ def printSampleLabels(request):
     if request.method == 'POST': 
         data = json.loads(request.body)
         labelNums = [data[str(i)] for i in range(0, data['length'])]
-        labels = LABEL_MODEL.get().objects.filter(number__in=labelNums)
+        labels = LABEL_MODEL.get().objects.filter(id__in=labelNums)
         if labels:
             size = SampleLabelSize.objects.get(name="small")
             pdfFile = generateMultiPDF(labels, size)
-            print "about to serve the PDF"
             return serve(request, os.path.basename(pdfFile), os.path.dirname(pdfFile))
     return HttpResponse(json.dumps({'error': 'Labels failed to print'}), content_type="application/json")
 
