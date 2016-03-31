@@ -48,7 +48,6 @@ class Label(models.Model):
     number = models.IntegerField()
     url = models.CharField(null=True, max_length=512)    
     last_printed = models.DateTimeField(blank=True, null=True, editable=False)
-    printableFile = models.CharField(max_length=256, blank=True, null=True)
     
     def __unicode__(self):
         return u'%s' % (self.number)

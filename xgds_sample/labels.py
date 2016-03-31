@@ -22,13 +22,16 @@ from fpdf import Template
 
 from django.conf import settings
 from xgds_sample import labelTemplates
+from geocamUtil.loader import LazyGetModelByName
+import pydevd
 
+SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 
 def generateMultiPDF(sampleLabels, size):
     """
     Actually create the PDF for multiple sample labels.
     """
-
+    pydevd.settrace('128.102.237.125')
     now = datetime.utcnow()
     printableFile = "multi_" + size.name + "_" + now.strftime("%Y%m%d_%H%M%S") + ".pdf"
 
@@ -51,19 +54,41 @@ def generateMultiPDF(sampleLabels, size):
         # make the qr code image
         qrCodeImages.append(generateQRCode(sampleLabel.url, sampleLabel.number))
 
-        # populate the template
+        # populate the templatto ae
         template[str(i) + "_qrcode"] = qrCodeImages[i]
         
         if sampleLabel.number:
             template[str(i) + "_id"] = sampleLabel.number
+        
+        # display description next to the qr code
+        sample = SAMPLE_MODEL.get().objects.get(label=sampleLabel)
+        rows = [sample.name]
+        if sample.description:
+            rows.append(sample.description)
+        if sample.latitude: 
+            rows.append('lat, lon: ' + sample.latitude + ' ' + sample.longitude)
+        if sample.collection_time: 
+            rows.append('collected at ' + sample.collection_time)
+        finalrows = []
+        for row in rows:
+            if len(row) > paragraph:
+                wrapped = textwrap.wrap(row, paragraph)
+                for l in wrapped:
+                    finalrows.append(l)
+            else:
+                finalrows.append(row)
+
+        for j, row in enumerate(finalrows):
+            key = "%d_row%d" % (i, j + 1)
+            if (key) in template.keys:
+                template[key] = row
+
 
         # update the record.  This is also a lie, we don't know if you actually printed it, but whatever.
         sampleLabel.printTime = now
         sampleLabel.printableFile = printableFile
         sampleLabel.save()
-
         i = i + 1
-
     while i < 10:
         template[str(i) + "_qrcode"] = os.path.join(settings.STATIC_ROOT, "xgds_sample/images/ipx.gif")
         i = i + 1
