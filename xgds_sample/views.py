@@ -37,6 +37,8 @@ from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from django.views.static import serve
 from xgds_sample.labels import *
 
+from django.http import HttpResponse
+from StringIO import StringIO
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
@@ -250,8 +252,11 @@ def printSampleLabels(request):
         if labels:
             size = SampleLabelSize.objects.get(name="small")
             pdfFile = generateMultiPDF(labels, size)
-            return serve(request, os.path.basename(pdfFile), os.path.dirname(pdfFile))
+            # TEST THIS: need to read the pdfFile and get value
+            file = open(pdfFile, "r") 
+            pdfContent = file.read()
+            response = HttpResponse(pdfContent, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(pdfFile)
+            return response
     return HttpResponse(json.dumps({'error': 'Labels failed to print'}), content_type="application/json")
-
-
     
