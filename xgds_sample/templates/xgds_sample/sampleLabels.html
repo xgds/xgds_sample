@@ -46,6 +46,8 @@
 		var createLabelUrl = "{% url 'xgds_sample_labels_create' %}";
 	</script>
     <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleLabels.js"></script>
+
+
 {% endblock scripts %}
 
 
@@ -74,6 +76,7 @@
 	<i class="icon-lock-open pinDiv"></i>
 	<form class="labels_table_form" id="labels_table_form" action="" method="post">
 		<div id="labels_table_button_group"> 
+			  <input name="print_labels" id="print_labels" hidden></input>
 			  <label class="checkbox" for="hide_printed">
 			    <input name="hide_printed" id="hide_printed" value="hide_printed" type="checkbox">
 			    <span></span> Hide Printed
@@ -95,6 +98,11 @@
 		</table>
 	</form>
 </div>
+
+<script type="text/javascript">
+	var checkedLabelIds = $( "input[name*='checkbox']:checked" ).map(function(){ return parseInt(this.value) });
+	$("#print_labels").val(checkedLabelIds);
+</script>
 {% endblock firstPackery %}
 
 		

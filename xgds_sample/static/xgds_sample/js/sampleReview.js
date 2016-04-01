@@ -13,3 +13,33 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //__END_LICENSE__
+
+
+/*
+ * Triplicates Legend:
+	Biology = A, B, C
+	Chemistry = D, E
+	Geology 
+	Archive
+ */
+
+function showReplicateOptions() {
+	var selected = $("#id_sample_type option:selected").html();
+	$("#id_replicate").children('option').hide();
+	$("#id_replicate").removeAttr('disabled');
+	if (selected == "Biology") {
+		$("#id_replicate option[value='1']").show();
+		$("#id_replicate option[value='2']").show();
+		$("#id_replicate option[value='3']").show();
+	} else if (selected == "Chemistry") {
+		$("#id_replicate option[value='4']").show();
+		$("#id_replicate option[value='5']").show();
+	} else if ((selected == "Archive") || (selected == "Geology")) {
+		$("#id_replicate").val('');
+		$("#id_replicate").attr('disabled','disabled')
+	}
+}
+
+$("#id_sample_type").change(function() {
+	showReplicateOptions();
+});

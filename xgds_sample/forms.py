@@ -47,7 +47,7 @@ class SampleForm(ModelForm):
                    'sample_type', 
                    'region', 
                    'number',
-                   'triplicate', 
+                   'replicate', 
                    'year', 
                    'resource', 
                    'collector', 
@@ -111,7 +111,7 @@ class SampleForm(ModelForm):
                 instance.user_position.altitude = self.cleaned_data['altitude']
         # if fields changed, validate against the name
         if ('region' in self.changed_data) or ('year' in self.changed_data) or ('sample_type' in self.changed_data) \
-            or ('number' in self.changed_data) or ('triplicate' in self.changed_data):
+            or ('number' in self.changed_data) or ('replicate' in self.changed_data):
             builtName = instance.buildName()
             if instance.name != builtName:
                 instance.name = builtName 
