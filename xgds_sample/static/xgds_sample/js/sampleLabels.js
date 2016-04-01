@@ -51,6 +51,7 @@ $('#print_button').on('click', function(event) {
 		data: postData,
 		success: function(data) 
 		{
+			
 			var labelsDataTable = $('#labels_table').dataTable();
 			setSaveStatusMessage($('#labels_messages'), data['status'], data['message']);
 		}, 
