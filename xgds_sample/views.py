@@ -31,7 +31,7 @@ from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleType, Region, SampleLabelSize
-from xdgs_core.views import get_handlebars_templates
+from xgds_core.views import get_handlebars_templates
 
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from django.views.static import serve
