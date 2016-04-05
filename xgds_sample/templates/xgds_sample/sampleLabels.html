@@ -74,9 +74,8 @@
 <!-- Labels table -->
 <div class='item w2 freeAspect' id='item_labels_table' data-isStamped="false">
 	<i class="icon-lock-open pinDiv"></i>
-	<form class="labels_table_form" id="labels_table_form" action="" method="post">
+	<form class="labels_table_form" id="labels_table_form" action="{% url 'xgds_sample_labels_print' %}" method="post">
 		<div id="labels_table_button_group"> 
-			  <input name="print_labels" id="print_labels" hidden></input>
 			  <label class="checkbox" for="hide_printed">
 			    <input name="hide_printed" id="hide_printed" value="hide_printed" type="checkbox">
 			    <span></span> Hide Printed
