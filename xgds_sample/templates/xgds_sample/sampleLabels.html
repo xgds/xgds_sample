@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
  {% endblock cssExtras %}
 
-{% block prePackery %}    
+{% block preLayout %}    
 	var labelsArray = [];
     var count = {{ labels.count }};
 	{% for label in labels %}
@@ -35,7 +35,7 @@
 				   }}
 				];
 	setupTable('item_labels_table', 'labels_table', labelsArray, aoColumns);
-{% endblock prePackery %}
+{% endblock preLayout %}
 
 
 {% block scripts %}
@@ -46,17 +46,18 @@
 		var createLabelUrl = "{% url 'xgds_sample_labels_create' %}";
 	</script>
     <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleLabels.js"></script>
-
-
 {% endblock scripts %}
 
-
-{% block firstPackery %}
-<div class='item auto freeAspect' id='create_labels_div' data-isStamped="false">
-	<i class="icon-lock-open pinDiv"></i>
+{% block preDashboard %}
+<div id="labels_messages"></div>
+{% endblock preDashboard %}
+{% block inDashboard %}
+<div class="grid-stack-item" id='create_labels_div' 
+        data-gs-x="0" data-gs-y="0"
+        data-gs-width="2" data-gs-height="1" >
+            <div class="grid-stack-item-content">
 	<form class="create_labels_form" id="create_labels_form" action="" method="post">
 		<strong> Create Labels </strong>
-			<div id="labels_messages"></div>
 		<table>
 			<tr>
 				<th><label for="id_start_number">Start number:</label></th>
@@ -67,13 +68,16 @@
 				<td><input id="id_quantity" maxlength="512" name="quantity" type="text" value="1"/></td>
 			</tr>
 		</table>
-		{% csrf_token %} <input id="create_labels_btn" type="submit" value="Create" />
+		{% csrf_token %} <input id="create_labels_btn" type="submit" value="Create" class="small"/>
 	</form>
+</div>
 </div>
 
 <!-- Labels table -->
-<div class='item w2 freeAspect' id='item_labels_table' data-isStamped="false">
-	<i class="icon-lock-open pinDiv"></i>
+<div id='item_labels_table'  class="grid-stack-item" 
+		data-gs-x="2" data-gs-y="0"
+        data-gs-width="4" data-gs-height="3" >
+        <div class="grid-stack-item-content">
 	<form class="labels_table_form" id="labels_table_form" action="{% url 'xgds_sample_labels_print' %}" method="post">
 		<div id="labels_table_button_group"> 
 			  <label class="checkbox" for="hide_printed">
@@ -97,11 +101,13 @@
 		</table>
 	</form>
 </div>
+</div>
+{% endblock inDashboard %}
 
-<script type="text/javascript">
+{% block jsInit %}
+	{{ block.super }}
 	var checkedLabelIds = $( "input[name*='checkbox']:checked" ).map(function(){ return parseInt(this.value) });
 	$("#print_labels").val(checkedLabelIds);
-</script>
-{% endblock firstPackery %}
+{% endblock jsInit %}
 
 		

@@ -9,9 +9,9 @@
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
  {% endblock cssExtras %}
 
-{% block firstPackery %}
-	<div class='item auto lockAspect' id='create_sample_from_label_num' data-isStamped="false">
-		<ul>
+{% block preDashboard %}
+<div id="messages">
+	<ul>
 			{% for message in messages %}
 			<li class="{{ message.tags }}">
 			{% if 'safe' in message.tags %} 
@@ -22,7 +22,13 @@
 			</li> 
 			{% endfor %}
 		</ul>
-	
+		</div>
+{% endblock preDashboard %}
+{% block inDashboard %}
+<div class="grid-stack-item noresize" id='create_sample_from_label_num'
+        data-gs-x="0" data-gs-y="0"
+        data-gs-width="2" data-gs-height="1">
+            <div class="grid-stack-item-content">
 		<form class="label_number_form" id="label_number_form" action="{% url 'xgds_sample_record_edit' %}" method="post" enctype="multipart/form-data">
 			<strong> Look up sample </strong>
 			<table>
@@ -32,7 +38,8 @@
 				</tr>
 			</table>
 			{% csrf_token %}
-			<input id="record_sample_submit_btn" type="submit" value="Open"/> 
+			<input id="record_sample_submit_btn" type="submit" value="Open" class="small"/> 
 		</form>
 	</div>
-{% endblock firstPackery %}
+</div>
+{% endblock inDashboard %}

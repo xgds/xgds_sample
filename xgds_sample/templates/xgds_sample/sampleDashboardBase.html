@@ -25,9 +25,12 @@
 {% endblock scripts %}
 
 
-{% block firstPackery %}
+{% block preMap %}
 <!-- Samples table -->
-<div class='item w2 freeAspect' id='item_samples_table' data-isStamped="false">
+<div class="grid-stack-item" id='item_samples_table_div'
+        data-gs-x="0" data-gs-y="0"
+        data-gs-width="3" data-gs-height="2">
+            <div class="grid-stack-item-content" id='item_samples_table'>
 	<i class="icon-lock-open pinDiv"></i>
 	<div class="ttip" data-tooltip="remove selected samples"> <i class="icon-trash" id="delete_sample"></i> </div>
 		<table cellpadding="0" cellspacing="0" border="0"  id="samples_table">
@@ -43,6 +46,7 @@
 			</tbody>
 		</table>
 </div>
-{% endblock firstPackery %}
+</div>
+{% endblock preMap %}
 
 		

@@ -37,10 +37,6 @@
 	setupTable('item_samples_table', 'samples_table', samplesArray, aoColumns);
 {% endblock jsInitPreApp %}
 
-{% block otherJSInit %}
-	matchWidth('item_sample_table','map');
-{% endblock otherJSInit %}
-
 {% block content %}
 {{ block.super }} 
 <div id="formset_div" style="display:none">
@@ -54,11 +50,10 @@
 </div>
 {% endblock %}
 
-
-{% block firstPackery %} 
-<div class='item auto lockAspect' id='create_sample_from_label_num' data-isStamped="false">
-	<i class="icon-lock-open pinDiv"></i><br />
-	<ul>
+{% block preDashboard %}
+{% if messages %}
+<div id="messages">
+<ul>
 		{% for message in messages %}
 		<li class="{{ message.tags }}">
 		{% if 'safe' in message.tags %}
@@ -66,6 +61,13 @@
 		{% endif %}</li> 
 		{% endfor %}
 	</ul>
+</div>
+{% endif %}
+{% endblock preDashboard %}
+
+{% block firstPackery %} 
+<div class='item auto lockAspect' id='create_sample_from_label_num' data-isStamped="false">
+	<i class="icon-lock-open pinDiv"></i><br />
 
 	<form class="sample_simple_search_form" id="sample_simple_search_form" action="" method="post">
 		<strong> Search for sample </strong>
