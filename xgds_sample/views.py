@@ -54,7 +54,7 @@ def getSampleSearchPage(request):
     theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
     
     data = {'formset': theFormSet,
-            'templates': get_handlebars_templates(XGDS_SAMPLE_TEMPLATE_LIST)
+            'templates': get_handlebars_templates(XGDS_SAMPLE_TEMPLATE_LIST, 'XGDS_SAMPLE_TEMPLATE_LIST')
             }
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))
