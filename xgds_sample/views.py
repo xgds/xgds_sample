@@ -53,7 +53,7 @@ def getSampleSearchPage(request):
     theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
     
     data = {'formset': theFormSet,
-            'templates': get_handlebars_templates(XGDS_SAMPLE_TEMPLATE_LIST)
+            'templates': get_handlebars_templates(XGDS_SAMPLE_TEMPLATE_LIST, 'XGDS_SAMPLE_TEMPLATE_LIST')
             }
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))
@@ -253,7 +253,7 @@ def printSampleLabels(request):
             size = SampleLabelSize.objects.get(name="small")
             pdfFile = generateMultiPDF(labels, size)
             # TEST THIS: need to read the pdfFile and get value
-            file = open(pdfFile, "r") 
+            file = open(pdfFile, "rb") 
             pdfContent = file.read()
             response = HttpResponse(pdfContent, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(pdfFile)
