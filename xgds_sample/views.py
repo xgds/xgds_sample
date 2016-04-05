@@ -39,6 +39,7 @@ from xgds_sample.labels import *
 from django.http import HttpResponse
 from StringIO import StringIO
 
+
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 
@@ -244,14 +245,13 @@ def createSampleLabels(request):
 
 def printSampleLabels(request):
     if request.method == 'POST': 
-        data = json.loads(request.body)
-        labelNums = [data[str(i)] for i in range(0, data['length'])]
-        labels = LABEL_MODEL.get().objects.filter(id__in=labelNums)
-        if labels:
+        labelNums = request.POST['label_checkbox']
+        labelsToPrint = [LABEL_MODEL.get().objects.get(number=labelNum) for labelNum in labelNums]
+        if labelsToPrint:
             size = SampleLabelSize.objects.get(name="small")
-            pdfFile = generateMultiPDF(labels, size)
+            pdfFile = generateMultiPDF(labelsToPrint, size)
             # TEST THIS: need to read the pdfFile and get value
-            file = open(pdfFile, "r") 
+            file = open(pdfFile, "rb") 
             pdfContent = file.read()
             response = HttpResponse(pdfContent, content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(pdfFile)
