@@ -21,7 +21,9 @@ XGDS_SAMPLE_SAMPLE_MODEL = 'xgds_sample.Sample'
 XGDS_SAMPLE_LABEL_MODEL = 'xgds_sample.Label'
 
 XGDS_SAMPLE_PDF_DIR = "xgds_sample/labels"
-XGDS_SAMPLE_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
+XGDS_CORE_TEMPLATE_DIRS = getOrCreateDict('XGDS_CORE_TEMPLATE_DIRS')
+XGDS_CORE_TEMPLATE_DIRS[XGDS_SAMPLE_SAMPLE_MODEL] = [os.path.join('xgds_sample', 'templates', 'handlebars')]
+
 XGDS_SAMPLE_HANDLEBARS_DIR = [os.path.join('xgds_sample', 'templates', 'handlebars')]
 
 XGDS_MAP_SERVER_JS_MAP = getOrCreateDict('XGDS_MAP_SERVER_JS_MAP')

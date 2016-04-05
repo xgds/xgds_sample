@@ -31,7 +31,8 @@ from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleType, Region, SampleLabelSize
-from xgds_map_server.views import get_handlebars_templates
+from xgds_core.views import get_handlebars_templates
+
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from django.views.static import serve
 from xgds_sample.labels import *
@@ -43,16 +44,17 @@ from StringIO import StringIO
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 
-
+XGDS_SAMPLE_TEMPLATE_LIST = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
+XGDS_SAMPLE_TEMPLATE_LIST = XGDS_SAMPLE_TEMPLATE_LIST + settings.XGDS_CORE_TEMPLATE_DIRS[settings.XGDS_SAMPLE_SAMPLE_MODEL]
+    
 @login_required
 def getSampleSearchPage(request):
     theForm = SpecializedForm(SearchForm, SAMPLE_MODEL.get())
     theFormSetMaker = formset_factory(theForm, extra=0)
     theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
-    fullTemplateList = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
-    fullTemplateList.append(settings.XGDS_SAMPLE_HANDLEBARS_DIR[0])
+    
     data = {'formset': theFormSet,
-            'templates': get_handlebars_templates(fullTemplateList)
+            'templates': get_handlebars_templates(XGDS_SAMPLE_TEMPLATE_LIST)
             }
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))
