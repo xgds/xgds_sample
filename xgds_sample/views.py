@@ -247,8 +247,8 @@ def createSampleLabels(request):
 
 def printSampleLabels(request):
     if request.method == 'POST': 
-        labelNums = request.POST['label_checkbox']
-        labelsToPrint = [LABEL_MODEL.get().objects.get(number=labelNum) for labelNum in labelNums]
+        labelIds = request.POST.getlist('label_checkbox')
+        labelsToPrint = [LABEL_MODEL.get().objects.get(id=int(labelId)) for labelId in labelIds]
         if labelsToPrint:
             size = SampleLabelSize.objects.get(name="small")
             pdfFile = generateMultiPDF(labelsToPrint, size)
