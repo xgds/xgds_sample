@@ -29,4 +29,17 @@ XGDS_SAMPLE_HANDLEBARS_DIR = [os.path.join('xgds_sample', 'templates', 'handleba
 XGDS_MAP_SERVER_JS_MAP = getOrCreateDict('XGDS_MAP_SERVER_JS_MAP')
 XGDS_MAP_SERVER_JS_MAP['Sample'] = {'ol': 'xgds_sample/js/olSampleMap.js',
                                     'model': XGDS_SAMPLE_SAMPLE_MODEL,
-                                    'hiddenColumns': []}
+                                    'columns': ['collection_time', 'timezone', 'name', 'sample_type', 'label', 'collector', 'resource', 'thumbnail_image_url'],
+                                    'columnTitles': ['Collected', 'Timezone', 'Name', 'Type', 'Label', 'Collector', 'Resource', ''] 
+                                    }
+
+XGDS_DATA_MASKED_FIELDS = getOrCreateDict('XGDS_DATA_MASKED_FIELDS')
+XGDS_DATA_MASKED_FIELDS['xgds_sample'] = {'AbstractSample': ['track_position',
+                                                             'user_position', 
+                                                             'creator',
+                                                             'modifier',
+                                                             'creation_time',
+                                                             'modification_time', 
+                                                          ],
+                                        }
+

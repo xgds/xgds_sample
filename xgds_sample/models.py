@@ -154,9 +154,9 @@ class AbstractSample(models.Model):
             else: 
                 result['collection_time'] = ''
             if self.collection_timezone:     
-                result['collection_timezone'] = str(self.collection_timezone)
+                result['timezone'] = str(self.collection_timezone)
             else: 
-                result['collection_timezone'] = ''
+                result['timezone'] = ''
             result.update(self.getPositionDict())
             del result['user_position']
             del result['track_position']
@@ -171,6 +171,9 @@ class AbstractSample(models.Model):
                 result['region'] = self.region.name
             del result['modifier']
             del result['creator']
+            
+            #TODO image support for samples
+            result['thumbnail_image_url'] = ''
             return result
         else: 
             return ''
