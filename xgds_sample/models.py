@@ -30,9 +30,7 @@ class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
     name = models.CharField(max_length=128)
     shortName = models.CharField(max_length=8)
-    siteFrameZone = models.CharField(max_length=32)
-    siteFrameName = models.CharField(max_length=32)
-    siteFrameTimeZone = models.CharField(max_length=64)
+    zone = models.ForeignKey('geocamUtil.SiteFrame', null=True)
     
     def __unicode__(self):
         return u'%s' % (self.name)

@@ -43,3 +43,6 @@ XGDS_DATA_MASKED_FIELDS['xgds_sample'] = {'AbstractSample': ['track_position',
                                                           ],
                                         }
 
+XGDS_DATA_EXPAND_RELATED = getOrCreateDict('XGDS_DATA_EXPAND_RELATED')
+XGDS_DATA_EXPAND_RELATED['xgds_sample'] = {'AbstractSample': [('region', 'zone', 'Zone')]}
+
