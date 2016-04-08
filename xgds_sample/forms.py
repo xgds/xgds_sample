@@ -29,12 +29,12 @@ from geocamTrack.utils import getClosestPosition
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 
 class SampleForm(ModelForm):
-    latitude = forms.FloatField(required=False, label="Latitude:")
-    longitude = forms.FloatField(required=False, label="Longitude:")
-    altitude = forms.FloatField(required=False, label="Altitude:")
+    latitude = forms.FloatField(required=False, label="Latitude")
+    longitude = forms.FloatField(required=False, label="Longitude")
+    altitude = forms.FloatField(required=False, label="Altitude")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
     name = forms.CharField(required=False, label="Name", help_text="Name autofills on save.")  # name may be constructed in the save method
-    number = forms.IntegerField(required=False, min_value=0)
+    number = forms.IntegerField(required=False, min_value=0, label="Station #")
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
         '%Y-%m-%d %H:%M:%S',

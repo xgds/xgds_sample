@@ -37,6 +37,12 @@ function showReplicateOptions() {
 	} else if ((selected == "Archive") || (selected == "Geology")) {
 		$("#id_replicate").val('');
 		$("#id_replicate").attr('disabled','disabled')
+	} else if (selected = "Special") {
+		$("#id_replicate option[value='6']").show();
+		$("#id_replicate option[value='7']").show();
+		$("#id_replicate option[value='8']").show();
+		$("#id_replicate option[value='9']").show();
+		$("#id_replicate option[value='10']").show();
 	}
 }
 

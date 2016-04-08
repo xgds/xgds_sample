@@ -26,6 +26,7 @@ from geocamUtil.models.AbstractEnum import AbstractEnumModel
 from geocamUtil.modelJson import modelToDict
 from geocamUtil.UserUtil import getUserName
 
+
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
     name = models.CharField(max_length=128)
