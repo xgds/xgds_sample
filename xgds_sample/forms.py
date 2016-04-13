@@ -35,6 +35,8 @@ class SampleForm(ModelForm):
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
     name = forms.CharField(required=False, label="Name", help_text="Name autofills on save.")  # name may be constructed in the save method
     number = forms.IntegerField(required=False, min_value=0, label="Station #")
+    collector = forms.CharField(required=False, label="Collector")
+    flight = forms.CharField(required=False, label="EVA")
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
         '%Y-%m-%d %H:%M:%S',
