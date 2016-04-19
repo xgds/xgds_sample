@@ -33,32 +33,33 @@ class SampleForm(ModelForm):
     longitude = forms.FloatField(required=False, label="Longitude")
     altitude = forms.FloatField(required=False, label="Altitude")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
-    name = forms.CharField(required=False, label="Name", help_text="Name autofills on save.")  # name may be constructed in the save method
+    name = forms.CharField(required=False, label="Sample Name", help_text="Name autofills on save.")  # name may be constructed in the save method
     number = forms.IntegerField(required=False, min_value=0, label="Station #")
     collector = forms.CharField(required=False, label="Collector")
     flight = forms.CharField(required=False, label="EVA")
+    resource = forms.CharField(required=False, widget=forms.HiddenInput())
+    flight = forms.CharField(required=False, widget=forms.HiddenInput())
+    latitude = forms.CharField(required=False, widget=forms.HiddenInput())
+    longitude = forms.CharField(required=False, widget=forms.HiddenInput())
+    altitude = forms.CharField(required=False, widget=forms.HiddenInput())
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
         '%Y-%m-%d %H:%M:%S',
         '%m/%d/%Y %H:%M'
     ]
-    collection_time = forms.DateTimeField(required=False, input_formats=date_formats)
+    collection_time = forms.DateTimeField(required=False, input_formats=date_formats, help_text="")
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
+    
     #IMPORTANT: do not add collection_time and timezone to the field order. It will error.
-    field_order = ['name',
-                   'sample_type', 
+    field_order = ['sample_type', 
                    'region', 
                    'number',
                    'replicate', 
                    'year', 
-                   'resource', 
                    'collector', 
-                   'flight', 
-                   'latitude', 
-                   'longitude', 
-                   'altitude', 
                    'marker_id',
-                   'description']
+                   'description',
+                   'name']
     
     
     # populate the event time with NOW if it is blank.
