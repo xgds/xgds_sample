@@ -20,11 +20,13 @@ from django.conf import settings
 from django import forms
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+
 from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
-
+import pydevd
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 
@@ -36,17 +38,13 @@ class SampleForm(ModelForm):
     name = forms.CharField(required=False, label="Sample Name", help_text="Name autofills on save.")  # name may be constructed in the save method
     number = forms.IntegerField(required=False, min_value=0, label="Station #")
     collector = forms.CharField(required=False, label="Collector")
-    flight = forms.CharField(required=False, label="EVA")
-    resource = forms.CharField(required=False, widget=forms.HiddenInput())
-    flight = forms.CharField(required=False, widget=forms.HiddenInput())
-    latitude = forms.CharField(required=False, widget=forms.HiddenInput())
-    longitude = forms.CharField(required=False, widget=forms.HiddenInput())
-    altitude = forms.CharField(required=False, widget=forms.HiddenInput())
+    
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
         '%Y-%m-%d %H:%M:%S',
         '%m/%d/%Y %H:%M'
     ]
+    
     collection_time = forms.DateTimeField(required=False, input_formats=date_formats, help_text="")
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
@@ -74,6 +72,18 @@ class SampleForm(ModelForm):
             localizedTime = tz.localize(naiveTime)
             utcTime = localizedTime.astimezone(pytz.utc)
             return utcTime
+    
+    
+    def clean_collector(self):
+        #collector is a input text field with autocomplete
+        try:
+            fullName = self.cleaned_data['collector']
+            splitName = fullName.split(' ')
+            firstAndLast = [x for x in splitName if x]
+            collector = User.objects.filter(first_name=firstAndLast[0]).filter(last_name=firstAndLast[1])[0] 
+        except: 
+            collector = None
+        return collector
     
     
     def clean(self):

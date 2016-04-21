@@ -49,3 +49,29 @@ function showReplicateOptions() {
 $("#id_sample_type").change(function() {
 	showReplicateOptions();
 });
+
+
+function initializeSampleEditForm(){
+	$('#id_resource').parent().parent().hide();
+	$('#id_latitude').parent().parent().hide();
+	$('#id_longitude').parent().parent().hide();
+	$('#id_altitude').parent().parent().hide();
+	$('#id_flight').parent().parent().hide();
+	$('#id_collection_time').parent().parent().hide();
+}
+
+initializeSampleEditForm();
+
+function toggleAdvancedInput() {
+	$('#id_resource').parent().parent().toggle();
+	$('#id_latitude').parent().parent().toggle();
+	$('#id_longitude').parent().parent().toggle();
+	$('#id_altitude').parent().parent().toggle();
+	$('#id_flight').parent().parent().toggle();
+	$('#id_collection_time').parent().parent().toggle();
+	if ($('#id_resource').is(":visible")) {
+		$('.toggleInputFields').html('Close out-of-sim fields');	
+	} else {
+		$('.toggleInputFields').html('Open out-of-sim fields');	
+	}
+}
