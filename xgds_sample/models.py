@@ -170,6 +170,7 @@ class AbstractSample(models.Model):
                 result['region'] = self.region.name
             del result['modifier']
             del result['creator']
+            result['pk'] = self.pk
             
             #TODO image support for samples
             result['thumbnail_image_url'] = ''
