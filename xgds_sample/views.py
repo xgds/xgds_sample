@@ -23,6 +23,7 @@ from django.forms.formsets import formset_factory
 from django.conf import settings
 from django.contrib import messages 
 from django.db.models import Max
+from django.contrib.auth.models import User
 
 import json
 import os
@@ -52,12 +53,18 @@ def getSampleSearchPage(request):
     theForm = SpecializedForm(SearchForm, SAMPLE_MODEL.get())
     theFormSetMaker = formset_factory(theForm, extra=0)
     theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
-    
     data = {'formset': theFormSet,
             'templates': get_handlebars_templates(XGDS_SAMPLE_TEMPLATE_LIST, 'XGDS_SAMPLE_TEMPLATE_LIST')
             }
     return render_to_response("xgds_sample/sampleSearch.html", data,
                               context_instance=RequestContext(request))
+
+
+# get all user names (string)
+def getUserNames():
+    allUsers = [user.first_name + ' ' + user.last_name  for user in User.objects.all()]
+    allUsers = [str(x) for x in allUsers if x.strip()]
+    return allUsers
 
 
 def deleteLabelAndSample(request, labelNum):
@@ -93,7 +100,8 @@ def getSampleViewPage(request, pk):
         # set custom field values with existing data.
         form = setSampleCustomFields(form, sample)
         return render_to_response('xgds_sample/sampleEdit.html',
-                                  RequestContext(request, {'form': form}))
+                                  RequestContext(request, {'form': form,
+                                                           'users': getUserNames()}))
     else:
         return render_to_response('xgds_sample/sampleView.html',
                                   RequestContext(request, {'sample': sample}))
@@ -111,6 +119,7 @@ def createSample(request, labelNum, label=None):
         label.save() 
     form = SampleForm(instance=sample)
     data = {'form': form,
+            'users': getUserNames()
             }
     return render_to_response('xgds_sample/sampleEdit.html',
                               RequestContext(request, data))
@@ -123,9 +132,10 @@ def setSampleCustomFields(form, sample):
     form.fields['longitude'].initial = positionDict['lon']
     if 'altitude' in positionDict:
         form.fields['altitude'].initial = positionDict['altitude']
-        
     if sample.collection_time:
         form.fields['collection_time'].initial = sample.collection_time
+    if sample.collector:
+        form.fields['collector'].initial = sample.collector.first_name + ' ' + sample.collector.last_name
     return form
 
 
@@ -162,8 +172,10 @@ def getSampleEditPage(request):
         form = SampleForm(instance=sample)
         # set custom field values with existing data.
         form = setSampleCustomFields(form, sample)
+        # get all user names (first last). Needed for autocompleting collector field.
         return render_to_response('xgds_sample/sampleEdit.html',
-                                  RequestContext(request, {'form': form}))                
+                                  RequestContext(request, {'form': form,
+                                                           'users': getUserNames()}))                
 
 
 @login_required 
@@ -171,6 +183,8 @@ def updateSampleRecord(request, labelNum):
     """ make changes to a sample based on form inputs and save,
     OR open the edit page
     """
+    # get all user names (first last). Needed for autocompleting collector field.
+    allUsers = getUserNames()
     try:
         label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
         sample = label.sample
@@ -178,6 +192,7 @@ def updateSampleRecord(request, labelNum):
         return createSample(request, labelNum, label)
     # if is updating the sample info from edit form
     if request.method == "POST":
+        # swap the user id 
         form = SampleForm(request.POST, instance=sample)
         if form.is_valid():
             form.save()
@@ -194,13 +209,15 @@ def updateSampleRecord(request, labelNum):
         else: 
             messages.error(request, 'The form is not valid')
             return render_to_response('xgds_sample/sampleEdit.html',
-                                      RequestContext(request, {'form': form}))
+                                      RequestContext(request, {'form': form,
+                                                               'users': allUsers}))
     # edit page opened via edit/<label number>
     elif request.method == "GET":
         form = SampleForm(instance=sample) 
         form = setSampleCustomFields(form, sample)
         return render_to_response('xgds_sample/sampleEdit.html',
-                                  RequestContext(request, {'form': form}))
+                                  RequestContext(request, {'form': form,
+                                                           'users': allUsers}))
     
     
 @login_required

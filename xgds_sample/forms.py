@@ -13,12 +13,13 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+
 import datetime
 import pytz
 
 from django.conf import settings
 from django import forms
-from django.forms import ModelForm
+from django.forms import ModelForm, CharField
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 
@@ -26,9 +27,13 @@ from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
-import pydevd
+
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
+
+class CollectorCharField(CharField):
+    def label_from_instance(self, obj):
+         return "TEST LABEL"
 
 class SampleForm(ModelForm):
     latitude = forms.FloatField(required=False, label="Latitude")
@@ -74,18 +79,6 @@ class SampleForm(ModelForm):
             return utcTime
     
     
-    def clean_collector(self):
-        #collector is a input text field with autocomplete
-        try:
-            fullName = self.cleaned_data['collector']
-            splitName = fullName.split(' ')
-            firstAndLast = [x for x in splitName if x]
-            collector = User.objects.filter(first_name=firstAndLast[0]).filter(last_name=firstAndLast[1])[0] 
-        except: 
-            collector = None
-        return collector
-    
-    
     def clean(self):
         """
         Checks that both lat and lon are entered (or both are empty)
@@ -122,6 +115,12 @@ class SampleForm(ModelForm):
                 instance.user_position.latitude = self.cleaned_data['latitude']
                 instance.user_position.longitude = self.cleaned_data['longitude']
                 instance.user_position.altitude = self.cleaned_data['altitude']
+        if ('collector' in self.changed_data):
+            fullName = self.cleaned_data['collector']
+            splitName = fullName.split(' ')
+            firstAndLast = [x for x in splitName if x.strip()]
+            collector = User.objects.filter(first_name=firstAndLast[0]).filter(last_name=firstAndLast[1])[0] 
+            instance.collector = collector
         # if fields changed, validate against the name
         if ('region' in self.changed_data) or ('year' in self.changed_data) or ('sample_type' in self.changed_data) \
             or ('number' in self.changed_data) or ('replicate' in self.changed_data):
@@ -153,4 +152,5 @@ class SampleForm(ModelForm):
                    'modification_time', 
                    'creator', 
                    'modifier', 
+                   'collector',
                    'label']
