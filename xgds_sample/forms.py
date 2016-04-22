@@ -54,11 +54,11 @@ class SampleForm(ModelForm):
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
     #IMPORTANT: do not add collection_time and timezone to the field order. It will error.
-    field_order = ['sample_type', 
-                   'region', 
+    field_order = ['region', 
+                   'year', 
+                   'sample_type', 
                    'number',
                    'replicate', 
-                   'year', 
                    'collector', 
                    'marker_id',
                    'description',
