@@ -45,3 +45,8 @@ li.success {
 #edit_sample_button {
 	float: right;
 }
+
+.toggleInputFields {
+	float: right;
+	border-bottom: 10px;
+}

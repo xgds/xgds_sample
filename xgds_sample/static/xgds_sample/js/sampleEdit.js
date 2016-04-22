@@ -49,3 +49,63 @@ function showReplicateOptions() {
 $("#id_sample_type").change(function() {
 	showReplicateOptions();
 });
+
+
+function initializeSampleEditForm(){
+	$('#id_resource').parent().parent().hide();
+	$('#id_latitude').parent().parent().hide();
+	$('#id_longitude').parent().parent().hide();
+	$('#id_altitude').parent().parent().hide();
+	$('#id_flight').parent().parent().hide();
+	$('#id_collection_time').parent().parent().hide();
+}
+
+function toggleAdvancedInput() {
+	$('#id_resource').parent().parent().toggle();
+	$('#id_latitude').parent().parent().toggle();
+	$('#id_longitude').parent().parent().toggle();
+	$('#id_altitude').parent().parent().toggle();
+	$('#id_flight').parent().parent().toggle();
+	$('#id_collection_time').parent().parent().toggle();
+	if ($('#id_resource').is(":visible")) {
+		$('.toggleInputFields').html('Close out-of-sim fields');	
+	} else {
+		$('.toggleInputFields').html('Open out-of-sim fields');	
+	}
+}
+
+// typeahead autocomplete for input fields
+
+var substringMatcher = function(strs) {
+	  return function findMatches(q, cb) {
+	    var matches, substringRegex;
+
+	    // an array that will be populated with substring matches
+	    matches = [];
+
+	    // regex used to determine if a string contains the substring `q`
+	    substrRegex = new RegExp(q, 'i');
+
+	    // iterate through the pool of strings and for any string that
+	    // contains the substring `q`, add it to the `matches` array
+	    $.each(strs, function(i, str) {
+	      if (substrRegex.test(str)) {
+	        matches.push(str);
+	      }
+	    });
+
+	    cb(matches);
+	  };
+	};
+
+	
+$('#id_collector').typeahead({
+	  hint: true,
+	  highlight: true,
+	  minLength: 1
+	},
+	{
+	  name: 'collector',
+	  source: substringMatcher(collectors)
+	});
+

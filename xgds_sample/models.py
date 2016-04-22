@@ -20,11 +20,11 @@ from django.utils import timezone
 
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
 from geocamUtil.modelJson import modelToDict
 from geocamUtil.UserUtil import getUserName
+from django.contrib.auth.models import User
 
 
 class Region(models.Model):

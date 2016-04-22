@@ -13,13 +13,16 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+
 import datetime
 import pytz
 
 from django.conf import settings
 from django import forms
-from django.forms import ModelForm
+from django.forms import ModelForm, CharField
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+
 from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
@@ -27,6 +30,10 @@ from geocamTrack.utils import getClosestPosition
 
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
+
+class CollectorCharField(CharField):
+    def label_from_instance(self, obj):
+         return "TEST LABEL"
 
 class SampleForm(ModelForm):
     latitude = forms.FloatField(required=False, label="Latitude")
@@ -36,17 +43,13 @@ class SampleForm(ModelForm):
     name = forms.CharField(required=False, label="Sample Name", help_text="Name autofills on save.")  # name may be constructed in the save method
     number = forms.IntegerField(required=False, min_value=0, label="Station #")
     collector = forms.CharField(required=False, label="Collector")
-    flight = forms.CharField(required=False, label="EVA")
-    resource = forms.CharField(required=False, widget=forms.HiddenInput())
-    flight = forms.CharField(required=False, widget=forms.HiddenInput())
-    latitude = forms.CharField(required=False, widget=forms.HiddenInput())
-    longitude = forms.CharField(required=False, widget=forms.HiddenInput())
-    altitude = forms.CharField(required=False, widget=forms.HiddenInput())
+    
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
         '%Y-%m-%d %H:%M:%S',
         '%m/%d/%Y %H:%M'
     ]
+    
     collection_time = forms.DateTimeField(required=False, input_formats=date_formats, help_text="")
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
@@ -112,6 +115,12 @@ class SampleForm(ModelForm):
                 instance.user_position.latitude = self.cleaned_data['latitude']
                 instance.user_position.longitude = self.cleaned_data['longitude']
                 instance.user_position.altitude = self.cleaned_data['altitude']
+        if ('collector' in self.changed_data):
+            fullName = self.cleaned_data['collector']
+            splitName = fullName.split(' ')
+            firstAndLast = [x for x in splitName if x.strip()]
+            collector = User.objects.filter(first_name=firstAndLast[0]).filter(last_name=firstAndLast[1])[0] 
+            instance.collector = collector
         # if fields changed, validate against the name
         if ('region' in self.changed_data) or ('year' in self.changed_data) or ('sample_type' in self.changed_data) \
             or ('number' in self.changed_data) or ('replicate' in self.changed_data):
@@ -143,4 +152,5 @@ class SampleForm(ModelForm):
                    'modification_time', 
                    'creator', 
                    'modifier', 
+                   'collector',
                    'label']
