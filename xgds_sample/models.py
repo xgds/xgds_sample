@@ -145,38 +145,41 @@ class AbstractSample(models.Model):
     
     def toMapDict(self):
         result = modelToDict(self)
-        if result: 
-            if self.collector:
-                result['collector'] = getUserName(self.collector)
-            if self.collection_time:     
-                result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M")
-            else: 
-                result['collection_time'] = ''
-            if self.collection_timezone:     
-                result['timezone'] = str(self.collection_timezone)
-            else: 
-                result['timezone'] = ''
-            result.update(self.getPositionDict())
-            del result['user_position']
-            del result['track_position']
-            if result['resource']:
-                result['resource'] = self.resource.name
-            if self.label:
-                result['label'] = int(self.label.number)
-            
-            if self.sample_type:
-                result['sample_type'] = self.sample_type.display_name
-            if self.region:
-                result['region'] = self.region.name
-            del result['modifier']
-            del result['creator']
-            result['pk'] = self.pk
-            
-            #TODO image support for samples
-            result['thumbnail_image_url'] = ''
-            return result
+        result['pk'] = int(self.pk)
+        result['app_label'] = self._meta.app_label
+        t = type(self)
+        if t._deferred:
+            t = t.__base__
+        result['model_type'] = t._meta.object_name
+
+        if self.collector:
+            result['collector'] = getUserName(self.collector)
+        if self.collection_time:     
+            result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M")
         else: 
-            return ''
+            result['collection_time'] = ''
+        if self.collection_timezone:     
+            result['timezone'] = str(self.collection_timezone)
+        else: 
+            result['timezone'] = ''
+        result.update(self.getPositionDict())
+        del result['user_position']
+        del result['track_position']
+        if result['resource']:
+            result['resource'] = self.resource.name
+        if self.label:
+            result['label'] = int(self.label.number)
+        
+        if self.sample_type:
+            result['sample_type'] = self.sample_type.display_name
+        if self.region:
+            result['region'] = self.region.name
+        del result['modifier']
+        del result['creator']
+        
+        #TODO image support for samples
+        result['thumbnail_image_url'] = ''
+        return result
     
     class Meta:
         abstract = True

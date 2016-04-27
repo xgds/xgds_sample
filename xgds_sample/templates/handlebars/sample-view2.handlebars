@@ -5,23 +5,19 @@
 			<td>{{name}}</td>
 		</tr>
 		<tr>
-			<th><label for="id_type">Type:</label></th>
-			<td>{{sample_type}}</td>
-		</tr>
-		<tr>
 			<th><label for="id_region">Region:</label></th>
 			<td>{{region}}</td>
 		</tr>
 		<tr>
-			<th><label for="id_resource">Resource:</label></th>
-			<td>{{resource}}</td>
+			<th><label for="id_year">Year:</label></th>
+			<td> {{year}}</td>
 		</tr>
 		<tr>
-			<th><label for="id_collector">Collector:</label></th>
-			<td>{{collector}}</td>
+			<th><label for="id_type">Sample Type:</label></th>
+			<td>{{sample_type}}</td>
 		</tr>
 		<tr>
-			<th><label for="id_number">Number:</label></th>
+			<th><label for="id_number">Station #:</label></th>
 			<td>{{number}}</td>
 		</tr>
 		<tr>
@@ -29,8 +25,24 @@
 			<td>{{replicate}}</td>
 		</tr>	
 		<tr>
-			<th><label for="id_year">Year:</label></th>
-			<td> {{year}}</td>
+			<th><label for="id_collector">Collector:</label></th>
+			<td>{{collector}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_collection_time">Collection time:</label></th>
+			<td>{{prettyTime collection_time collection_timezone}}</td>
+		</tr>
+		<tr>
+			<th><label for="marker_id">Marker ID:</label></th>
+			<td>{{marker_id}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_description">Description:</label></th>
+			<td>{{description}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_resource">Resource:</label></th>
+			<td>{{resource}}</td>
 		</tr>
 		<tr>
 			<th><label for="id_flight">EVA:</label></th>
@@ -47,13 +59,5 @@
 		<tr>
 			<th><label for="id_altitude">Altitude:</label></th>
 			<td>{{alt}}</td>
-		</tr>
-		<tr>
-			<th><label for="id_collection_time">Collection time:</label></th>
-			<td>{{prettyTime collection_time collection_timezone}}</td>
-		</tr>
-		<tr>
-			<th><label for="id_description">Description:</label></th>
-			<td>{{description}}</td>
 		</tr>
 	</table>
