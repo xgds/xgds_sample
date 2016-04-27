@@ -57,7 +57,6 @@ function initializeSampleEditForm(){
 	$('#id_longitude').parent().parent().hide();
 	$('#id_altitude').parent().parent().hide();
 	$('#id_flight').parent().parent().hide();
-	$('#id_collection_time').parent().parent().hide();
 }
 
 function toggleAdvancedInput() {
@@ -66,7 +65,6 @@ function toggleAdvancedInput() {
 	$('#id_longitude').parent().parent().toggle();
 	$('#id_altitude').parent().parent().toggle();
 	$('#id_flight').parent().parent().toggle();
-	$('#id_collection_time').parent().parent().toggle();
 	if ($('#id_resource').is(":visible")) {
 		$('.toggleInputFields').html('Close out-of-sim fields');	
 	} else {

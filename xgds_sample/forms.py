@@ -17,6 +17,7 @@
 import datetime
 import pytz
 
+from django.utils import timezone
 from django.conf import settings
 from django import forms
 from django.forms import ModelForm, CharField
@@ -50,7 +51,7 @@ class SampleForm(ModelForm):
         '%m/%d/%Y %H:%M'
     ]
     
-    collection_time = forms.DateTimeField(required=False, input_formats=date_formats, help_text="")
+    collection_time = forms.DateTimeField(required=True, input_formats=date_formats, help_text="", initial=timezone.now)
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
     #IMPORTANT: do not add collection_time and timezone to the field order. It will error.
@@ -60,10 +61,16 @@ class SampleForm(ModelForm):
                    'number',
                    'replicate', 
                    'collector', 
+                   'collection_time',
                    'marker_id',
                    'description',
                    'name']
     
+    def clean_collection_timezone(self): 
+        try:
+            return self.cleaned_data['collection_timezone']
+        except:
+            return settings.TIME_ZONE
     
     # populate the event time with NOW if it is blank.
     def clean_collection_time(self): 
@@ -71,7 +78,7 @@ class SampleForm(ModelForm):
         if not ctime:
             return None
         else:
-            ctimezone = self.cleaned_data['collection_timezone']
+            ctimezone = self.clean_collection_timezone()
             tz = pytz.timezone(ctimezone)
             naiveTime = ctime.replace(tzinfo = None)
             localizedTime = tz.localize(naiveTime)
