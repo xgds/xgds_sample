@@ -1,34 +1,47 @@
-<div class="item w2 lockAspect" id="item_{{ name }}" data-isStamped="false">  
-	<div id="sample_view">
-		<i class="icon-cancel-circled"></i>
-		<i class="icon-lock-open pinDiv"></i>
-		<div class="small default btn icon-right entypo icon-window" id="new-window-btn"><a href="#" id="new-window-target" target="_blank">New Window</a></div>
-		
-		<button class="small info btn prev-button"><i class="icon-left-dir"></i></button>
-		<div class="sample-name" ><strong> {{ name }} </strong></div>
-		<button class="small info btn next-button"><i class="icon-right-dir"></i></button>
-		
-		<form action="{{ updateSampleInfo }}" id="sample-info-form" method="post">
-		<table>
-			<tr>
-				<th><label for="id_sample_type">Type:</label></th>
-				<td><select id="id_sample_type" name="type">
-						<option value="" selected="selected">---------</option> 
-						{% for type in types_list %}
-						<option value="{{ type.value }}">{{ type.display_name }}</option>
-						{% endfor %}
-				</select></td>
-			</tr>
-			<tr>
-				<th><label for="id_region">Region:</label></th>
-				<td><select id="id_region" name="region">
-						<option value="" selected="selected">---------</option> 
-						{% for region in regions_list %}
-						<option value="{{ region.shortName }}">{{ region.name }}</option>
-						{% endfor %}
-				</select></td>
-			</tr>
-			</table>
-		</form>
-		<input class="small info btn" type="submit" id="updateSampleInfoSubmit" value="Save" />	
-</div>
+<div> <strong>Sample</strong> <a id="edit_sample_button" href="/xgds_sample/edit/{{pk}}" class="mybutton small" target="_blank">Edit</a> </div>
+	<table>
+		<tr>
+			<th><label for="id_name">Name:</label></th>
+			<td>{{name}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_name">Label #:</label></th>
+			<td>{{label}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_region">Region:</label></th>
+			<td>{{region}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_type">Sample Type:</label></th>
+			<td>{{sample_type}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_collector">Collector:</label></th>
+			<td>{{collector}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_collection_time">Collection time:</label></th>
+			<td>{{prettyTime collection_time collection_timezone}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_description">Description:</label></th>
+			<td>{{description}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_resource">Resource:</label></th>
+			<td>{{resource}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_latitude">Latitude:</label></th>
+			<td>{{lat}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_longitude">Longitude:</label></th>
+			<td>{{lon}}</td>
+		</tr>
+		<tr>
+			<th><label for="id_altitude">Altitude:</label></th>
+			<td>{{alt}}</td>
+		</tr>
+	</table>
