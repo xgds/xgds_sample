@@ -82,6 +82,15 @@ class AbstractSample(models.Model):
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
     
+    @classmethod
+    def getFieldOrder(cls):
+        return ['region', 
+                'sample_type', 
+                'collector', 
+                'collection_time',
+                'description',
+                'name']
+
     @property
     def view_url(self):
         return reverse('xgds_sample_view', kwargs={'pk':self.pk})
@@ -176,6 +185,7 @@ class AbstractSample(models.Model):
             result['region'] = self.region.name
         del result['modifier']
         del result['creator']
+        
         
         #TODO image support for samples
         result['thumbnail_image_url'] = ''

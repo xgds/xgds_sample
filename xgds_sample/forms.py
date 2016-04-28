@@ -31,10 +31,11 @@ from geocamTrack.utils import getClosestPosition
 
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
+SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 
 class CollectorCharField(CharField):
     def label_from_instance(self, obj):
-         return "TEST LABEL"
+        return "TEST LABEL"
 
 class SampleForm(ModelForm):
     latitude = forms.FloatField(required=False, label="Latitude")
@@ -54,17 +55,8 @@ class SampleForm(ModelForm):
     collection_time = forms.DateTimeField(required=True, input_formats=date_formats, help_text="", initial=timezone.now)
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
-    #IMPORTANT: do not add collection_time and timezone to the field order. It will error.
-    field_order = ['region', 
-                   'year', 
-                   'sample_type', 
-                   'number',
-                   'replicate', 
-                   'collector', 
-                   'collection_time',
-                   'marker_id',
-                   'description',
-                   'name']
+    field_order = SAMPLE_MODEL.get().getFieldOrder()
+        
     
     def clean_collection_timezone(self): 
         try:

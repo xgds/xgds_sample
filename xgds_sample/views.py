@@ -48,18 +48,6 @@ LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 XGDS_SAMPLE_TEMPLATE_LIST = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
 XGDS_SAMPLE_TEMPLATE_LIST = XGDS_SAMPLE_TEMPLATE_LIST + settings.XGDS_CORE_TEMPLATE_DIRS[settings.XGDS_SAMPLE_SAMPLE_MODEL]
     
-@login_required
-def getSampleSearchPage(request):
-    theForm = SpecializedForm(SearchForm, SAMPLE_MODEL.get())
-    theFormSetMaker = formset_factory(theForm, extra=0)
-    theFormSet = theFormSetMaker(initial=[{'modelClass': SAMPLE_MODEL.get()}])
-    data = {'formset': theFormSet,
-            'templates': get_handlebars_templates(XGDS_SAMPLE_TEMPLATE_LIST, 'XGDS_SAMPLE_TEMPLATE_LIST')
-            }
-    return render_to_response("xgds_sample/sampleSearch.html", data,
-                              context_instance=RequestContext(request))
-
-
 # get all user names (string)
 def getUserNames():
     allUsers = [user.first_name + ' ' + user.last_name  for user in User.objects.all()]
@@ -104,7 +92,8 @@ def getSampleViewPage(request, pk):
                                                            'users': getUserNames()}))
     else:
         return render_to_response('xgds_sample/sampleView.html',
-                                  RequestContext(request, {'sample': sample}))
+                                  RequestContext(request, {'sample': sample,
+                                                           'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS')}))
 
 
 def createSample(request, labelNum, label=None):
@@ -175,7 +164,8 @@ def getSampleEditPage(request):
         # get all user names (first last). Needed for autocompleting collector field.
         return render_to_response('xgds_sample/sampleEdit.html',
                                   RequestContext(request, {'form': form,
-                                                           'users': getUserNames()}))                
+                                                           'users': getUserNames(),
+                                                           'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS')}))                
 
 
 @login_required 
