@@ -28,6 +28,7 @@ from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
+from __builtin__ import False
 
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
@@ -120,13 +121,19 @@ class SampleForm(ModelForm):
             firstAndLast = [x for x in splitName if x.strip()]
             collector = User.objects.filter(first_name=firstAndLast[0]).filter(last_name=firstAndLast[1])[0] 
             instance.collector = collector
+        
         # if fields changed, validate against the name
-        if ('region' in self.changed_data) or ('year' in self.changed_data) or ('sample_type' in self.changed_data) \
-            or ('number' in self.changed_data) or ('replicate' in self.changed_data):
+        needsNameRebuild = False
+        for field in SAMPLE_MODEL.get().getFieldsForName():
+            if field in self.changed_data:
+                needsNameRebuild = True
+                break
+        if needsNameRebuild:
             builtName = instance.buildName()
             if instance.name != builtName:
                 instance.name = builtName 
                 self.errors['warning'] = "Name has been updated to %s." % builtName
+
         # if name changed, validate against the fields.
         if 'name' in self.changed_data:
             builtName = instance.buildName()
