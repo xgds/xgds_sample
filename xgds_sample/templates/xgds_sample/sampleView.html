@@ -1,5 +1,6 @@
 {% extends 'dashboard_base.html' %}
 {% load tz %}
+{% load userName %}
 {% load json_dumps %}
 {% block sitemenu-content-secondary %}
 	{% include "sample_subnav.html" %}
@@ -73,7 +74,7 @@
 		</tr>
 		<tr>
 			<th><label for="id_collector">Collector:</label></th>
-			<td>{{ sample.collector }}</td>
+			<td>{% userName sample.collector %}</td>
 		</tr>
 		<tr>
 			<th><label for="id_number">Number:</label></th>
