@@ -160,7 +160,8 @@ def getSampleEditPage(request):
                 return createSample(request, labelNum, label)
         form = SampleForm(instance=sample)
         # set custom field values with existing data.
-        form = setSampleCustomFields(form, sample)
+        # done in form now
+#         form = setSampleCustomFields(form, sample)
         # get all user names (first last). Needed for autocompleting collector field.
         return render_to_response('xgds_sample/sampleEdit.html',
                                   RequestContext(request, {'form': form,
