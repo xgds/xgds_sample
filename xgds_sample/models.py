@@ -112,6 +112,12 @@ class AbstractSample(models.Model):
         
         return t._meta.object_name
     
+    @classmethod
+    def getFieldsForName(cls):
+        #TODO return a list of fields that will be used to build the name, 
+        # to see if they have changed and the name needs updating.
+        return []
+    
     def buildName(self):
         #TODO implement for your model if you want a custom name
         pass
