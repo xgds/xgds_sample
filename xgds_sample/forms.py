@@ -57,7 +57,18 @@ class SampleForm(ModelForm):
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
     field_order = SAMPLE_MODEL.get().getFieldOrder()
-        
+    
+    def __init__(self, *args, **kwargs):
+        super(SampleForm, self).__init__(*args, **kwargs)
+        if self.instance:
+            if self.instance.collector:
+                self.fields['collector'].initial = self.instance.collector.first_name + ' ' + self.instance.collector.last_name
+
+            positionDict = self.instance.getPositionDict()
+            self.fields['latitude'].initial = positionDict['lat']
+            self.fields['longitude'].initial = positionDict['lon']
+            if 'altitude' in positionDict:
+                self.fields['altitude'].initial = positionDict['altitude']
     
     def clean_collection_timezone(self): 
         try:
