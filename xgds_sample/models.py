@@ -109,7 +109,6 @@ class AbstractSample(models.Model):
         t = type(self)
         if t._deferred:
             t = t.__base__
-        
         return t._meta.object_name
     
     @classmethod
