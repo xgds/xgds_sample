@@ -21,8 +21,7 @@ from django.views.generic.base import TemplateView
 from xgds_sample import views
 
 
-urlpatterns = [url(r'^search/', views.getSampleSearchPage, {}, 'xgds_sample_search'),
-               url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_labels'),
+urlpatterns = [url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_labels'),
                url(r'label/sample/(?P<labelNum>[\d]+)$', views.viewSampleByLabel, {}, 'xgds_sample_search_view'),
                url(r'sample/(?P<pk>[\d]+)$', views.getSampleViewPage, {}, 'xgds_sample_view'),
                url(r'createSample/(?P<labelNum>[\d]+)$', views.createSample, {}, 'xgds_sample_create'),

@@ -17,6 +17,7 @@
 import datetime
 import pytz
 
+from django.utils import timezone
 from django.conf import settings
 from django import forms
 from django.forms import ModelForm, CharField
@@ -27,13 +28,15 @@ from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
+from __builtin__ import False
 
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
+SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 
 class CollectorCharField(CharField):
     def label_from_instance(self, obj):
-         return "TEST LABEL"
+        return "TEST LABEL"
 
 class SampleForm(ModelForm):
     latitude = forms.FloatField(required=False, label="Latitude")
@@ -50,20 +53,28 @@ class SampleForm(ModelForm):
         '%m/%d/%Y %H:%M'
     ]
     
-    collection_time = forms.DateTimeField(required=False, input_formats=date_formats, help_text="")
+    collection_time = forms.DateTimeField(required=True, input_formats=date_formats, help_text="", initial=timezone.now)
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
-    #IMPORTANT: do not add collection_time and timezone to the field order. It will error.
-    field_order = ['region', 
-                   'year', 
-                   'sample_type', 
-                   'number',
-                   'replicate', 
-                   'collector', 
-                   'marker_id',
-                   'description',
-                   'name']
+    field_order = SAMPLE_MODEL.get().getFieldOrder()
     
+    def __init__(self, *args, **kwargs):
+        super(SampleForm, self).__init__(*args, **kwargs)
+        if self.instance:
+            if self.instance.collector:
+                self.fields['collector'].initial = self.instance.collector.first_name + ' ' + self.instance.collector.last_name
+
+            positionDict = self.instance.getPositionDict()
+            self.fields['latitude'].initial = positionDict['lat']
+            self.fields['longitude'].initial = positionDict['lon']
+            if 'altitude' in positionDict:
+                self.fields['altitude'].initial = positionDict['altitude']
+    
+    def clean_collection_timezone(self): 
+        try:
+            return self.cleaned_data['collection_timezone']
+        except:
+            return settings.TIME_ZONE
     
     # populate the event time with NOW if it is blank.
     def clean_collection_time(self): 
@@ -71,7 +82,7 @@ class SampleForm(ModelForm):
         if not ctime:
             return None
         else:
-            ctimezone = self.cleaned_data['collection_timezone']
+            ctimezone = self.clean_collection_timezone()
             tz = pytz.timezone(ctimezone)
             naiveTime = ctime.replace(tzinfo = None)
             localizedTime = tz.localize(naiveTime)
@@ -121,13 +132,19 @@ class SampleForm(ModelForm):
             firstAndLast = [x for x in splitName if x.strip()]
             collector = User.objects.filter(first_name=firstAndLast[0]).filter(last_name=firstAndLast[1])[0] 
             instance.collector = collector
+        
         # if fields changed, validate against the name
-        if ('region' in self.changed_data) or ('year' in self.changed_data) or ('sample_type' in self.changed_data) \
-            or ('number' in self.changed_data) or ('replicate' in self.changed_data):
+        needsNameRebuild = False
+        for field in SAMPLE_MODEL.get().getFieldsForName():
+            if field in self.changed_data:
+                needsNameRebuild = True
+                break
+        if needsNameRebuild:
             builtName = instance.buildName()
             if instance.name != builtName:
                 instance.name = builtName 
                 self.errors['warning'] = "Name has been updated to %s." % builtName
+
         # if name changed, validate against the fields.
         if 'name' in self.changed_data:
             builtName = instance.buildName()

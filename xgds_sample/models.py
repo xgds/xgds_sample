@@ -82,6 +82,15 @@ class AbstractSample(models.Model):
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
     
+    @classmethod
+    def getFieldOrder(cls):
+        return ['region', 
+                'sample_type', 
+                'collector', 
+                'collection_time',
+                'description',
+                'name']
+
     @property
     def view_url(self):
         return reverse('xgds_sample_view', kwargs={'pk':self.pk})
@@ -100,8 +109,13 @@ class AbstractSample(models.Model):
         t = type(self)
         if t._deferred:
             t = t.__base__
-        
         return t._meta.object_name
+    
+    @classmethod
+    def getFieldsForName(cls):
+        #TODO return a list of fields that will be used to build the name, 
+        # to see if they have changed and the name needs updating.
+        return []
     
     def buildName(self):
         #TODO implement for your model if you want a custom name
@@ -145,38 +159,42 @@ class AbstractSample(models.Model):
     
     def toMapDict(self):
         result = modelToDict(self)
-        if result: 
-            if self.collector:
-                result['collector'] = getUserName(self.collector)
-            if self.collection_time:     
-                result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M")
-            else: 
-                result['collection_time'] = ''
-            if self.collection_timezone:     
-                result['timezone'] = str(self.collection_timezone)
-            else: 
-                result['timezone'] = ''
-            result.update(self.getPositionDict())
-            del result['user_position']
-            del result['track_position']
-            if result['resource']:
-                result['resource'] = self.resource.name
-            if self.label:
-                result['label'] = int(self.label.number)
-            
-            if self.sample_type:
-                result['sample_type'] = self.sample_type.display_name
-            if self.region:
-                result['region'] = self.region.name
-            del result['modifier']
-            del result['creator']
-            result['pk'] = self.pk
-            
-            #TODO image support for samples
-            result['thumbnail_image_url'] = ''
-            return result
+        result['pk'] = int(self.pk)
+        result['app_label'] = self._meta.app_label
+        t = type(self)
+        if t._deferred:
+            t = t.__base__
+        result['model_type'] = t._meta.object_name
+
+        if self.collector:
+            result['collector'] = getUserName(self.collector)
+        if self.collection_time:     
+            result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M")
         else: 
-            return ''
+            result['collection_time'] = ''
+        if self.collection_timezone:     
+            result['timezone'] = str(self.collection_timezone)
+        else: 
+            result['timezone'] = ''
+        result.update(self.getPositionDict())
+        del result['user_position']
+        del result['track_position']
+        if result['resource']:
+            result['resource'] = self.resource.name
+        if self.label:
+            result['label'] = int(self.label.number)
+        
+        if self.sample_type:
+            result['sample_type'] = self.sample_type.display_name
+        if self.region:
+            result['region'] = self.region.name
+        del result['modifier']
+        del result['creator']
+        
+        
+        #TODO image support for samples
+        result['thumbnail_image_url'] = ''
+        return result
     
     class Meta:
         abstract = True
