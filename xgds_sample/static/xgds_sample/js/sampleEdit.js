@@ -18,7 +18,7 @@
 /*
  * Triplicates Legend:
 	Biology = A, B, C
-	Chemistry = D, E
+	ORG = D, E
 	Geology 
 	Archive
  */
@@ -31,7 +31,7 @@ function showReplicateOptions() {
 		$("#id_replicate option[value='1']").show();
 		$("#id_replicate option[value='2']").show();
 		$("#id_replicate option[value='3']").show();
-	} else if (selected == "Chemistry") {
+	} else if (selected == "ORG") {
 		$("#id_replicate option[value='4']").show();
 		$("#id_replicate option[value='5']").show();
 	} else if ((selected == "Archive") || (selected == "Geology")) {
