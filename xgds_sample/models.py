@@ -158,6 +158,8 @@ class AbstractSample(models.Model):
         return result
     
     def toMapDict(self):
+        if not self.collection_time and not self.name:
+            return None
         result = modelToDict(self)
         result['pk'] = int(self.pk)
         result['app_label'] = self._meta.app_label
