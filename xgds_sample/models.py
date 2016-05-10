@@ -93,7 +93,9 @@ class AbstractSample(models.Model):
 
     @property
     def view_url(self):
-        return reverse('xgds_sample_view', kwargs={'pk':self.pk})
+        return reverse('search_map_single_object', kwargs={'modelPK':self.pk,
+                                                           'modelName': 'Sample'})
+#         return reverse('xgds_sample_view', kwargs={'pk':self.pk})
     
     @property
     def thumbnail_url(self):
@@ -163,6 +165,7 @@ class AbstractSample(models.Model):
         result = modelToDict(self)
         result['pk'] = int(self.pk)
         result['app_label'] = self._meta.app_label
+        
         t = type(self)
         if t._deferred:
             t = t.__base__
