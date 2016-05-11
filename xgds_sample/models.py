@@ -94,8 +94,7 @@ class AbstractSample(models.Model):
     @property
     def view_url(self):
         return reverse('search_map_single_object', kwargs={'modelPK':self.pk,
-                                                           'modelName': 'Sample'})
-#         return reverse('xgds_sample_view', kwargs={'pk':self.pk})
+                                                           'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY})
     
     @property
     def thumbnail_url(self):

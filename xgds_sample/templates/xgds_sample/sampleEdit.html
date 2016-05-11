@@ -43,6 +43,8 @@ xgds_sample.initializeSampleEditForm();
 // initialize the notes when the window is ready
 $(document).ready(function() {
 	{% if form.instance %}
+	var thedata = [{{form.instance.toMapDict|json_dumps|safe}}];
+		console.log(thedata);
 		showOnMap([{{form.instance.toMapDict|json_dumps|safe}}]);
 	{% endif %}
 	
@@ -98,7 +100,7 @@ $(document).ready(function() {
 		<a class="toggleInputFields" onclick="xgds_sample.toggleAdvancedInput()"> Open out-of-sim fields </a>
 		<div id="sample-edit-button-group">
 			<a href="{% url 'xgds_sample_delete_label' form.instance.label.number %}" onclick="return confirm('Are you sure you want to permanently delete this sample and label?')"class="mybutton small">Delete</a>
-			<a href="{% url 'xgds_sample_view' form.instance.pk %}" class="mybutton small">Cancel</a>
+			<a href="{% url 'search_map_single_object' settings.XGDS_SAMPLE_SAMPLE_KEY form.instance.pk %}" class="mybutton small">Cancel</a>
 			<input class="mybutton small" id="sample-info-submit" type="submit" value="Save"/>
 		</div>
 	</form>

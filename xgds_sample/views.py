@@ -13,9 +13,8 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
-
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response,  get_object_or_404
+from django.shortcuts import render_to_response,  get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseBadRequest, HttpResponse
 from django.template import RequestContext
@@ -68,32 +67,47 @@ def deleteLabelAndSample(request, labelNum):
     return render_to_response('xgds_sample/recordSample.html',
                               RequestContext(request, {}))
     
-    
+
+@login_required 
+def editSample(request, samplePK, form=None):
+    if not form:
+        sample = SAMPLE_MODEL.get().objects.get(pk=samplePK)
+        form = SampleForm(instance=sample)
+    return render_to_response('xgds_sample/sampleEdit.html',
+                              RequestContext(request, {'form': form,
+                                                       'users': getUserNames(),
+                                                       'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
+                                                       'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS')})
+                              )            
+
+
 @login_required 
 def viewSampleByLabel(request, labelNum):
     try:
         label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
-        data = {'sample': label.sample} 
-        return render_to_response('xgds_sample/sampleView.html',
-                              RequestContext(request, data))
+        if create:
+            return editSample(request, label.sample.pk)
+        else:
+            return redirect(reverse('search_map_single_object', kwargs={'modelPK':label.sample.pk,
+                                                                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY}))   
     except:
         return createSample(request, labelNum)
 
 
-@login_required 
-def getSampleViewPage(request, pk):
-    sample = get_object_or_404(SAMPLE_MODEL.get(), pk=pk)
-    if not sample.sample_type:
-        form = SampleForm(instance=sample)
-        # set custom field values with existing data.
-        form = setSampleCustomFields(form, sample)
-        return render_to_response('xgds_sample/sampleEdit.html',
-                                  RequestContext(request, {'form': form,
-                                                           'users': getUserNames()}))
-    else:
-        return render_to_response('xgds_sample/sampleView.html',
-                                  RequestContext(request, {'sample': sample,
-                                                           'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS')}))
+#@login_required 
+# def getSampleViewPage(request, pk):
+#     sample = get_object_or_404(SAMPLE_MODEL.get(), pk=pk)
+#     if not sample.sample_type:
+#         form = SampleForm(instance=sample)
+#         # set custom field values with existing data.
+#         form = setSampleCustomFields(form, sample)
+#         return render_to_response('xgds_sample/sampleEdit.html',
+#                                   RequestContext(request, {'form': form,
+#                                                            'users': getUserNames()}))
+#     else:
+#         return render_to_response('xgds_sample/sampleView.html',
+#                                   RequestContext(request, {'sample': sample,
+#                                                            'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS')}))
 
 
 def createSample(request, labelNum, label=None):
@@ -104,14 +118,11 @@ def createSample(request, labelNum, label=None):
         label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
     sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
     if sample_create:
-        label.url = reverse('xgds_sample_view', kwargs={'pk':sample.pk})
+        label.url = reverse('search_map_single_object', kwargs={'modelName':settings.XGDS_SAMPLE_SAMPLE_KEY,
+                                                                'modelPK':sample.pk})
         label.save() 
     form = SampleForm(instance=sample)
-    data = {'form': form,
-            'users': getUserNames()
-            }
-    return render_to_response('xgds_sample/sampleEdit.html',
-                              RequestContext(request, data))
+    return editSample(request, sample.pk, form)
 
 
 def setSampleCustomFields(form, sample):       
@@ -126,7 +137,6 @@ def setSampleCustomFields(form, sample):
     if sample.collector:
         form.fields['collector'].initial = sample.collector.first_name + ' ' + sample.collector.last_name
     return form
-
 
 @login_required 
 def getSampleEditPage(request):
@@ -159,18 +169,11 @@ def getSampleEditPage(request):
             except:
                 return createSample(request, labelNum, label)
         form = SampleForm(instance=sample)
-        # set custom field values with existing data.
-        # done in form now
-#         form = setSampleCustomFields(form, sample)
-        # get all user names (first last). Needed for autocompleting collector field.
-        return render_to_response('xgds_sample/sampleEdit.html',
-                                  RequestContext(request, {'form': form,
-                                                           'users': getUserNames(),
-                                                           'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS')}))                
+        return editSample(request, sample.pk, form)
 
 
 @login_required 
-def updateSampleRecord(request, labelNum):
+def editSampleByLabel(request, labelNum):
     """ make changes to a sample based on form inputs and save,
     OR open the edit page
     """
@@ -204,11 +207,8 @@ def updateSampleRecord(request, labelNum):
                                                                'users': allUsers}))
     # edit page opened via edit/<label number>
     elif request.method == "GET":
-        form = SampleForm(instance=sample) 
-        form = setSampleCustomFields(form, sample)
-        return render_to_response('xgds_sample/sampleEdit.html',
-                                  RequestContext(request, {'form': form,
-                                                           'users': allUsers}))
+        form = SampleForm(instance=sample)
+        return editSample(request, sample.pk, form)
     
     
 @login_required
