@@ -178,7 +178,6 @@ def editSampleByLabel(request, labelNum):
     OR open the edit page
     """
     # get all user names (first last). Needed for autocompleting collector field.
-    allUsers = getUserNames()
     try:
         label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
         sample = label.sample
@@ -198,13 +197,14 @@ def editSampleByLabel(request, labelNum):
                         messages.error(request, msg)
             else:
                 messages.success(request, 'Sample data successfully updated.')
-            return render_to_response('xgds_sample/sampleView.html',
-                                       RequestContext(request, {'sample': form.instance}))
+            return redirect(reverse('search_map_single_object', kwargs={'modelPK':form.instance.sample.pk,
+                                                                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY}))   
+#             return render_to_response('xgds_sample/sampleView.html',
+#                                        RequestContext(request, {'sample': form.instance}))
         else: 
             messages.error(request, 'The form is not valid')
-            return render_to_response('xgds_sample/sampleEdit.html',
-                                      RequestContext(request, {'form': form,
-                                                               'users': allUsers}))
+            return editSample(request, sample.pk, form)
+            
     # edit page opened via edit/<label number>
     elif request.method == "GET":
         form = SampleForm(instance=sample)
