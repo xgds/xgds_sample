@@ -197,8 +197,8 @@ def editSampleByLabel(request, labelNum):
                         messages.error(request, msg)
             else:
                 messages.success(request, 'Sample data successfully updated.')
-            return redirect(reverse('search_map_single_object', kwargs={'modelPK':form.instance.sample.pk,
-                                                                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY}))   
+            return redirect(reverse('search_map_single_object', kwargs={'modelPK': form.instance.pk,
+                                                                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY})) 
 #             return render_to_response('xgds_sample/sampleView.html',
 #                                        RequestContext(request, {'sample': form.instance}))
         else: 
