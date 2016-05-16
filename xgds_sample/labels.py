@@ -73,7 +73,7 @@ def generateMultiPDF(sampleLabels, size):
             samplePosition = sample.getPositionDict()
             if samplePosition:
                 if samplePosition['lat'] and samplePosition['lon']:
-                    rows.append('lat, lon: ' + samplePosition['lat'] + ' ' + samplePosition['lon'])
+                    rows.append('lat, lon: ' + str(samplePosition['lat']) + ' ' + str(samplePosition['lon']))
             if sample.collection_time: 
                 rows.append('collected at ' + sample.collection_time.strftime('%Y-%m-%d %H:%i %e'))
             finalrows = []
