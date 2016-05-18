@@ -78,13 +78,13 @@ def generateMultiPDF(sampleLabels, size):
                 rows.append('collected at ' + sample.collection_time.strftime('%Y-%m-%d %H:%i %e'))
             finalrows = []
             for row in rows:
-                if len(row) > paragraph:
-                    wrapped = textwrap.wrap(row, paragraph)
-                    for l in wrapped:
-                        finalrows.append(l)
-                else:
-                    finalrows.append(row)
-    
+                if row is not None:
+                    if len(row) > paragraph:
+                        wrapped = textwrap.wrap(row, paragraph)
+                        for l in wrapped:
+                            finalrows.append(l)
+                    else:
+                        finalrows.append(row)
             for j, row in enumerate(finalrows):
                 key = "%d_row%d" % (i, j + 1)
                 if (key) in template.keys:

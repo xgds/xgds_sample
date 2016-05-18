@@ -138,6 +138,7 @@ def setSampleCustomFields(form, sample):
         form.fields['collector'].initial = sample.collector.first_name + ' ' + sample.collector.last_name
     return form
 
+
 @login_required 
 def getSampleEditPage(request):
     label = None
@@ -223,40 +224,31 @@ def getSampleLabelsPage(request):
                               RequestContext(request,
                                              {'startNum': startNum,
                                               'labels': labels}))
-    
-    
-def createSampleLabels(request):
-    if request.POST:
-        try: 
-            startNum = int(request.POST['start_number'])
-        except: 
-            return HttpResponse(json.dumps({'message': 'Invalid argument. Please enter an integer.'}), 
-                         content_type = 'application/json')
-        try: 
-            quantity = int(request.POST['quantity'])
-        except: 
-            return HttpResponse(json.dumps({'message': 'Invalid argument. Please enter an integer.'}), 
-                         content_type = 'application/json')
-        # create multiple labels
-        newLabels = []
-        for labelNum in range(startNum, startNum + quantity):
-            label, created = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
-            if created:
-                newLabels.append(json.dumps(label.toMapDict()))
-        if newLabels:
-            return HttpResponse(json.dumps({'message': 'Successfully created the labels',
-                                            'newLabels': newLabels}), 
-                                    content_type='application/json')
-        else: 
-            return HttpResponse(json.dumps({'message': 'No new labels to create.',
-                                'newLabels': newLabels}), 
-                                content_type='application/json') 
 
 
 def printSampleLabels(request):
     if request.method == 'POST': 
-        labelIds = request.POST.getlist('label_checkbox')
-        labelsToPrint = [LABEL_MODEL.get().objects.get(id=int(labelId)) for labelId in labelIds]
+        if 'label_quantity' in request.POST:
+            labels = LABEL_MODEL.get().objects.all()
+            aggregate = labels.aggregate(Max('number'))
+            if aggregate['number__max']:
+                startNum = aggregate['number__max'] + 1
+            else:
+                startNum = 1
+            labelNumbers = range(startNum, startNum + int(request.POST['label_quantity']))
+            labelsToPrint = []
+            for labelNum in labelNumbers:
+                label, create = LABEL_MODEL.get().objects.get_or_create(number=int(labelNum))
+                sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
+                sample.save()
+                if sample_create:
+                    label.url = reverse('search_map_single_object', kwargs={'modelName':settings.XGDS_SAMPLE_SAMPLE_KEY,
+                                                                            'modelPK':sample.pk})
+                    label.save() 
+                labelsToPrint.append(label)
+        else: 
+            labelIds = request.POST.getlist('label_checkbox')
+            labelsToPrint = [LABEL_MODEL.get().objects.get(id=int(labelId)) for labelId in labelIds]
         if labelsToPrint:
             size = SampleLabelSize.objects.get(name="small")
             pdfFile = generateMultiPDF(labelsToPrint, size)

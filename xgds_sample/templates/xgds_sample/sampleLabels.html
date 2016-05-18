@@ -44,7 +44,6 @@
 	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
 	<script type="text/javascript">
 		var printLabelsUrl = "{% url 'xgds_sample_labels_print' %}";
-		var createLabelUrl = "{% url 'xgds_sample_labels_create' %}";
 	</script>
     <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleLabels.js"></script>
 {% endblock scripts %}
@@ -53,31 +52,27 @@
 <div id="labels_messages"></div>
 {% endblock preDashboard %}
 {% block inDashboard %}
-<div class="grid-stack-item" id='create_labels_div' 
-        data-gs-x="0" data-gs-y="0"
-        data-gs-width="2" data-gs-height="1" >
-            <div class="grid-stack-item-content">
-	<form class="create_labels_form" id="create_labels_form" action="" method="post">
-		<strong> Create Labels </strong>
-		<table>
-			<tr>
-				<th><label for="id_start_number">Start number:</label></th>
-				<td><input id="id_start_number" maxlength="512" name="start_number" type="text" value="{{startNum}}" /></td>
-			</tr>
-			<tr>
-				<th><label for="id_quantity">Quantity:</label></th>
-				<td><input id="id_quantity" maxlength="512" name="quantity" type="text" value="1"/></td>
-			</tr>
-		</table>
-		{% csrf_token %} <input id="create_labels_btn" type="submit" value="Create" class="small"/>
-	</form>
-</div>
+<div class="grid-stack-item" id='print_labels_div' data-gs-x="0"
+	data-gs-y="0" data-gs-width="2" data-gs-height="1">
+	<div class="grid-stack-item-content">
+		<form class="print_labels_form" id="print_labels_form" action="{% url 'xgds_sample_labels_print' %}" method="post">
+			<table>
+				<tr>
+					<th><label for="id_label_quantity">Number of labels:</label></th>
+					<td><input id="id_label_quantity" maxlength="512" name="label_quantity" type="number"></td>
+				</tr>
+			</table>
+			{% csrf_token %} 
+			<a href="#" id="show_labels">Show existing labels</a>
+			<div style="float:right;"><input id="print_labels_btn" type="submit" value="Print" class="small" /></div>
+		</form>
+	</div>
 </div>
 
 <!-- Labels table -->
 <div id='item_labels_table'  class="grid-stack-item" 
 		data-gs-x="2" data-gs-y="0"
-        data-gs-width="4" data-gs-height="3" >
+        data-gs-width="4" data-gs-height="3">
         <div class="grid-stack-item-content">
 	<form class="labels_table_form" id="labels_table_form" action="{% url 'xgds_sample_labels_print' %}" method="post">
 		<div id="labels_table_button_group"> 
