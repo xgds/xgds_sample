@@ -23,9 +23,11 @@ from django.conf import settings
 from django.contrib import messages 
 from django.db.models import Max
 from django.contrib.auth.models import User
+from PyPDF2 import PdfFileMerger, PdfFileReader
 
 import json
 import os
+import re
 
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
@@ -204,6 +206,10 @@ def getSampleLabelsPage(request):
                                              {'labels': labels,
                                               'file_url': ""}))
 
+def chunks(l, n):
+    n = max(1, n)
+    return [l[i:i + n] for i in range(0, len(l), n)]
+
 
 def printSampleLabels(request):
     data = {'file_url': ""}
@@ -237,9 +243,29 @@ def printSampleLabels(request):
             labelsToPrint = [LABEL_MODEL.get().objects.get(id=int(labelId)) for labelId in labelIds]
         if labelsToPrint:
             size = SampleLabelSize.objects.get(name="small")
-            pdfFileName = generateMultiPDF(labelsToPrint, size)
-            pdfFileName = pdfFileName.replace(settings.DATA_ROOT, settings.DATA_URL)
+            labelChunks = chunks(labelsToPrint, 10)  # labels in chunks of 10. (list of lists)
+            pdfFileNames = []
+            index = 0
+            for labelChunk in labelChunks: 
+                pdfFileName = generateMultiPDF(labelChunk, size, index)
+                pdfFileNames.append(pdfFileName)
+                index = index + 1
+            
+            # merge the single sheet of pdf files into one to create multiple page pdf.
+            merger = PdfFileMerger()
+            outputFileName = re.sub(r"_temp\d+", "", pdfFileNames[0])
+            for filename in pdfFileNames:
+                merger.append(PdfFileReader(file(filename, 'rb')))
+                # delete the temporary file
+                os.remove(filename)
+            merger.write(outputFileName)  # merge them into one file, and take the first file's name
+
+            outputFileName = outputFileName.replace(settings.DATA_ROOT, settings.DATA_URL)
             messages.success(request, "Labels successfully generated.")
-            data['file_url'] = pdfFileName
+            data['file_url'] = outputFileName         
+#             if pdfFileName:
+#                 pdfFileName = pdfFileName.replace(settings.DATA_ROOT, settings.DATA_URL)
+#                 messages.success(request, "Labels successfully generated.")
+#                 data['file_url'] = pdfFileName
     return render_to_response('xgds_sample/sampleLabels.html', 
                                RequestContext(request, data))

@@ -27,13 +27,12 @@ from geocamUtil.loader import LazyGetModelByName
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 
-def generateMultiPDF(sampleLabels, size):
+def generateMultiPDF(sampleLabels, size, index):
     """
     Actually create the PDF for multiple sample labels.
     """
     now = datetime.utcnow()
-    printableFile = "multi_" + size.name + "_" + now.strftime("%Y%m%d_%H%M%S") + ".pdf"
-
+    printableFile = "multi_" + size.name + "_" + now.strftime("%Y%m%d_%H%M%S") + "_temp" + str(index) + ".pdf"
     # clear out any old version
     outputFilename = os.path.join(settings.MEDIA_ROOT, settings.XGDS_SAMPLE_PDF_DIR, printableFile)
 
