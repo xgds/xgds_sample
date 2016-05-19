@@ -50,9 +50,9 @@ $(document).ready(function() {
 	
 	// show existing notes
 	var container = $('#notes_content');
-	setupNotesUI();
-	initializeNotesReference(container, '{{form.instance.modelAppLabel}}', '{{form.instance.modelTypeName}}', '{{form.instance.pk }}', '{{form.instance.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{form.instance.collection_timezone}}');
-	getNotesForObject('{{form.instance.modelAppLabel}}', '{{form.instance.modelTypeName}}', '{{form.instance.pk }}', 'notes_content', container.find('table#notes_list'));
+	xgds_notes.setupNotesUI();
+	xgds_notes.initializeNotesReference(container, '{{form.instance.modelAppLabel}}', '{{form.instance.modelTypeName}}', '{{form.instance.pk }}', '{{form.instance.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{form.instance.collection_timezone}}');
+	xgds_notes.getNotesForObject('{{form.instance.modelAppLabel}}', '{{form.instance.modelTypeName}}', '{{form.instance.pk }}', 'notes_content', container.find('table#notes_list'));
 });
 {% endblock jsInit %} 
 
@@ -108,7 +108,7 @@ $(document).ready(function() {
 	<hr>
 	<div id="complete_notes">
 		<strong>Notes</strong>
-		<div id="notes_content" class="tab-content active">
+		<div id="notes_content" class="tab-content active notes_content">
 		{% include 'xgds_notes2/notes_input_include.html' %}
 		{% include 'xgds_notes2/notes_table_small.html' %}
 		</div>

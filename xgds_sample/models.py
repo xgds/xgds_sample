@@ -92,6 +92,14 @@ class AbstractSample(models.Model):
                 'name']
 
     @property
+    def thumbnail_time_url(self, event_time):
+        return self.thumbnail_url()
+
+    @property
+    def view_time_url(self, event_time):
+        return self.view_url()
+    
+    @property
     def view_url(self):
         return reverse('search_map_single_object', kwargs={'modelPK':self.pk,
                                                            'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY})

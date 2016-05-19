@@ -27,9 +27,9 @@
 	{% endif %}
 	
 	var container = $('#notes_content');
-	setupNotesUI();
-	initializeNotesReference(container, '{{sample.modelAppLabel}}', '{{sample.modelTypeName}}', '{{sample.pk }}', '{{sample.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{sample.collection_timezone}}');
-	getNotesForObject('{{sample.modelAppLabel}}', '{{sample.modelTypeName}}', '{{sample.pk }}', 'notes_content', container.find('table#notes_list'));
+	xgds_notes.setupNotesUI();
+	xgds_notes.initializeNotesReference(container, '{{sample.modelAppLabel}}', '{{sample.modelTypeName}}', '{{sample.pk }}', '{{sample.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{sample.collection_timezone}}');
+	xgds_notes.getNotesForObject('{{sample.modelAppLabel}}', '{{sample.modelTypeName}}', '{{sample.pk }}', 'notes_content', container.find('table#notes_list'));
 
 {% endblock otherJSInit %} 
 
@@ -104,7 +104,7 @@
 	<hr/>
 	<div id="complete_notes">
 		<strong>Notes</strong>
-		<div id="notes_content" class="tab-content active">
+		<div id="notes_content" class="tab-content active notes_content">
 		{% include 'xgds_notes2/notes_input_include.html' %}
 		{% include 'xgds_notes2/notes_table_small.html' %}
 		</div>
