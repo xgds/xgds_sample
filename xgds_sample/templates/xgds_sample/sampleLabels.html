@@ -12,7 +12,6 @@
 
 {% block preLayout %}    
 	var labelsArray = [];
-    var count = {{ labels.count }};
 	{% for label in labels %}
 		labelsArray.push({{label.toMapDict|json_dumps|safe}});
 	{% endfor %}
