@@ -31,11 +31,12 @@
 							return '';
 						}
 				   }},
-                            {"mData": function(data, type, full) {
+                   {"mData": function(data, type, full) {
 				   		return "";
 				   }}
 				];
 	setupTable('item_labels_table', 'labels_table', labelsArray, aoColumns);
+	
 {% endblock preLayout %}
 
 
@@ -44,21 +45,33 @@
 	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
 	<script type="text/javascript">
 		var printLabelsUrl = "{% url 'xgds_sample_labels_print' %}";
+	    var labelsPdfUrl = "{{ file_url }}";
 	</script>
     <script type="text/javascript" src="{{ STATIC_URL }}xgds_sample/js/sampleLabels.js"></script>
 {% endblock scripts %}
 
 {% block preDashboard %}
-<div id="labels_messages"></div>
+{% if messages %}
+<div class="error-message upload-error">
+	<ul class="messages">
+	    {% for message in messages %}
+	    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+	    {% endfor %}
+	</ul>
+</div>
+{% endif  %}
 {% endblock preDashboard %}
+
+
 {% block inDashboard %}
 <div class="grid-stack-item" id='print_labels_div' data-gs-x="0"
 	data-gs-y="0" data-gs-width="2" data-gs-height="1">
 	<div class="grid-stack-item-content">
 		<form class="print_labels_form" id="print_labels_form" action="{% url 'xgds_sample_labels_print' %}" method="post">
+			<strong>Print New Labels</strong>
 			<table>
 				<tr>
-					<th><label for="id_label_quantity">Number of labels:</label></th>
+					<th><label for="id_label_quantity">Quantity:</label></th>
 					<td><input id="id_label_quantity" maxlength="512" name="label_quantity" type="number"></td>
 				</tr>
 			</table>
@@ -66,6 +79,7 @@
 			<a href="#" id="show_labels">Show existing labels</a>
 			<div style="float:right;"><input id="print_labels_btn" type="submit" value="Print" class="small" /></div>
 		</form>
+		<a href="{{file_url}}" id="download_file" hidden>Download PDF</a> <!-- necessary to avoid pop up blocker -->
 	</div>
 </div>
 
@@ -80,7 +94,6 @@
 			    <input name="hide_printed" id="hide_printed" value="hide_printed" type="checkbox">
 			    <span></span> Hide Printed
 			  </label>
-			<input type="submit" class="mybutton small right" id="delete_button" value="Delete Selected" ></input>
 			<input type="submit" class="mybutton small right" id="print_button" value="Print Selected" ></input>
 		</div>
 		<table cellpadding="0" cellspacing="0" border="0"  id="labels_table">

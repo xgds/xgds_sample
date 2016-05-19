@@ -58,6 +58,9 @@ class Label(models.Model):
         except: 
             result['sampleName'] = ""
         return result
+    
+    class Meta:
+        ordering = ['number']
 
 
 DEFAULT_RESOURCE_FIELD = lambda: models.ForeignKey('geocamTrack.Resource', null=True, blank=True)

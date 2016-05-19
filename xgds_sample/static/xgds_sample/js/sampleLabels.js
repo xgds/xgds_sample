@@ -15,7 +15,23 @@ $('#item_labels_table').hide();
 $('#show_labels').on('click', function(event) {
 	event.preventDefault();
 	$('#item_labels_table').toggle();
+	if ($('#labels_table').is(":visible")) {
+		$('#labels_table').dataTable().resize(); // to resize headers
+		$('#show_labels').html("Hide existing labels");
+	} else {
+		$('#show_labels').html("Show existing labels");
+	}
 });
+
+// download labels file if available.
+if (labelsPdfUrl != "") { 
+	$('#download_file').on('click', function(event){
+		window.open(labelsPdfUrl,'_blank');
+	});
+	$('#download_file').click(); // click event is necessary to avoid being blocked by a pop up blocker.
+	labelsPdfUrl = "";
+}
+
 
 //$('#print_labels_btn').on('click', function(event) {
 //	// validate the form fields (must be integer)

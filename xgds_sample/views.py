@@ -94,22 +94,6 @@ def viewSampleByLabel(request, labelNum):
         return createSample(request, labelNum)
 
 
-#@login_required 
-# def getSampleViewPage(request, pk):
-#     sample = get_object_or_404(SAMPLE_MODEL.get(), pk=pk)
-#     if not sample.sample_type:
-#         form = SampleForm(instance=sample)
-#         # set custom field values with existing data.
-#         form = setSampleCustomFields(form, sample)
-#         return render_to_response('xgds_sample/sampleEdit.html',
-#                                   RequestContext(request, {'form': form,
-#                                                            'users': getUserNames()}))
-#     else:
-#         return render_to_response('xgds_sample/sampleView.html',
-#                                   RequestContext(request, {'sample': sample,
-#                                                            'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS')}))
-
-
 def createSample(request, labelNum, label=None):
     """
     Create a label and/or sample based on the requested label number
@@ -215,27 +199,25 @@ def editSampleByLabel(request, labelNum):
 @login_required
 def getSampleLabelsPage(request):
     labels = LABEL_MODEL.get().objects.all()
-    aggregate = labels.aggregate(Max('number'))
-    if aggregate['number__max']:
-        startNum = aggregate['number__max'] + 1
-    else:
-        startNum = 1
     return render_to_response('xgds_sample/sampleLabels.html',
                               RequestContext(request,
-                                             {'startNum': startNum,
-                                              'labels': labels}))
+                                             {'labels': labels,
+                                              'file_url': ""}))
 
 
 def printSampleLabels(request):
+    data = {'file_url': ""}
     if request.method == 'POST': 
         if 'label_quantity' in request.POST:
+            quantity = int(request.POST['label_quantity'])
             labels = LABEL_MODEL.get().objects.all()
+            data['labels'] = labels
             aggregate = labels.aggregate(Max('number'))
             if aggregate['number__max']:
                 startNum = aggregate['number__max'] + 1
             else:
                 startNum = 1
-            labelNumbers = range(startNum, startNum + int(request.POST['label_quantity']))
+            labelNumbers = range(startNum, startNum + quantity)
             labelsToPrint = []
             for labelNum in labelNumbers:
                 label, create = LABEL_MODEL.get().objects.get_or_create(number=int(labelNum))
@@ -246,17 +228,18 @@ def printSampleLabels(request):
                                                                             'modelPK':sample.pk})
                     label.save() 
                 labelsToPrint.append(label)
+            if quantity <=0:
+                messages.error(request, "Quantity must be an integer greater than 0.")
+            else: 
+                messages.error(request, "")
         else: 
             labelIds = request.POST.getlist('label_checkbox')
             labelsToPrint = [LABEL_MODEL.get().objects.get(id=int(labelId)) for labelId in labelIds]
         if labelsToPrint:
             size = SampleLabelSize.objects.get(name="small")
-            pdfFile = generateMultiPDF(labelsToPrint, size)
-            # TEST THIS: need to read the pdfFile and get value
-            file = open(pdfFile, "rb") 
-            pdfContent = file.read()
-            response = HttpResponse(pdfContent, content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(pdfFile)
-            return response
-    return HttpResponse(json.dumps({'error': 'Labels failed to print'}), content_type="application/json")
-    
+            pdfFileName = generateMultiPDF(labelsToPrint, size)
+            pdfFileName = pdfFileName.replace(settings.DATA_ROOT, settings.DATA_URL)
+            messages.success(request, "Labels successfully generated.")
+            data['file_url'] = pdfFileName
+    return render_to_response('xgds_sample/sampleLabels.html', 
+                               RequestContext(request, data))
