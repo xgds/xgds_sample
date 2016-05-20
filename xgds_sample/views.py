@@ -269,3 +269,15 @@ def printSampleLabels(request):
 #                 data['file_url'] = pdfFileName
     return render_to_response('xgds_sample/sampleLabels.html', 
                                RequestContext(request, data))
+    
+
+def getSampleHelpPage(request):
+    image1Url = settings.STATIC_URL + 'xgds_sample/images/Slide1.png'
+    image2Url = settings.STATIC_URL + 'xgds_sample/images/Slide2.png'
+    image3Url = settings.STATIC_URL + 'xgds_sample/images//Slide3.png'
+    data = {'image1': image1Url,
+            'image2': image2Url, 
+            'image3': image3Url}
+    return render_to_response('xgds_sample/sampleHelp.html', 
+                              RequestContext(request, data))
+    

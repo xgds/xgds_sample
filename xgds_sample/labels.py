@@ -35,24 +35,18 @@ def generateMultiPDF(sampleLabels, size, index):
     printableFile = "multi_" + size.name + "_" + now.strftime("%Y%m%d_%H%M%S") + "_temp" + str(index) + ".pdf"
     # clear out any old version
     outputFilename = os.path.join(settings.MEDIA_ROOT, settings.XGDS_SAMPLE_PDF_DIR, printableFile)
-
     # get the template
     elements = getattr(labelTemplates, 'multi' + size.name)
     template = Template(format=[215.9, 279.4], orientation="P", elements=elements)
     template.add_page()
-
     qrCodeImages = []
-
     i = 0
     paragraph = size.paragraphWidth
-    
     for sampleLabel in sampleLabels:
         if i == 10:
             break
-
         # make the qr code image
         qrCodeImages.append(generateQRCode(sampleLabel.url, sampleLabel.number))
-
         # populate the templatto ae
         template[str(i) + "_qrcode"] = qrCodeImages[i]
         
@@ -93,18 +87,14 @@ def generateMultiPDF(sampleLabels, size, index):
         sampleLabel.printableFile = printableFile
         sampleLabel.save()
         i = i + 1
-        
     while i < 10:
         template[str(i) + "_qrcode"] = os.path.join(settings.STATIC_ROOT, "xgds_sample/images/ipx.gif")
         i = i + 1
-
     # make the PDF
     template.render(outputFilename)
-
     # remove the qr code image
     for qrCodeImage in qrCodeImages:
         os.remove(qrCodeImage)
-
     return outputFilename
 
 

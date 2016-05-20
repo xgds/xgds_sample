@@ -29,5 +29,6 @@ urlpatterns = [url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_label
                url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_record_edit'),
                url(r'edit/(?P<labelNum>[\d]+)$', views.editSampleByLabel, {}, 'xgds_sample_record_update'), 
                url(r'edit/sample/(?P<samplePK>[\d]+)$', views.editSample, {}, 'xgds_sample_edit_sample'), 
-               url(r'labels/print$', views.printSampleLabels, {}, 'xgds_sample_labels_print')
+               url(r'labels/print$', views.printSampleLabels, {}, 'xgds_sample_labels_print'),
+               url(r'help$', views.getSampleHelpPage, {}, 'xgds_sample_help')
                ]

@@ -1,0 +1,60 @@
+{% extends 'dashboard_no_map.html' %}
+
+{% load json_dumps %}
+
+{% block sitemenu-content-secondary %}
+	{% include "sample_subnav.html" %}
+    {% load nav %}
+{% endblock %}
+
+ {% block cssExtras %}
+ {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
+ {% endblock cssExtras %}
+
+
+{% block scripts %}
+{{block.super}}
+{% endblock scripts %}
+
+{% block jsInit %} 
+{{ block.super }}
+{% endblock jsInit %} 
+
+{% block inDashboard %}
+
+<div class="grid-stack-item noResize" id='create_sample_from_label_num'
+        data-gs-x="2" data-gs-y="2"
+        data-gs-width="3" data-gs-height="3">
+            <div class="grid-stack-item-content">
+        <strong> Print labels </strong>
+		<div style="center;">
+			<img src="{{ image1 }}" width='180%'>	
+		</div>
+	</div>
+</div>
+
+<div class="grid-stack-item noResize" id='create_sample_from_label_num'
+        data-gs-x="2" data-gs-y="1"
+        data-gs-width="3" data-gs-height="3">
+            <div class="grid-stack-item-content">
+		<strong> Record samples 1 </strong>
+		<div style="center;">
+			<img src="{{ image2 }}" width='180%'>	
+		</div>
+	</div>
+</div>
+
+<div class="grid-stack-item noResize" id='create_sample_from_label_num'
+        data-gs-x="2" data-gs-y="0"
+        data-gs-width="3" data-gs-height="3">
+            <div class="grid-stack-item-content">
+            <strong> Record samples 2 </strong>
+		<div style="center;">
+			<img src="{{ image3 }}" width='180%'>	
+		</div>
+	</div>
+</div>
+
+
+{% endblock inDashboard %}
