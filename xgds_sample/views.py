@@ -42,9 +42,12 @@ from xgds_sample.labels import *
 from django.http import HttpResponse
 from StringIO import StringIO
 
-
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
+
+TRACK_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_TRACK_MODEL)
+POSITION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
+RESOURCE_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_RESOURCE_MODEL)
 
 XGDS_SAMPLE_TEMPLATE_LIST = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
 XGDS_SAMPLE_TEMPLATE_LIST = XGDS_SAMPLE_TEMPLATE_LIST + settings.XGDS_CORE_TEMPLATE_DIRS[settings.XGDS_SAMPLE_SAMPLE_MODEL]
@@ -107,6 +110,16 @@ def createSample(request, labelNum, label=None):
         label.url = reverse('search_map_single_object', kwargs={'modelName':settings.XGDS_SAMPLE_SAMPLE_KEY,
                                                                 'modelPK':sample.pk})
         label.save() 
+        # save sample location from resource's track.
+        if sample.resource is not None:
+            resrc = sample.resource
+        else: 
+            collectorName = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR
+            resrc = RESOURCE_MODEL.get().objects.get(name=collectorName)
+            track = TRACK_MODEL.get().objects.get(resource=resrc)
+            latest_position = track.getPositions().latest('timestamp')
+            sample.track_position = latest_position
+            sample.save()
     form = SampleForm(instance=sample)
     return editSample(request, sample.pk, form)
 
@@ -186,8 +199,6 @@ def editSampleByLabel(request, labelNum):
                 messages.success(request, 'Sample data successfully updated.')
             return redirect(reverse('search_map_single_object', kwargs={'modelPK': form.instance.pk,
                                                                         'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY})) 
-#             return render_to_response('xgds_sample/sampleView.html',
-#                                        RequestContext(request, {'sample': form.instance}))
         else: 
             messages.error(request, 'The form is not valid')
             return editSample(request, sample.pk, form)
@@ -263,10 +274,6 @@ def printSampleLabels(request):
             outputFileName = outputFileName.replace(settings.DATA_ROOT, settings.DATA_URL)
             messages.success(request, "Labels successfully generated.")
             data['file_url'] = outputFileName         
-#             if pdfFileName:
-#                 pdfFileName = pdfFileName.replace(settings.DATA_ROOT, settings.DATA_URL)
-#                 messages.success(request, "Labels successfully generated.")
-#                 data['file_url'] = pdfFileName
     return render_to_response('xgds_sample/sampleLabels.html', 
                                RequestContext(request, data))
     

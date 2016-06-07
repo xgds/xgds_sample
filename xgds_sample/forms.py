@@ -28,15 +28,16 @@ from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
-from __builtin__ import False
 
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 
+
 class CollectorCharField(CharField):
     def label_from_instance(self, obj):
         return "TEST LABEL"
+
 
 class SampleForm(ModelForm):
     latitude = forms.FloatField(required=False, label="Latitude")
@@ -63,7 +64,6 @@ class SampleForm(ModelForm):
         if self.instance:
             if self.instance.collector:
                 self.fields['collector'].initial = self.instance.collector.first_name + ' ' + self.instance.collector.last_name
-
             positionDict = self.instance.getPositionDict()
             self.fields['latitude'].initial = positionDict['lat']
             self.fields['longitude'].initial = positionDict['lon']
@@ -115,6 +115,7 @@ class SampleForm(ModelForm):
         instance.collection_time = self.cleaned_data['collection_time']
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
+        
         if (('latitude' in self.changed_data) and ('longitude' in self.changed_data)) or ('altitude' in self.changed_data):
             if instance.user_position is None:
                 instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
@@ -126,6 +127,7 @@ class SampleForm(ModelForm):
                 instance.user_position.latitude = self.cleaned_data['latitude']
                 instance.user_position.longitude = self.cleaned_data['longitude']
                 instance.user_position.altitude = self.cleaned_data['altitude']
+        
         if ('collector' in self.changed_data):
             fullName = self.cleaned_data['collector']
             splitName = fullName.split(' ')
