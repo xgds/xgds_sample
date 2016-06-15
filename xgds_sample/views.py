@@ -25,6 +25,7 @@ from django.db.models import Max
 from django.contrib.auth.models import User
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
+from datetime import datetime
 import json
 import os
 import re
@@ -34,6 +35,7 @@ from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleType, Region, SampleLabelSize
 from xgds_core.views import get_handlebars_templates
+from geocamTrack.utils import getClosestPosition
 
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from django.views.static import serve
@@ -72,6 +74,13 @@ def deleteLabelAndSample(request, labelNum):
     return render_to_response('xgds_sample/recordSample.html',
                               RequestContext(request, {}))
     
+    
+def getTrackPosition(timestamp, resource):
+    '''
+    Look up and return the closest tracked position if there is one.
+    '''
+    return getClosestPosition(timestamp=timestamp, resource=resource)
+
 
 @login_required 
 def editSample(request, samplePK, form=None):
@@ -116,9 +125,7 @@ def createSample(request, labelNum, label=None):
         else: 
             collectorName = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR
             resrc = RESOURCE_MODEL.get().objects.get(name=collectorName)
-            track = TRACK_MODEL.get().objects.get(resource=resrc)
-            latest_position = track.getPositions().latest('timestamp')
-            sample.track_position = latest_position
+            sample.track_position = getTrackPosition(datetime.utcnow(), resrc)            
             sample.save()
     form = SampleForm(instance=sample)
     return editSample(request, sample.pk, form)
