@@ -29,6 +29,7 @@ from datetime import datetime
 import json
 import os
 import re
+import pytz
 
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
@@ -61,6 +62,13 @@ def getUserNames():
     return allUsers
 
 
+def getTrackPosition(timestamp, resource):
+    '''
+    Look up and return the closest tracked position if there is one.
+    '''
+    return getClosestPosition(timestamp=timestamp, resource=resource)
+
+
 def deleteLabelAndSample(request, labelNum):
     label = LABEL_MODEL.get().objects.get(number=labelNum)
     message = 'Deleted label %d' % label.number
@@ -74,13 +82,6 @@ def deleteLabelAndSample(request, labelNum):
     return render_to_response('xgds_sample/recordSample.html',
                               RequestContext(request, {}))
     
-    
-def getTrackPosition(timestamp, resource):
-    '''
-    Look up and return the closest tracked position if there is one.
-    '''
-    return getClosestPosition(timestamp=timestamp, resource=resource)
-
 
 @login_required 
 def editSample(request, samplePK, form=None):
@@ -120,12 +121,10 @@ def createSample(request, labelNum, label=None):
                                                                 'modelPK':sample.pk})
         label.save() 
         # save sample location from resource's track.
-        if sample.resource is not None:
-            resrc = sample.resource
-        else: 
-            collectorName = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR
-            resrc = RESOURCE_MODEL.get().objects.get(name=collectorName)
-            sample.track_position = getTrackPosition(datetime.utcnow(), resrc)            
+        defaultCollector = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR
+        resourceModel = RESOURCE_MODEL.get().objects.get(name=defaultCollector)
+        if resourceModel is not None:            
+            sample.track_position = getTrackPosition(datetime.utcnow().replace(tzinfo=pytz.UTC), resourceModel)  
             sample.save()
     form = SampleForm(instance=sample)
     return editSample(request, sample.pk, form)
