@@ -34,7 +34,7 @@ import pytz
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
-from xgds_sample.models import SampleType, Region, SampleLabelSize
+from xgds_sample.models import SampleLabelSize
 from xgds_core.views import get_handlebars_templates
 from geocamTrack.utils import getClosestPosition
 
@@ -167,7 +167,6 @@ def getSampleEditPage(request):
                                extra_tags='safe')
                 return render_to_response('xgds_sample/recordSample.html',
                                           RequestContext(request, {}))
-        
         if labelNum and not label:
             try:
                 label = LABEL_MODEL.get().objects.get(number=labelNum)

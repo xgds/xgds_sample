@@ -28,6 +28,7 @@ from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
+from geocamUtil.models import SiteFrame
 
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
@@ -69,6 +70,12 @@ class SampleForm(ModelForm):
             self.fields['longitude'].initial = positionDict['lon']
             if 'altitude' in positionDict:
                 self.fields['altitude'].initial = positionDict['altitude']
+            # check the site frame and set the regions.
+            siteframe = SiteFrame.objects.get(pk = settings.XGDS_CURRENT_SITEFRAME_ID)
+            # get all the regions for this site frame. 
+            regionsForZone = Region.objects.filter(zone = siteframe)
+            self.fields['region'].widget.choices.queryset = regionsForZone
+            self.fields['region'].empty_label = None
     
     def clean_collection_timezone(self): 
         try:
