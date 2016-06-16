@@ -33,7 +33,7 @@ from geocamUtil.models import SiteFrame
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
-
+GEOCAM_TRACK_RESOURCE_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_RESOURCE_MODEL)
 
 class CollectorCharField(CharField):
     def label_from_instance(self, obj):
@@ -74,8 +74,10 @@ class SampleForm(ModelForm):
             siteframe = SiteFrame.objects.get(pk = settings.XGDS_CURRENT_SITEFRAME_ID)
             # get all the regions for this site frame. 
             regionsForZone = Region.objects.filter(zone = siteframe)
-            self.fields['region'].widget.choices.queryset = regionsForZone
+            #self.fields['region'].widget.choices.queryset = regionsForZone
+            self.initial['region'] = regionsForZone[0]
             self.fields['region'].empty_label = None
+            self.initial['resource'] = GEOCAM_TRACK_RESOURCE_MODEL.get().objects.get(name = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR)
     
     def clean_collection_timezone(self): 
         try:
