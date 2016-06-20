@@ -85,6 +85,21 @@ class AbstractSample(models.Model):
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
     
+    @property
+    def app_label(self):
+        return self._meta.app_label
+    
+    @property
+    def model_type(self):
+        t = type(self)
+        if t._deferred:
+            t = t.__base__
+        return t._meta.object_name
+
+    @property
+    def type(self):
+        return 'Sample'
+
     @classmethod
     def getFieldOrder(cls):
         return ['region', 
@@ -93,6 +108,56 @@ class AbstractSample(models.Model):
                 'collection_time',
                 'description',
                 'name']
+
+    @property
+    def sample_type_name(self):
+        if self.sample_type:
+            return self.sample_type.display_name
+        return None
+
+    @property
+    def label_number(self):
+        return int(self.label.number)
+
+    @property
+    def region_name(self):
+        if self.region:
+            return self.region.name
+        return None
+    
+    @property
+    def collector_name(self):
+        return getUserName(self.collector)
+
+#     @property
+#     def timezone(self):
+#         return self.collection_timezone
+
+    @property
+    def lat(self):
+        position = self.getPosition()
+        if position:
+            return position.latitude
+        
+    @property
+    def lon(self):
+        position = self.getPosition()
+        if position:
+            return position.longitude
+
+    @property
+    def altitude(self):
+        try:
+            position = self.getPosition()
+            if position:
+                return position.altitude
+        except:
+            pass
+        return None
+
+    @property
+    def thumbnail_image_url(self):
+        return self.thumbnail_url()
 
     def thumbnail_time_url(self, event_time):
         return self.thumbnail_url()
@@ -103,6 +168,13 @@ class AbstractSample(models.Model):
     def view_url(self):
         return reverse('search_map_single_object', kwargs={'modelPK':self.pk,
                                                            'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY})
+    
+    def getPosition(self):
+        if self.user_position:
+            return self.user_position
+        if self.track_position:
+            return self.track_position
+        return None
     
     def thumbnail_url(self):
         # TODO when we have image support for samples return the first image's thumbnail
@@ -191,14 +263,15 @@ class AbstractSample(models.Model):
         del result['user_position']
         del result['track_position']
         if result['resource']:
-            result['resource'] = self.resource.name
+            result['resource_name'] = self.resource.name
+            del result['resource']
         if self.label:
-            result['label'] = int(self.label.number)
+            result['label_number'] = int(self.label.number)
         
         if self.sample_type:
-            result['sample_type'] = self.sample_type.display_name
+            result['sample_type_name'] = self.sample_type.display_name
         if self.region:
-            result['region'] = self.region.name
+            result['region_name'] = self.region.name
         del result['modifier']
         del result['creator']
         
