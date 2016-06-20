@@ -109,6 +109,11 @@ class AbstractSample(models.Model):
                 'description',
                 'name']
 
+    @classmethod
+    def getSearchableFields(self):
+        return ['name', 'description', 'collector__first_name', 'collector__last_name', 'sample_type__display_name']
+
+
     @property
     def sample_type_name(self):
         if self.sample_type:
