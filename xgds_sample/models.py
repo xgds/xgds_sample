@@ -26,6 +26,8 @@ from geocamUtil.modelJson import modelToDict
 from geocamUtil.UserUtil import getUserName
 from django.contrib.auth.models import User
 
+from xgds_core.models import SearchableModel
+
 
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
@@ -68,7 +70,7 @@ DEFAULT_TRACK_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResour
 DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourcePosition', null=True, blank=True, related_name="sample_user_set" )
 
 
-class AbstractSample(models.Model):
+class AbstractSample(models.Model, SearchableModel):
     name = models.CharField(max_length=512, null=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
@@ -85,20 +87,9 @@ class AbstractSample(models.Model):
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
     
-    @property
-    def app_label(self):
-        return self._meta.app_label
-    
-    @property
-    def model_type(self):
-        t = type(self)
-        if t._deferred:
-            t = t.__base__
-        return t._meta.object_name
-
-    @property
-    def type(self):
-        return 'Sample'
+#     @property
+#     def type(self):
+#         return 'Sample'
 
     @classmethod
     def getFieldOrder(cls):
@@ -134,32 +125,6 @@ class AbstractSample(models.Model):
     def collector_name(self):
         return getUserName(self.collector)
 
-#     @property
-#     def timezone(self):
-#         return self.collection_timezone
-
-    @property
-    def lat(self):
-        position = self.getPosition()
-        if position:
-            return position.latitude
-        
-    @property
-    def lon(self):
-        position = self.getPosition()
-        if position:
-            return position.longitude
-
-    @property
-    def altitude(self):
-        try:
-            position = self.getPosition()
-            if position:
-                return position.altitude
-        except:
-            pass
-        return None
-
     @property
     def thumbnail_image_url(self):
         return self.thumbnail_url()
@@ -184,17 +149,6 @@ class AbstractSample(models.Model):
     def thumbnail_url(self):
         # TODO when we have image support for samples return the first image's thumbnail
         return ''
-    
-    @property
-    def modelAppLabel(self):
-        return self._meta.app_label
-    
-    @property
-    def modelTypeName(self):
-        t = type(self)
-        if t._deferred:
-            t = t.__base__
-        return t._meta.object_name
     
     @classmethod
     def getFieldsForName(cls):
@@ -247,12 +201,8 @@ class AbstractSample(models.Model):
             return None
         result = modelToDict(self)
         result['pk'] = int(self.pk)
-        result['app_label'] = self._meta.app_label
-        
-        t = type(self)
-        if t._deferred:
-            t = t.__base__
-        result['model_type'] = t._meta.object_name
+        result['app_label'] = self.app_label
+        result['model_type'] = self.model_type
 
         if self.collector:
             result['collector'] = getUserName(self.collector)
@@ -282,7 +232,7 @@ class AbstractSample(models.Model):
         
         
         #TODO image support for samples
-        result['thumbnail_image_url'] = ''
+        result['thumbnail_image_url'] = self.thumbnail_image_url
         return result
     
     class Meta:
