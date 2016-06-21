@@ -46,15 +46,14 @@ class SampleForm(ModelForm):
     altitude = forms.FloatField(required=False, label="Altitude")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
     name = forms.CharField(required=False, label="Sample Name", help_text="Name autofills on save.")  # name may be constructed in the save method
-    number = forms.IntegerField(required=False, min_value=0, label="Station #")
+    number = forms.IntegerField(required=False, min_value=0, label="Number")
+    station_number = forms.IntegerField(required=False, min_value=0, label="Station #")
     collector = forms.CharField(required=False, label="Collector")
-    
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
         '%Y-%m-%d %H:%M:%S',
         '%m/%d/%Y %H:%M'
     ]
-    
     collection_time = forms.DateTimeField(required=True, input_formats=date_formats, help_text="", initial=timezone.now)
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
@@ -78,6 +77,34 @@ class SampleForm(ModelForm):
             self.initial['region'] = regionsForZone[0]
             self.fields['region'].empty_label = None
             self.initial['resource'] = GEOCAM_TRACK_RESOURCE_MODEL.get().objects.get(name = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR)
+            # auto increment the sample number
+            allSamples = SAMPLE_MODEL.get().objects.all()
+            numbers = [sample.number for sample in allSamples]
+            numbers.sort()
+            currentNumber = numbers[-1] + 1
+            self.initial['number'] = currentNumber
+            
+    
+    def clean_year(self):
+        year = self.cleaned_data['year']
+        if year == None:
+            raise forms.ValidationError(u"You haven't set a year.")
+        return year
+    
+    
+    def clean_number(self):
+        number = self.cleaned_data['number']
+        if number == None:
+            raise forms.ValidationError(u"You haven't set a number.")
+        return number
+    
+    
+    def clean_station_number(self):
+        station_number = self.cleaned_data['station_number']
+        if station_number == None:
+            raise forms.ValidationError(u"You haven't set a station_number.")
+        return station_number
+    
     
     def clean_collection_timezone(self): 
         try:
@@ -159,7 +186,7 @@ class SampleForm(ModelForm):
         # if name changed, validate against the fields.
         if 'name' in self.changed_data:
             builtName = instance.buildName()
-            if instance.name != builtName: #TODO check that instance name is
+            if instance.name != builtName:  #TODO check that instance name is
                 try: 
                     instance.updateSampleFromName(self.cleaned_data['name'])
                     self.errors['warning'] = "Fields have been updated to reflect the new name."
