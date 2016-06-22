@@ -87,9 +87,9 @@ class AbstractSample(models.Model, SearchableModel):
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
     
-#     @property
-#     def type(self):
-#         return 'Sample'
+    @classmethod
+    def timesearchField(self):
+        return 'collection_time'
 
     @classmethod
     def getFieldOrder(cls):
