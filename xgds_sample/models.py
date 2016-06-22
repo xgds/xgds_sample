@@ -31,8 +31,8 @@ from xgds_core.models import SearchableModel
 
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
-    name = models.CharField(max_length=128)
-    shortName = models.CharField(max_length=8)
+    name = models.CharField(max_length=128, db_index=True)
+    shortName = models.CharField(max_length=8, db_index=True)
     zone = models.ForeignKey('geocamUtil.SiteFrame', null=True)
     
     def __unicode__(self):
@@ -46,9 +46,9 @@ class SampleType(AbstractEnumModel):
     
 
 class Label(models.Model):
-    number = models.IntegerField()
+    number = models.IntegerField(db_index=True)
     url = models.CharField(null=True, max_length=512)    
-    last_printed = models.DateTimeField(blank=True, null=True, editable=False)
+    last_printed = models.DateTimeField(blank=True, null=True, editable=False, db_index=True)
     
     def __unicode__(self):
         return u'%s' % (self.number)
@@ -71,7 +71,7 @@ DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourc
 
 
 class AbstractSample(models.Model, SearchableModel):
-    name = models.CharField(max_length=512, null=True) # 9 characters
+    name = models.CharField(max_length=512, null=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
     resource = 'set to DEFAULT_RESOURCE_FIELD() or similar in derived classes'
@@ -80,10 +80,10 @@ class AbstractSample(models.Model, SearchableModel):
     collector = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_collector") # person who collected the sample
     creator = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_creator") # person who entered sample data into Minerva
     modifier = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_modifier") # person who entered sample data into Minerva
-    collection_time = models.DateTimeField(blank=True, null=True, editable=False)
-    collection_timezone = models.CharField(null=True, blank=False, max_length=128, default=settings.TIME_ZONE)
-    creation_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
-    modification_time = models.DateTimeField(blank=True, default=timezone.now, editable=False)
+    collection_time = models.DateTimeField(blank=True, null=True, editable=False, db_index=True)
+    collection_timezone = models.CharField(null=True, blank=False, max_length=128, default=settings.TIME_ZONE, db_index=True)
+    creation_time = models.DateTimeField(blank=True, default=timezone.now, editable=False, db_index=True)
+    modification_time = models.DateTimeField(blank=True, default=timezone.now, editable=False, db_index=True)
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
     
