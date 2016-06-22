@@ -54,7 +54,7 @@ class SampleForm(ModelForm):
         '%Y-%m-%d %H:%M:%S',
         '%m/%d/%Y %H:%M'
     ]
-    collection_time = forms.DateTimeField(required=True, input_formats=date_formats, help_text="", initial=timezone.now)
+    collection_time = forms.DateTimeField(required=True, input_formats=date_formats, help_text="")
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
     field_order = SAMPLE_MODEL.get().getFieldOrder()
@@ -80,10 +80,17 @@ class SampleForm(ModelForm):
             # auto increment the sample number
             allSamples = SAMPLE_MODEL.get().objects.all()
             numbers = [sample.number for sample in allSamples]
+            numbers.remove(None)
             numbers.sort()
-            currentNumber = numbers[-1] + 1
+            if len(numbers) > 0:
+                currentNumber = int(numbers[-1]) + 1
+            else:
+                currentNumber = 0
             self.initial['number'] = currentNumber
-            
+            if self.instance.collection_time:
+                self.initial['collection_time'] = self.instance.collection_time
+            else: 
+                self.initial['collection_time'] = timezone.now()
     
     def clean_year(self):
         year = self.cleaned_data['year']
@@ -112,18 +119,17 @@ class SampleForm(ModelForm):
         except:
             return settings.TIME_ZONE
     
-    # populate the event time with NOW if it is blank.
+    
     def clean_collection_time(self): 
         ctime = self.cleaned_data['collection_time']
-        if not ctime:
-            return None
-        else:
+        if ctime:  # if there is a time input, convert to utc
             ctimezone = self.clean_collection_timezone()
             tz = pytz.timezone(ctimezone)
             naiveTime = ctime.replace(tzinfo = None)
             localizedTime = tz.localize(naiveTime)
             utcTime = localizedTime.astimezone(pytz.utc)
-            return utcTime
+            ctime = utcTime
+        return ctime
     
     
     def clean(self):
