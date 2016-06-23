@@ -22,6 +22,7 @@ from django.forms.formsets import formset_factory
 from django.conf import settings
 from django.contrib import messages 
 from django.db.models import Max
+from django.utils import timezone
 from django.contrib.auth.models import User
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
@@ -34,9 +35,10 @@ import pytz
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
-from xgds_sample.models import SampleLabelSize
+from xgds_sample.models import SampleLabelSize, Region
 from xgds_core.views import get_handlebars_templates
 from geocamTrack.utils import getClosestPosition
+from geocamUtil.models import SiteFrame
 
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from django.views.static import serve
@@ -44,6 +46,7 @@ from xgds_sample.labels import *
 
 from django.http import HttpResponse
 from StringIO import StringIO
+
 
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
@@ -81,53 +84,6 @@ def deleteLabelAndSample(request, labelNum):
     messages.error(request, message)
     return render_to_response('xgds_sample/recordSample.html',
                               RequestContext(request, {}))
-    
-
-@login_required 
-def editSample(request, samplePK, form=None):
-    if not form:
-        sample = SAMPLE_MODEL.get().objects.get(pk=samplePK)
-        form = SampleForm(instance=sample)
-    return render_to_response('xgds_sample/sampleEdit.html',
-                              RequestContext(request, {'form': form,
-                                                       'users': getUserNames(),
-                                                       'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
-                                                       'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS')})
-                              )            
-
-
-@login_required 
-def viewSampleByLabel(request, labelNum):
-    try:
-        label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
-        if create:
-            return editSample(request, label.sample.pk)
-        else:
-            return redirect(reverse('search_map_single_object', kwargs={'modelPK':label.sample.pk,
-                                                                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY}))   
-    except:
-        return createSample(request, labelNum)
-
-
-def createSample(request, labelNum, label=None):
-    """
-    Create a label and/or sample based on the requested label number
-    """
-    if not label:
-        label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
-    sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
-    if sample_create:
-        label.url = reverse('search_map_single_object', kwargs={'modelName':settings.XGDS_SAMPLE_SAMPLE_KEY,
-                                                                'modelPK':sample.pk})
-        label.save() 
-        # save sample location from resource's track.
-        defaultCollector = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR
-        resourceModel = RESOURCE_MODEL.get().objects.get(name=defaultCollector)
-        if resourceModel is not None:            
-            sample.track_position = getTrackPosition(datetime.utcnow().replace(tzinfo=pytz.UTC), resourceModel)  
-            sample.save()
-    form = SampleForm(instance=sample)
-    return editSample(request, sample.pk, form)
 
 
 def setSampleCustomFields(form, sample):       
@@ -145,53 +101,51 @@ def setSampleCustomFields(form, sample):
 
 
 @login_required 
-def getSampleEditPage(request):
-    label = None
-    if request.POST:
-        numberOrName = request.POST['label_num_or_sample_name'] 
-        if not numberOrName:
-            messages.error(request, 'Please enter a valid sample name or label number')
-            return render_to_response('xgds_sample/recordSample.html',
-                                       RequestContext(request, {}))
-        labelNum = None
-        label = None
-        sample = None 
-        try:
-            labelNum = int(numberOrName)
-        except:
-            try:
-                sample = SAMPLE_MODEL.get().objects.get(name=numberOrName)
-                label = sample.label
-            except:
-                messages.error(request, 'Could not find sample %s; start with a label. ' % numberOrName,
-                               extra_tags='safe')
-                return render_to_response('xgds_sample/recordSample.html',
-                                          RequestContext(request, {}))
-        if labelNum and not label:
-            try:
-                label = LABEL_MODEL.get().objects.get(number=labelNum)
-                sample = label.sample
-            except:
-                return createSample(request, labelNum, label)
-        form = SampleForm(instance=sample)
-        return editSample(request, sample.pk, form)
-
-
-@login_required 
-def editSampleByLabel(request, labelNum):
-    """ make changes to a sample based on form inputs and save,
-    OR open the edit page
-    """
-    # get all user names (first last). Needed for autocompleting collector field.
-    try:
-        label, create = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
-        sample = label.sample
-    except: 
-        return createSample(request, labelNum, label)
-    # if is updating the sample info from edit form
+def getSampleEditPage(request, samplePK = None):
+    getSampleInfoUrl = reverse('xgds_sample_get_info')
+    currentLabelNum = ""
+    if samplePK:
+        sample = SAMPLE_MODEL.get().objects.get(pk=samplePK)
+        currentLabelNum = sample.label.number
+    form = SampleForm()
+    fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
+    return render_to_response('xgds_sample/sampleEdit.html',
+                              RequestContext(request, {'form': form,
+                                                       'currentLabelNum': currentLabelNum,
+                                                       'users': getUserNames(),
+                                                       'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
+                                                       'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
+                                                       'getSampleInfoUrl': getSampleInfoUrl,
+                                                       'fieldsEnabledFlag': fieldsEnabledFlag})
+                              )      
+ 
+ 
+@login_required
+def saveSampleInfo(request):
+    getSampleInfoUrl = reverse('xgds_sample_get_info')
     if request.method == "POST":
+        data = request.POST.dict()
+        labelNum = int(data['hidden_labelNum'])
+        name = data['hidden_name']
+        
+        if labelNum: 
+            label, labelCreate = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
+            sample, sampleCreate = SAMPLE_MODEL.get().objects.get_or_create(label = label)
+        elif name: 
+            sample, sampleCreate = SAMPLE_MODEL.get().objects.get_or_create(name = name)
+        else: 
+            return render_to_response('xgds_sample/sampleEdit.html',
+                              RequestContext(request, {'form': SampleForm(),
+                                                       'users': getUserNames(),
+                                                       'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
+                                                       'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
+                                                       'getSampleInfoUrl': getSampleInfoUrl,
+                                                       'fieldsEnabledFlag': 0})
+                              )        
+
         # swap the user id 
         form = SampleForm(request.POST, instance=sample)
+        fieldsEnabledFlag = 1  #enable fields so user can fix the form errors
         if form.is_valid():
             form.save()
             if form.errors:
@@ -201,17 +155,63 @@ def editSampleByLabel(request, labelNum):
                     elif key == 'error': 
                         messages.error(request, msg)
             else:
-                messages.success(request, 'Sample data successfully updated.')
-            return redirect(reverse('search_map_single_object', kwargs={'modelPK': form.instance.pk,
-                                                                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY})) 
-        else: 
-            messages.error(request, 'The form is not valid')
-            return editSample(request, sample.pk, form)
-            
-    # edit page opened via edit/<label number>
-    elif request.method == "GET":
-        form = SampleForm(instance=sample)
-        return editSample(request, sample.pk, form)
+                messages.success(request, 'Sample data successfully updated.')  
+                # form save was successful so go to a blank page for another sample info input
+                form = SampleForm()
+                fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
+        
+        return render_to_response('xgds_sample/sampleEdit.html',
+                          RequestContext(request, {'form': form,
+                                                   'users': getUserNames(),
+                                                   'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
+                                                   'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
+                                                   'getSampleInfoUrl': getSampleInfoUrl,
+                                                   'fieldsEnabledFlag': fieldsEnabledFlag})
+                          )      
+     
+ 
+def getSampleInfo(request):
+    """
+    When user enters the label number of sample name
+    this sends back the corresponding sample information
+    to populate the sample edit form
+    """
+    if request.method == "POST":
+        json_data = {}
+        dict = request.POST.dict()
+        print "inside get sample info"
+        print dict
+        # get the sample either by name or label number
+        if dict['sampleName']:
+            sampleName = dict['sampleName']
+            sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(name=sampleName)
+        if dict['labelNum']:
+            labelNum = dict['labelNum']
+            label, labelCreate = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
+            if label:
+                # create the sample
+                sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
+        # get sample info as json to pass back to client side
+        mapDict = sample.toMapDict()
+        print mapDict
+        # set the default information (mirroring forms.py as initial values)
+        if not mapDict['region']: 
+            siteFrame = SiteFrame.objects.get(pk = settings.XGDS_CURRENT_SITEFRAME_ID)
+            mapDict['region'] =  Region.objects.get(zone = siteFrame).id
+        if not mapDict['number']:
+            mapDict['number'] = sample.getCurrentNumber()
+        if not mapDict['collection_time']:
+            collection_time = timezone.now()
+            collection_time = collection_time.strftime("%m/%d/%Y %H:%M")
+            mapDict['collection_time'] = collection_time
+        try: 
+            json_data = json.dumps([mapDict], indent=4)
+        except: 
+            return HttpResponseBadRequest('sample info is not in proper JSON format')
+        return HttpResponse(json_data, content_type='application/json',
+                            status=200)
+    else: 
+        raise Exception("Request method %s not supported." % request.method)
     
     
 @login_required

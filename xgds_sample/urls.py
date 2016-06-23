@@ -22,13 +22,11 @@ from xgds_sample import views
 
 
 urlpatterns = [url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_labels'),
-               url(r'label/sample/(?P<labelNum>[\d]+)$', views.viewSampleByLabel, {}, 'xgds_sample_search_view'),
-               url(r'createSample/(?P<labelNum>[\d]+)$', views.createSample, {}, 'xgds_sample_create'),
                url(r'deleteLabel/(?P<labelNum>[\d]+)$', views.deleteLabelAndSample, {}, 'xgds_sample_delete_label'),
-               url(r'recordSample', TemplateView.as_view(template_name='xgds_sample/recordSample.html'), {}, 'xgds_sample_record'),
-               url(r'edit$', views.getSampleEditPage, {}, 'xgds_sample_record_edit'),
-               url(r'edit/(?P<labelNum>[\d]+)$', views.editSampleByLabel, {}, 'xgds_sample_record_update'), 
-               url(r'edit/sample/(?P<samplePK>[\d]+)$', views.editSample, {}, 'xgds_sample_edit_sample'), 
+               url(r'edit/sample$', views.getSampleEditPage, {}, 'xgds_sample_record_edit'),
+               url(r'edit/sample/(?P<samplePK>[\d]+)$', views.getSampleEditPage, {}, 'xgds_sample_record_edit'), 
+               url(r'saveSample$', views.saveSampleInfo, {}, 'xgds_sample_info_save'),
+               url(r'sample.json', views.getSampleInfo, {}, 'xgds_sample_get_info'),
                url(r'labels/print$', views.printSampleLabels, {}, 'xgds_sample_labels_print'),
                url(r'help$', views.getSampleHelpPage, {}, 'xgds_sample_help')
                ]

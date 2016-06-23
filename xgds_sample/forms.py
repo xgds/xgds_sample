@@ -35,6 +35,7 @@ LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 GEOCAM_TRACK_RESOURCE_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_RESOURCE_MODEL)
 
+
 class CollectorCharField(CharField):
     def label_from_instance(self, obj):
         return "TEST LABEL"
@@ -45,10 +46,13 @@ class SampleForm(ModelForm):
     longitude = forms.FloatField(required=False, label="Longitude")
     altitude = forms.FloatField(required=False, label="Altitude")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
-    name = forms.CharField(required=False, label="Sample Name", help_text="Name autofills on save.")  # name may be constructed in the save method
     number = forms.IntegerField(required=False, min_value=0, label="Number")
     station_number = forms.IntegerField(required=False, min_value=0, label="Station #")
     collector = forms.CharField(required=False, label="Collector")
+    
+    hidden_labelNum = forms.IntegerField(widget = forms.HiddenInput(), required = False)
+    hidden_name = forms.CharField(widget = forms.HiddenInput(), required = False)
+    
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
         '%Y-%m-%d %H:%M:%S',
@@ -78,19 +82,12 @@ class SampleForm(ModelForm):
             self.fields['region'].empty_label = None
             self.initial['resource'] = GEOCAM_TRACK_RESOURCE_MODEL.get().objects.get(name = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR)
             # auto increment the sample number
-            allSamples = SAMPLE_MODEL.get().objects.all()
-            numbers = [sample.number for sample in allSamples]
-            numbers.remove(None)
-            numbers.sort()
-            if len(numbers) > 0:
-                currentNumber = int(numbers[-1]) + 1
-            else:
-                currentNumber = 0
-            self.initial['number'] = currentNumber
+            self.initial['number'] = self.instance.getCurrentNumber()
             if self.instance.collection_time:
                 self.initial['collection_time'] = self.instance.collection_time
             else: 
                 self.initial['collection_time'] = timezone.now()
+    
     
     def clean_year(self):
         year = self.cleaned_data['year']
@@ -187,7 +184,7 @@ class SampleForm(ModelForm):
             builtName = instance.buildName()
             if instance.name != builtName:
                 instance.name = builtName 
-                self.errors['warning'] = "Name has been updated to %s." % builtName
+#                 self.errors['warning'] = "Name has been updated to %s." % builtName
 
         # if name changed, validate against the fields.
         if 'name' in self.changed_data:
@@ -195,7 +192,7 @@ class SampleForm(ModelForm):
             if instance.name != builtName:  #TODO check that instance name is
                 try: 
                     instance.updateSampleFromName(self.cleaned_data['name'])
-                    self.errors['warning'] = "Fields have been updated to reflect the new name."
+#                     self.errors['warning'] = "Fields have been updated to reflect the new name."
                 except: 
                     # if validation fails, return without saving
                     self.errors['error'] = "Save Failed. Name does not validate against the fields. "

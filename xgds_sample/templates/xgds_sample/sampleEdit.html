@@ -90,10 +90,6 @@ $(document).ready(function() {
 	<form class="updateSample" id="updateSampleForm" action="{% url 'xgds_sample_record_update' form.instance.label.number %}" method="post" enctype="multipart/form-data">
 		<input type=hidden name=sampleId value="{{ form.instance.pk }}">
 		<table>
-			<tr>
-				<th><label for="id_label_number">Label Number:</label></th>
-				<td>{{ form.instance.label.number }} </td>
-			</tr>
 			{{ form.as_table }}
 		</table>
 		{% csrf_token %}
@@ -121,24 +117,6 @@ $(document).ready(function() {
 {% endblock preMap %}
 
 {% block postMap %}
-<div class="grid-stack-item noresize" id='create_sample_from_label_num'
-        data-gs-x="3" data-gs-y="3"
-        data-gs-width="2" data-gs-height="1">
-        <div class="grid-stack-item-content" >
-		<i class="icon-lock-open pinDiv"></i><br />
-		<form class="label_number_form" id="label_number_form" action="{% url 'xgds_sample_record_edit' %}" method="post" enctype="multipart/form-data">
-			<strong> Look up sample </strong>
-			<table>
-				<tr>
-					<th><label for="id_label_number">Label # or sample name:</label></th>
-					<td><input id="id_label_number" maxlength="512" name="label_num_or_sample_name" type="text" /></td>
-				</tr>
-			</table>
-			{% csrf_token %}
-			<input id="record_sample_submit_btn" type="submit" class="small" value="Open"/> 
-		</form>
-	</div>
-</div>
 {% endblock postMap %}
 
 

@@ -28,7 +28,6 @@ from django.contrib.auth.models import User
 
 from xgds_core.models import SearchableModel
 
-
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
     name = models.CharField(max_length=128, db_index=True)
@@ -71,7 +70,7 @@ DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourc
 
 
 class AbstractSample(models.Model, SearchableModel):
-    name = models.CharField(max_length=512, null=True, db_index=True) # 9 characters
+    name = models.CharField(max_length=512, null=True, blank=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
     resource = 'set to DEFAULT_RESOURCE_FIELD() or similar in derived classes'
@@ -93,12 +92,13 @@ class AbstractSample(models.Model, SearchableModel):
 
     @classmethod
     def getFieldOrder(cls):
-        return ['region', 
+        return ['label',
+                'name',
+                'region', 
                 'sample_type', 
                 'collector', 
                 'collection_time',
-                'description',
-                'name']
+                'description']
 
     @classmethod
     def getSearchableFields(self):
@@ -197,13 +197,13 @@ class AbstractSample(models.Model, SearchableModel):
         return result
     
     def toMapDict(self):
-        if not self.collection_time and not self.name:
-            return None
         result = modelToDict(self)
-        result['pk'] = int(self.pk)
-        result['app_label'] = self.app_label
-        result['model_type'] = self.model_type
-
+        if self.pk:
+            result['pk'] = int(self.pk)
+        if self.app_label:
+            result['app_label'] = self.app_label
+        if self.model_type:
+            result['model_type'] = self.model_type
         if self.collector:
             result['collector'] = getUserName(self.collector)
         if self.collection_time:     
@@ -229,7 +229,6 @@ class AbstractSample(models.Model, SearchableModel):
             result['region_name'] = self.region.name
         del result['modifier']
         del result['creator']
-        
         
         #TODO image support for samples
         result['thumbnail_image_url'] = self.thumbnail_image_url
