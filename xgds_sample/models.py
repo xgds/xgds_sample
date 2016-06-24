@@ -177,22 +177,22 @@ class AbstractSample(models.Model, SearchableModel):
         result['altitude'] = ''
 
         if self.user_position:
-            result['lat'] = self.user_position.latitude
-            result['lon'] = self.user_position.longitude
+            result['latitude'] = self.user_position.latitude
+            result['longitude'] = self.user_position.longitude
             if hasattr(self.user_position, 'altitude'):
                 result['altitude'] = self.user_position.altitude
             return result
         
         result['position_id'] = ''
         if self.track_position:
-            result['lat'] = self.track_position.latitude
-            result['lon'] = self.track_position.longitude
+            result['latitude'] = self.track_position.latitude
+            result['longitude'] = self.track_position.longitude
             if self.track_position.altitude:
                 result['altitude'] = self.track_position.altitude
             return result
         else: 
-            result['lat'] = ''
-            result['lon'] = ''
+            result['latitude'] = ''
+            result['longitude'] = ''
             
         return result
     
@@ -207,7 +207,7 @@ class AbstractSample(models.Model, SearchableModel):
         if self.collector:
             result['collector'] = getUserName(self.collector)
         if self.collection_time:     
-            result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M")
+            result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M:%S")
         else: 
             result['collection_time'] = ''
         if self.collection_timezone:     

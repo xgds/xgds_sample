@@ -29,6 +29,7 @@ from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
 from geocamUtil.models import SiteFrame
+from geocamUtil.TimeUtil import utcToLocalTime
 
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
@@ -49,6 +50,7 @@ class SampleForm(ModelForm):
     number = forms.IntegerField(required=False, min_value=0, label="Number")
     station_number = forms.IntegerField(required=False, min_value=0, label="Station #")
     collector = forms.CharField(required=False, label="Collector")
+    name = forms.CharField(required=False, label="Name", help_text='Name autofills on save.')
     
     hidden_labelNum = forms.IntegerField(widget = forms.HiddenInput(), required = False)
     hidden_name = forms.CharField(widget = forms.HiddenInput(), required = False)
@@ -69,8 +71,8 @@ class SampleForm(ModelForm):
             if self.instance.collector:
                 self.fields['collector'].initial = self.instance.collector.first_name + ' ' + self.instance.collector.last_name
             positionDict = self.instance.getPositionDict()
-            self.fields['latitude'].initial = positionDict['lat']
-            self.fields['longitude'].initial = positionDict['lon']
+            self.fields['latitude'].initial = positionDict['latitude']
+            self.fields['longitude'].initial = positionDict['longitude']
             if 'altitude' in positionDict:
                 self.fields['altitude'].initial = positionDict['altitude']
             # check the site frame and set the regions.
@@ -84,9 +86,12 @@ class SampleForm(ModelForm):
             # auto increment the sample number
             self.initial['number'] = self.instance.getCurrentNumber()
             if self.instance.collection_time:
-                self.initial['collection_time'] = self.instance.collection_time
+                utc_collection_time = self.instance.collection_time
             else: 
-                self.initial['collection_time'] = timezone.now()
+                utc_collection_time = timezone.now()
+            local_time = utcToLocalTime(utc_collection_time) 
+            collection_time = local_time.strftime("%m/%d/%Y %H:%M:%S")
+            self.initial['collection_time'] = collection_time
     
     
     def clean_year(self):
@@ -184,15 +189,14 @@ class SampleForm(ModelForm):
             builtName = instance.buildName()
             if instance.name != builtName:
                 instance.name = builtName 
-#                 self.errors['warning'] = "Name has been updated to %s." % builtName
 
         # if name changed, validate against the fields.
         if 'name' in self.changed_data:
-            builtName = instance.buildName()
-            if instance.name != builtName:  #TODO check that instance name is
+            builtName = instance.buildName()  # name built from the fields.
+            nameFromForm = self.cleaned_data['name']
+            if nameFromForm != builtName:  
                 try: 
-                    instance.updateSampleFromName(self.cleaned_data['name'])
-#                     self.errors['warning'] = "Fields have been updated to reflect the new name."
+                    instance.updateSampleFromName(nameFromForm)
                 except: 
                     # if validation fails, return without saving
                     self.errors['error'] = "Save Failed. Name does not validate against the fields. "

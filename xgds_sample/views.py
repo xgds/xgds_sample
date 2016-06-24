@@ -39,6 +39,7 @@ from xgds_sample.models import SampleLabelSize, Region
 from xgds_core.views import get_handlebars_templates
 from geocamTrack.utils import getClosestPosition
 from geocamUtil.models import SiteFrame
+from geocamUtil.TimeUtil import utcToLocalTime
 
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from django.views.static import serve
@@ -89,8 +90,8 @@ def deleteLabelAndSample(request, labelNum):
 def setSampleCustomFields(form, sample):       
     # set custom field values with existing data.
     positionDict = sample.getPositionDict()
-    form.fields['latitude'].initial = positionDict['lat']
-    form.fields['longitude'].initial = positionDict['lon']
+    form.fields['latitude'].initial = positionDict['latitude']
+    form.fields['longitude'].initial = positionDict['longitude']
     if 'altitude' in positionDict:
         form.fields['altitude'].initial = positionDict['altitude']
     if sample.collection_time:
@@ -102,13 +103,14 @@ def setSampleCustomFields(form, sample):
 
 @login_required 
 def getSampleEditPage(request, samplePK = None):
+    fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
     getSampleInfoUrl = reverse('xgds_sample_get_info')
     currentLabelNum = ""
     if samplePK:
         sample = SAMPLE_MODEL.get().objects.get(pk=samplePK)
         currentLabelNum = sample.label.number
+        fieldsEnabledFlag = 1  # if we get to this page from sample view, enable the fields.
     form = SampleForm()
-    fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
     return render_to_response('xgds_sample/sampleEdit.html',
                               RequestContext(request, {'form': form,
                                                        'currentLabelNum': currentLabelNum,
@@ -152,7 +154,8 @@ def saveSampleInfo(request):
                 for key, msg in form.errors.items():
                     if key == 'warning':
                         messages.warning(request, msg)
-                    elif key == 'error': 
+                    elif key == 'error':
+                        print "THERE IS A FORM ERROR!" 
                         messages.error(request, msg)
             else:
                 messages.success(request, 'Sample data successfully updated.')  
@@ -179,8 +182,6 @@ def getSampleInfo(request):
     if request.method == "POST":
         json_data = {}
         dict = request.POST.dict()
-        print "inside get sample info"
-        print dict
         # get the sample either by name or label number
         if dict['sampleName']:
             sampleName = dict['sampleName']
@@ -193,6 +194,7 @@ def getSampleInfo(request):
                 sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
         # get sample info as json to pass back to client side
         mapDict = sample.toMapDict()
+        print "getInfo sample toMapDict"
         print mapDict
         # set the default information (mirroring forms.py as initial values)
         if not mapDict['region']: 
@@ -200,10 +202,16 @@ def getSampleInfo(request):
             mapDict['region'] =  Region.objects.get(zone = siteFrame).id
         if not mapDict['number']:
             mapDict['number'] = sample.getCurrentNumber()
-        if not mapDict['collection_time']:
-            collection_time = timezone.now()
-            collection_time = collection_time.strftime("%m/%d/%Y %H:%M")
-            mapDict['collection_time'] = collection_time
+        # change the server time (UTC) to local time for display
+        if not mapDict['collection_time']: 
+            utc_time = timezone.now() 
+        else: 
+            # convert to a datetime object
+            utc_time = mapDict['collection_time']
+            utc_time = datetime.strptime(utc_time, '%m/%d/%Y %H:%M:%S') 
+        local_time = utcToLocalTime(utc_time) 
+        collection_time = local_time.strftime("%m/%d/%Y %H:%M:%S")
+        mapDict['collection_time'] = collection_time
         try: 
             json_data = json.dumps([mapDict], indent=4)
         except: 
