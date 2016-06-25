@@ -105,12 +105,12 @@ def setSampleCustomFields(form, sample):
 def getSampleEditPage(request, samplePK = None):
     fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
     getSampleInfoUrl = reverse('xgds_sample_get_info')
-    currentLabelNum = ""
+    sample = None
     if samplePK:
         sample = SAMPLE_MODEL.get().objects.get(pk=samplePK)
         currentLabelNum = sample.label.number
         fieldsEnabledFlag = 1  # if we get to this page from sample view, enable the fields.
-    form = SampleForm()
+    form = SampleForm(instance=sample)
     return render_to_response('xgds_sample/sampleEdit.html',
                               RequestContext(request, {'form': form,
                                                        'currentLabelNum': currentLabelNum,
