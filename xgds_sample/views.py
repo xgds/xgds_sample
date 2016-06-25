@@ -108,12 +108,10 @@ def getSampleEditPage(request, samplePK = None):
     sample = None
     if samplePK:
         sample = SAMPLE_MODEL.get().objects.get(pk=samplePK)
-        currentLabelNum = sample.label.number
         fieldsEnabledFlag = 1  # if we get to this page from sample view, enable the fields.
     form = SampleForm(instance=sample)
     return render_to_response('xgds_sample/sampleEdit.html',
                               RequestContext(request, {'form': form,
-                                                       'currentLabelNum': currentLabelNum,
                                                        'users': getUserNames(),
                                                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
                                                        'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
