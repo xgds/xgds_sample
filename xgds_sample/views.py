@@ -181,21 +181,28 @@ def getSampleInfo(request):
     """
     if request.method == "POST":
         json_data = {}
-        dict = request.POST.dict()
+        postDict = request.POST.dict()
         # get the sample either by name or label number
-        if dict['sampleName']:
-            sampleName = dict['sampleName']
-            sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(name=sampleName)
-        if dict['labelNum']:
-            labelNum = dict['labelNum']
-            label, labelCreate = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
-            if label:
-                # create the sample
-                sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
+        if 'sampleName' in postDict:
+            sampleName = postDict['sampleName']
+            if sampleName:  # sampleName is not necessarily unique.
+                try: 
+                    sample = SAMPLE_MODEL.get().objects.filter(name=sampleName)[0]
+                except: 
+                    sample = SAMPLE_MODEL.get().objects.create(name=sampleName)
+            else:
+                raise Exception("Sample %s is not found." % sampleName)
+        if 'labelNum' in postDict:
+            labelNum = int(postDict['labelNum'])
+            if labelNum:
+                label, labelCreate = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
+                if label:
+                    # create the sample
+                    sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
+                else: 
+                    raise Exception("Label with number %d is not found", labelNum)
         # get sample info as json to pass back to client side
         mapDict = sample.toMapDict()
-        print "getInfo sample toMapDict"
-        print mapDict
         # set the default information (mirroring forms.py as initial values)
         if not mapDict['region']: 
             siteFrame = SiteFrame.objects.get(pk = settings.XGDS_CURRENT_SITEFRAME_ID)
