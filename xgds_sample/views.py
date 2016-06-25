@@ -130,20 +130,14 @@ def saveSampleInfo(request):
         labelNum = int(data['hidden_labelNum'])
         name = data['hidden_name']
         
-        if labelNum: 
-            label, labelCreate = LABEL_MODEL.get().objects.get_or_create(number = labelNum)
-            sample, sampleCreate = SAMPLE_MODEL.get().objects.get_or_create(label = label)
-        elif name: 
-            sample, sampleCreate = SAMPLE_MODEL.get().objects.get_or_create(name = name)
-        else: 
-            return render_to_response('xgds_sample/sampleEdit.html',
-                              RequestContext(request, {'form': SampleForm(),
-                                                       'users': getUserNames(),
-                                                       'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
-                                                       'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
-                                                       'getSampleInfoUrl': getSampleInfoUrl,
-                                                       'fieldsEnabledFlag': 0})
-                              )        
+        try:
+            pk = int(data['pk'])
+        except:
+            pk = None
+        
+        if pk:
+            sample = SAMPLE_MODEL.get().objects.get(pk=pk)
+#                               )        
 
         # swap the user id 
         form = SampleForm(request.POST, instance=sample)
@@ -155,13 +149,12 @@ def saveSampleInfo(request):
                     if key == 'warning':
                         messages.warning(request, msg)
                     elif key == 'error':
-                        print "THERE IS A FORM ERROR!" 
                         messages.error(request, msg)
             else:
-                messages.success(request, 'Sample data successfully updated.')  
+                messages.success(request, 'Sample %s successfully updated.' % sample.name)  
                 # form save was successful so go to a blank page for another sample info input
-                form = SampleForm()
-                fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
+                #form = SampleForm()
+                #fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
         
         return render_to_response('xgds_sample/sampleEdit.html',
                           RequestContext(request, {'form': form,

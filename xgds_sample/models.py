@@ -70,7 +70,7 @@ DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourc
 
 
 class AbstractSample(models.Model, SearchableModel):
-    name = models.CharField(max_length=512, null=True, blank=True, db_index=True) # 9 characters
+    name = models.CharField(max_length=64, null=True, blank=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
     resource = 'set to DEFAULT_RESOURCE_FIELD() or similar in derived classes'
@@ -198,6 +198,8 @@ class AbstractSample(models.Model, SearchableModel):
     
     def toMapDict(self):
         result = modelToDict(self)
+        if not self.name:
+            result['name'] = ''
         if self.pk:
             result['pk'] = int(self.pk)
         if self.app_label:

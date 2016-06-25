@@ -48,12 +48,13 @@ class SampleForm(ModelForm):
     altitude = forms.FloatField(required=False, label="Altitude")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
     number = forms.IntegerField(required=False, min_value=0, label="Number")
-    station_number = forms.IntegerField(required=False, min_value=0, label="Station #")
+    station_number = forms.CharField(required=False, label="Station #")
     collector = forms.CharField(required=False, label="Collector")
     name = forms.CharField(widget = forms.HiddenInput(), required = False, label="Name", help_text='Name autofills on save.')
     
     hidden_labelNum = forms.IntegerField(widget = forms.HiddenInput(), required = False)
     hidden_name = forms.CharField(widget = forms.HiddenInput(), required = False)
+    pk = forms.IntegerField(widget = forms.HiddenInput(), required = False)
     
     date_formats = list(forms.DateTimeField.input_formats) + [
         '%Y/%m/%d %H:%M:%S',
