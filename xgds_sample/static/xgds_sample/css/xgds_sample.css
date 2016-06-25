@@ -5,6 +5,10 @@ hr {
     background-color: #333; /* Modern Browsers */
 }
 
+#error-message {
+	color: red;
+}
+
 #map {
 	width:550px;
 	height: 600px;

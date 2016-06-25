@@ -174,10 +174,14 @@ class SampleForm(ModelForm):
         
         if ('collector' in self.changed_data):
             fullName = self.cleaned_data['collector']
-            splitName = fullName.split(' ')
-            firstAndLast = [x for x in splitName if x.strip()]
-            collector = User.objects.filter(first_name=firstAndLast[0]).filter(last_name=firstAndLast[1])[0] 
-            instance.collector = collector
+            try: 
+                splitName = fullName.split(' ')
+                firstAndLast = [x for x in splitName if x.strip()]
+                collector = User.objects.filter(first_name=firstAndLast[0]).filter(last_name=firstAndLast[1])[0] 
+                instance.collector = collector
+            except: 
+                self.errors['error'] = "Save Failed. User %s does not exist." % fullName
+                return instance
         
         # if fields changed, validate against the name
         needsNameRebuild = False
