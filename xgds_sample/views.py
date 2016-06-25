@@ -261,8 +261,8 @@ def printSampleLabels(request):
                 sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
                 sample.save()
                 if sample_create:
-                    label.url = reverse('search_map_single_object', kwargs={'modelName':settings.XGDS_SAMPLE_SAMPLE_KEY,
-                                                                            'modelPK':sample.pk})
+                    label.url = settings.XGDS_SAMPLE_PERM_LINK_PREFIX + reverse('search_map_single_object', kwargs={'modelName':settings.XGDS_SAMPLE_SAMPLE_KEY,
+                                                                                                                    'modelPK':sample.pk})
                     label.save() 
                 labelsToPrint.append(label)
             if quantity <=0:

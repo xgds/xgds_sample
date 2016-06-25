@@ -20,6 +20,7 @@ from geocamUtil.SettingsUtil import getOrCreateDict
 XGDS_SAMPLE_SAMPLE_MODEL = 'xgds_sample.Sample'
 XGDS_SAMPLE_LABEL_MODEL = 'xgds_sample.Label'
 XGDS_SAMPLE_RESOURCE_MODEL = 'geocamTrack.Resource'
+XGDS_SAMPLE_PERM_LINK_PREFIX = 'TODO:FIXME'
 
 XGDS_SAMPLE_DEFAULT_COLLECTOR = 'EV2'
 XGDS_SAMPLE_PDF_DIR = "xgds_sample/labels"
