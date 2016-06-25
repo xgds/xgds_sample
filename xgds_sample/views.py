@@ -135,7 +135,6 @@ def saveSampleInfo(request):
         
         if pk:
             sample = SAMPLE_MODEL.get().objects.get(pk=pk)
-#                               )        
 
         # swap the user id 
         form = SampleForm(request.POST, instance=sample)
@@ -150,10 +149,6 @@ def saveSampleInfo(request):
                         messages.error(request, msg)
             else:
                 messages.success(request, 'Sample %s successfully updated.' % sample.name)  
-                # form save was successful so go to a blank page for another sample info input
-                #form = SampleForm()
-                #fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
-        
         return render_to_response('xgds_sample/sampleEdit.html',
                           RequestContext(request, {'form': form,
                                                    'users': getUserNames(),
