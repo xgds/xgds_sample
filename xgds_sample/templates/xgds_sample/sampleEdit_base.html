@@ -1,0 +1,146 @@
+{% extends 'dashboard_base.html' %}
+
+{% load json_dumps %}
+
+{% block sitemenu-content-secondary %}
+	{% include "sample_subnav.html" %}
+    {% load nav %}
+{% endblock %}
+
+ {% block cssExtras %}
+ {{ block.super }}
+ {% include "xgds_notes2/NoteCSS.html" %}
+  <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css"></link>
+  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
+ {% endblock cssExtras %}
+
+
+{% block scripts %}
+{{block.super}}
+	{% include "xgds_notes2/NoteJS.html" %}
+	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}typeahead.js/dist/typeahead.bundle.min.js"></script> 
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
+	<script type="text/javascript" src='{{ STATIC_URL }}xgds_core/js/datetimepickerUtils.js'></script>
+	<script type="text/javascript">
+		var collectors = {{ users|safe }};
+	</script>
+	<script type="text/javascript" src='{{ STATIC_URL }}xgds_sample/js/sampleEdit.js'></script>
+	
+    <!--  load handlebars -->
+	{% for template_name, template in templates.items %}
+		<script type="text/handlebars" id="template-{{template_name}}">
+			{{template|safe}}
+		</script>
+	{% endfor %}
+{% endblock scripts %}
+
+{% block jsInit %} 
+{{ block.super }}
+// url to server side code that fetches sample info for given sample label or name.
+var getSampleInfoUrl = '{{ getSampleInfoUrl }}';
+{% if form.instance.pk %}
+var existingSample = true;
+var hiddenLabel = "{{form.instance.label_number}}";
+var hiddenName = "{{form.instance.name}}";
+{% else %}
+var existingSample = false;
+var hiddenLabel = null;
+var hiddenName = null;
+{% endif %}
+
+var fieldsEnabledFlag = {{ fieldsEnabledFlag }};
+
+// add time picker 
+addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
+
+// initialize the notes when the window is ready
+$(document).ready(function() {
+	{% if form.instance %}
+	var thedata = [{{form.instance.toMapDict|json_dumps|safe}}];
+		showOnMap([{{form.instance.toMapDict|json_dumps|safe}}]);
+	{% endif %}
+	
+	// show existing notes
+	var container = $('#notes_content');
+	xgds_notes.setupNotesUI();
+	xgds_notes.initializeNotesReference(container, '{{form.instance.app_label}}', '{{form.instance.model_type}}', '{{form.instance.pk }}', '{{form.instance.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{form.instance.collection_timezone}}');
+	xgds_notes.getNotesForObject('{{form.instance.app_label}}', '{{form.instance.model_type}}', '{{form.instance.pk }}', 'notes_content', container.find('table.notes_list'));
+
+	xgds_sample.initializeSampleEditForm();
+});
+{% endblock jsInit %} 
+
+
+{% load xgds_sample_extras %}
+
+{% block preDashboard %}
+<div class="error-message upload-error">
+	<ul class="messages">
+	{% if messages %}
+	    {% for message in messages %}
+	    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+	    {% endfor %}
+	    {% else %}
+	    <br/>
+	    {% endif  %}
+	</ul>
+</div>
+{% endblock preDashboard %}
+
+
+{% block preMap %} 
+<div class="grid-stack-item" id='item_sample_create'
+        data-gs-x="0" data-gs-y="0"
+        data-gs-width="3" data-gs-height="5">
+            <div class="grid-stack-item-content">
+	<i class="icon-lock pinDiv"></i>
+	<div id="error-message"></div>
+	<div><strong> Look up sample </strong></div>
+	<table id="lookupsample_table">
+		<tr>
+			<th>
+				<select class="sample_info_type" id="search_input_type">
+					<option value="labelNum">Label Number</option>
+					<option value="sampleName">Sample Name</option>
+				</select>
+			</th>
+			<td class='sample_info_type_value'><input id="id_search_input" min="0" />  &nbsp;&nbsp;<button id="load" onclick="xgds_sample.onEnterLoadSampleInfo()" type="button" class="small">Load</button> </td>
+		</tr>
+	</table>
+	</br>
+	
+	<div id="label_number_title"><strong> </strong></div>
+	<div id="sample_name_title"><strong> </strong></div>
+	{% if form.errors %}
+    <ol>
+    {% for error in form.errors %}
+        <li><strong>{{ error|escape }}</strong></li>
+    {% endfor %}
+    </ol>
+	{% endif %}
+	<form class="updateSample" id="updateSampleForm" action="{% url 'xgds_sample_info_save' %}" method="post" enctype="multipart/form-data">
+		<table>
+			{{ form.as_table }}
+		</table>
+		{% csrf_token %}
+		<a class="toggleInputFields" onclick="xgds_sample.toggleAdvancedInput();"> Open out-of-sim fields </a>
+		<div id="sample-edit-button-group">
+		<input class="mybutton small" id="sample-info-submit" type="submit" value="Save"/>
+		</div>
+	</form>
+	
+	<hr>
+ 	<div id="complete_notes">
+		<strong>Notes</strong>
+		<div id="notes_content" class="tab-content active notes_content">
+		{% include 'xgds_notes2/notes_input_include.html' %}
+		{% include 'xgds_notes2/notes_table_small.html' %}
+		</div>
+	</div> 
+	
+	</div>
+</div>
+
+
+{% endblock preMap %}

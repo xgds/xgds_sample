@@ -107,6 +107,8 @@ $.extend(xgds_sample,{
 					}
 				}
 				
+				showOnMap(data);
+				
 				_this.updateNotes(json_dict);
 				
 				_this.postDataLoad(json_dict);

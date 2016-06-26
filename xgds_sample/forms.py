@@ -43,8 +43,8 @@ class CollectorCharField(CharField):
 
 
 class SampleForm(ModelForm):
-    latitude = forms.FloatField(required=False, label="Latitude")
-    longitude = forms.FloatField(required=False, label="Longitude")
+    lat = forms.FloatField(required=False, label="Latitude")
+    lon = forms.FloatField(required=False, label="Longitude")
     altitude = forms.FloatField(required=False, label="Altitude")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
     number = forms.IntegerField(required=False, min_value=0, label="Number")
@@ -69,11 +69,12 @@ class SampleForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(SampleForm, self).__init__(*args, **kwargs)
         if self.instance:
+            self.fields['pk'].initial = self.instance.pk
             if self.instance.collector:
                 self.fields['collector'].initial = self.instance.collector.first_name + ' ' + self.instance.collector.last_name
             positionDict = self.instance.getPositionDict()
-            self.fields['latitude'].initial = positionDict['latitude']
-            self.fields['longitude'].initial = positionDict['longitude']
+            self.fields['lat'].initial = positionDict['lat']
+            self.fields['lon'].initial = positionDict['lon']
             if 'altitude' in positionDict:
                 self.fields['altitude'].initial = positionDict['altitude']
             # check the site frame and set the regions.
@@ -141,13 +142,13 @@ class SampleForm(ModelForm):
         Checks that collection time is entered if user is entering position for the first time.
         """
         cleaned_data = super(SampleForm, self).clean()
-        latitude = cleaned_data.get("latitude")
-        longitude = cleaned_data.get("longitude")
-        if (latitude and not longitude) or (not latitude and longitude):  # if only one of them is filled in
+        lat = cleaned_data.get("lat")
+        lon = cleaned_data.get("lon")
+        if (lat and not lon) or (not lat and lon):  # if only one of them is filled in
             msg = "Must enter both latitude and longitude or leave both blank."
-            self.add_error('latitude', msg)
-            self.add_error('longitude', msg)
-        if latitude and longitude:
+            self.add_error('lat', msg)
+            self.add_error('lon', msg)
+        if lat and lon:
             instance = super(SampleForm, self).save(commit=False)
             if instance.user_position is None:
                 if not self.cleaned_data['collection_time']:
@@ -161,16 +162,16 @@ class SampleForm(ModelForm):
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
         
-        if (('latitude' in self.changed_data) and ('longitude' in self.changed_data)) or ('altitude' in self.changed_data):
+        if (('lat' in self.changed_data) and ('lon' in self.changed_data)) or ('altitude' in self.changed_data):
             if instance.user_position is None:
                 instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
                                                                              timestamp = instance.collection_time,
-                                                                             latitude = self.cleaned_data['latitude'],
-                                                                             longitude = self.cleaned_data['longitude'], 
+                                                                             latitude = self.cleaned_data['lat'],
+                                                                             longitude = self.cleaned_data['lon'], 
                                                                              altitude = self.cleaned_data['altitude'])
             else:
-                instance.user_position.latitude = self.cleaned_data['latitude']
-                instance.user_position.longitude = self.cleaned_data['longitude']
+                instance.user_position.latitude = self.cleaned_data['lat']
+                instance.user_position.longitude = self.cleaned_data['lon']
                 instance.user_position.altitude = self.cleaned_data['altitude']
         
         if ('collector' in self.changed_data):
