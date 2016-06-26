@@ -204,19 +204,19 @@ $.extend(xgds_sample,{
 				cb(matches);
 			};
 		};
-		$('#id_collector').typeahead({
+		$('#id_collector_name').typeahead({
 			hint: true,
 			highlight: true,
 			minLength: 1
 		},
 		{
-			name: 'collector',
+			name: 'collector_name',
 			source: substringMatcher(collectors)
 		});
 	},
 	
-	advancedInputFields: ['#id_latitude',
-	                      '#id_longitude',
+	advancedInputFields: ['#id_lat',
+	                      '#id_lon',
 	                      '#id_altitude'
 	                      ],
 	
@@ -231,7 +231,7 @@ $.extend(xgds_sample,{
 		$.each(this.advancedInputFields, function(index, field){
 			$(field).parent().parent().toggle();
 		});
-		if ($('#id_latitude').is(":visible")) {
+		if ($('#id_lat').is(":visible")) {
 			$('.toggleInputFields').html('Close out-of-sim fields');	
 		} else {
 			$('.toggleInputFields').html('Open out-of-sim fields');	
@@ -258,13 +258,13 @@ $.extend(xgds_sample,{
 			};
 		};
 
-		$('#id_collector').typeahead({
+		$('#id_collector_name').typeahead({
 			hint: true,
 			highlight: true,
 			minLength: 1
 		},
 		{
-			name: 'collector',
+			name: 'collector_name',
 			source: substringMatcher(collectors)
 		});
 	}

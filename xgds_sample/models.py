@@ -96,7 +96,7 @@ class AbstractSample(models.Model, SearchableModel):
                 'name',
                 'region', 
                 'sample_type', 
-                'collector', 
+                'collector_name', 
                 'collection_time',
                 'description']
 

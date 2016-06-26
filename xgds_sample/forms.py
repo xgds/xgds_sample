@@ -49,7 +49,7 @@ class SampleForm(ModelForm):
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
     number = forms.IntegerField(required=False, min_value=0, label="Number")
     station_number = forms.CharField(required=False, label="Station #")
-    collector = forms.CharField(required=False, label="Collector")
+    collector_name = forms.CharField(required=False, label="Collector")
     name = forms.CharField(widget = forms.HiddenInput(), required = False, label="Name", help_text='Name autofills on save.')
     
     hidden_labelNum = forms.IntegerField(widget = forms.HiddenInput(), required = False)
@@ -71,7 +71,7 @@ class SampleForm(ModelForm):
         if self.instance:
             self.fields['pk'].initial = self.instance.pk
             if self.instance.collector:
-                self.fields['collector'].initial = self.instance.collector.first_name + ' ' + self.instance.collector.last_name
+                self.fields['collector_name'].initial = self.instance.collector.first_name + ' ' + self.instance.collector.last_name
             positionDict = self.instance.getPositionDict()
             self.fields['lat'].initial = positionDict['lat']
             self.fields['lon'].initial = positionDict['lon']
@@ -174,8 +174,8 @@ class SampleForm(ModelForm):
                 instance.user_position.longitude = self.cleaned_data['lon']
                 instance.user_position.altitude = self.cleaned_data['altitude']
         
-        if ('collector' in self.changed_data):
-            fullName = self.cleaned_data['collector']
+        if ('collector_name' in self.changed_data):
+            fullName = self.cleaned_data['collector_name']
             try: 
                 splitName = fullName.split(' ')
                 firstAndLast = [x for x in splitName if x.strip()]
