@@ -86,7 +86,10 @@ class SampleForm(ModelForm):
             self.fields['region'].empty_label = None
             self.initial['resource'] = GEOCAM_TRACK_RESOURCE_MODEL.get().objects.get(name = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR)
             # auto increment the sample number
-            self.initial['number'] = self.instance.getCurrentNumber()
+            self.initial['number'] = self.instance.number
+            if not self.instance.number:
+                self.initial['number'] = self.instance.getCurrentNumber()
+            
             if self.instance.collection_time:
                 utc_collection_time = self.instance.collection_time
             else: 

@@ -35,7 +35,7 @@ $.extend(xgds_sample,{
 		this.getInputFieldsToUpdate();
 		// only disable fields if the form save succeeded or it's a new form
 		if (fieldsEnabledFlag == 0) {
-			this.all_input_fields.prop("readonly", true);
+			this.all_input_fields.prop("disabled", true);
 		} else {
 			this.onFieldsEnabled();
 		}
@@ -89,7 +89,7 @@ $.extend(xgds_sample,{
 			success: function(data)
 			{
 				// enable fields
-		    	_this.all_input_fields.prop("readonly", false);
+		    	_this.all_input_fields.prop("disabled", false);
 		    	
 				// clear the error message
 				$("#error-message").html("");
@@ -219,7 +219,7 @@ $.extend(xgds_sample,{
 		/**
 		 * Get only the input fields inside the form. 
 		 */
-		this.all_input_fields = $(':input');
+		this.all_input_fields = $(":input[id^=id_]");
 		
 		for (var i=0; i<this.nonEditableFields.length; i++){
 			this.all_input_fields = this.all_input_fields.not($(this.nonEditableFields[i]));
