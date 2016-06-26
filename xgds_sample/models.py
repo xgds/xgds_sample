@@ -102,8 +102,7 @@ class AbstractSample(models.Model, SearchableModel):
 
     @classmethod
     def getSearchableFields(self):
-        return ['name', 'description', 'collector__first_name', 'collector__last_name', 'sample_type__display_name']
-
+        return ['name', 'description', 'collector__first_name', 'collector__last_name', 'sample_type__display_name', 'region__name', 'region__zone__name']
 
     @property
     def sample_type_name(self):
