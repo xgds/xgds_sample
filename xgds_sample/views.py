@@ -125,8 +125,6 @@ def saveSampleInfo(request):
     getSampleInfoUrl = reverse('xgds_sample_get_info')
     if request.method == "POST":
         data = request.POST.dict()
-        labelNum = int(data['hidden_labelNum'])
-        name = data['hidden_name']
         
         try:
             pk = int(data['pk'])
@@ -136,7 +134,6 @@ def saveSampleInfo(request):
         if pk:
             sample = SAMPLE_MODEL.get().objects.get(pk=pk)
 
-        # swap the user id 
         form = SampleForm(request.POST, instance=sample)
         fieldsEnabledFlag = 1  #enable fields so user can fix the form errors
         if form.is_valid():
@@ -156,7 +153,7 @@ def saveSampleInfo(request):
                                                    'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
                                                    'getSampleInfoUrl': getSampleInfoUrl,
                                                    'fieldsEnabledFlag': fieldsEnabledFlag})
-                          )      
+                                                   )      
      
  
 def getSampleInfo(request):
