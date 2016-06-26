@@ -47,7 +47,7 @@ class SampleForm(ModelForm):
     lon = forms.FloatField(required=False, label="Longitude")
     altitude = forms.FloatField(required=False, label="Altitude")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
-    number = forms.IntegerField(required=False, min_value=0, label="Number")
+    number = forms.IntegerField(required=False, min_value=0, label="Number", disabled=True)
     station_number = forms.CharField(required=False, label="Station #")
     collector_name = forms.CharField(required=False, label="Collector")
     name = forms.CharField(widget = forms.HiddenInput(), required = False, label="Name", help_text='Name autofills on save.')

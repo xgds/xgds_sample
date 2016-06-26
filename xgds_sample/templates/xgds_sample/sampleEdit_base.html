@@ -22,10 +22,10 @@
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}typeahead.js/dist/typeahead.bundle.min.js"></script> 
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
 	<script type="text/javascript" src='{{ STATIC_URL }}xgds_core/js/datetimepickerUtils.js'></script>
+	<script type="text/javascript" src='{{ STATIC_URL }}xgds_sample/js/sampleEdit.js'></script>
 	<script type="text/javascript">
 		var collectors = {{ users|safe }};
 	</script>
-	<script type="text/javascript" src='{{ STATIC_URL }}xgds_sample/js/sampleEdit.js'></script>
 	
     <!--  load handlebars -->
 	{% for template_name, template in templates.items %}

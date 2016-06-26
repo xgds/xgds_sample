@@ -23,6 +23,7 @@ $.extend(xgds_sample,{
 		 */
 		var _this = this;
 		this.updateAdvancedInputFields();
+		this.updateNonEditableFields();
 		this.toggleAdvancedInput();
 		this.setupCollectorInput();
 		
@@ -31,10 +32,10 @@ $.extend(xgds_sample,{
 			$("#id_search_input").val('');
 		});
 		
-		var all_input_fields = this.getInputFieldsToUpdate();
+		this.getInputFieldsToUpdate();
 		// only disable fields if the form save succeeded or it's a new form
 		if (fieldsEnabledFlag == 0) {
-			all_input_fields.prop("disabled", true);
+			this.all_input_fields.prop("readonly", true);
 		} else {
 			this.onFieldsEnabled();
 		}
@@ -88,8 +89,7 @@ $.extend(xgds_sample,{
 			success: function(data)
 			{
 				// enable fields
-		    	var all_input_fields = _this.getInputFieldsToUpdate();
-		    	all_input_fields.prop("disabled", false);
+		    	_this.all_input_fields.prop("readonly", false);
 		    	
 				// clear the error message
 				$("#error-message").html("");
@@ -133,20 +133,14 @@ $.extend(xgds_sample,{
 	
 	updateLabelName: function(labelNum, sampleName) {
 		// copy over the fields into hidden
+		$("#id_hidden_name").val(sampleName);
+		$("#id_hidden_labelNum").val(labelNum);
 		$("#label_number_title").html("<strong> Label number: " + labelNum  + "</strong>");
     	if (_.isNull(sampleName) || sampleName == "") {
 			$("#sample_name_title").html("<strong> Name: (Autofills on save) </strong>");
 		} else {
 			$("#sample_name_title").html("<strong>Name: " + sampleName  + "</strong>");
 		}
-	},
-	
-	getInputFieldsToUpdate: function() {
-		/**
-		 * Get only the input fields inside the form. 
-		 */
-		var input_fields = $(':input').not($("input[id='id_search_input']")).not($("#load")).not($("select[class='sample_info_type']"));
-		return input_fields;
 	},
 	
 	clearMessages: function() {
@@ -213,6 +207,23 @@ $.extend(xgds_sample,{
 			name: 'collector_name',
 			source: substringMatcher(collectors)
 		});
+	},
+	
+	nonEditableFields: ['#id_search_input','#load', '#search_input_type'],
+	
+	updateNonEditableFields: function() {
+		
+	},
+	
+	getInputFieldsToUpdate: function() {
+		/**
+		 * Get only the input fields inside the form. 
+		 */
+		this.all_input_fields = $(':input');
+		
+		for (var i=0; i<this.nonEditableFields.length; i++){
+			this.all_input_fields = this.all_input_fields.not($(this.nonEditableFields[i]));
+		}
 	},
 	
 	advancedInputFields: ['#id_lat',
