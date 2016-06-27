@@ -87,6 +87,14 @@ class AbstractSample(models.Model, SearchableModel):
     description = models.CharField(null=True, blank=True, max_length=1024)
     
     @classmethod
+    def cls_type(cls):
+        return 'Sample'
+    
+    @property
+    def type(self):
+        return self.__class__.cls_type()
+    
+    @classmethod
     def timesearchField(self):
         return 'collection_time'
 
