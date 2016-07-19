@@ -30,7 +30,6 @@ from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
 from geocamUtil.models import SiteFrame
 from geocamUtil.TimeUtil import utcToLocalTime
-import pydevd
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
