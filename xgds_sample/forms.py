@@ -30,7 +30,7 @@ from geocamUtil.loader import LazyGetModelByName
 from geocamTrack.utils import getClosestPosition
 from geocamUtil.models import SiteFrame
 from geocamUtil.TimeUtil import utcToLocalTime
-
+import pydevd
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
@@ -81,10 +81,8 @@ class SampleForm(ModelForm):
             siteframe = SiteFrame.objects.get(pk = settings.XGDS_CURRENT_SITEFRAME_ID)
             # get all the regions for this site frame. 
             regionsForZone = Region.objects.filter(zone = siteframe)
-            #self.fields['region'].widget.choices.queryset = regionsForZone
             self.initial['region'] = regionsForZone[0]
             self.fields['region'].empty_label = None
-            self.initial['resource'] = GEOCAM_TRACK_RESOURCE_MODEL.get().objects.get(name = settings.XGDS_SAMPLE_DEFAULT_COLLECTOR)
             # auto increment the sample number
             self.initial['number'] = self.instance.number
             if not self.instance.number:
@@ -164,7 +162,7 @@ class SampleForm(ModelForm):
         instance.collection_time = self.cleaned_data['collection_time']
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
-        
+            
         if (('lat' in self.changed_data) and ('lon' in self.changed_data)) or ('altitude' in self.changed_data):
             if instance.user_position is None:
                 instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
