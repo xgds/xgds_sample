@@ -13,7 +13,6 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-
 import datetime
 import pytz
 from django.utils import timezone
@@ -44,7 +43,7 @@ class SampleType(AbstractEnumModel):
         return u'%s' % (self.display_name)
     
 
-class Label(models.Model):
+class Label(models.Model, SearchableModel):
     number = models.IntegerField(db_index=True)
     url = models.CharField(null=True, max_length=512)    
     last_printed = models.DateTimeField(blank=True, null=True, editable=False, db_index=True)
@@ -52,13 +51,12 @@ class Label(models.Model):
     def __unicode__(self):
         return u'%s' % (self.number)
     
-    def toMapDict(self):
-        result = modelToDict(self)
-        try:
-            result['sampleName'] = self.sample.name
-        except: 
-            result['sampleName'] = ""
-        return result
+    @property
+    def sampleName(self):
+        if self.sample:
+            if self.sample.name:
+                return self.sample.name
+        return ''
     
     class Meta:
         ordering = ['number']

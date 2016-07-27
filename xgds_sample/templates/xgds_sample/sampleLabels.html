@@ -20,8 +20,12 @@
                                 return "<input type='checkbox' name='label_checkbox' value='" + data["id"] +"'>";
                             }},
 				   {"mData": function(data, type, full) {
-				   		var result = "<a href='label/sample/" + data.number + "'>" + data.number + "</a>";
-				   		return result;
+				   if (data['sampleName'] != ''){
+				   		var result = "<a href=" + data['url'] +  ">" + data.number + "</a>";
+				   	} else {
+				   		var result = '' + data.number;
+				   	}
+				   	return result;
 				   }},
                    {"mData": function(data, type, full) {
                    		if (data['sampleName'] != ''){

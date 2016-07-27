@@ -198,7 +198,6 @@ def getSampleInfo(request):
         if 'collection_time' not in mapDict or not mapDict['collection_time']: 
             utc_time = timezone.now() 
         else: 
-            # convert to a datetime object
             utc_time = mapDict['collection_time']
         local_time = utcToLocalTime(utc_time) 
         collection_time = local_time.strftime("%m/%d/%Y %H:%M:%S")
