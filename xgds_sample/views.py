@@ -191,7 +191,7 @@ def getSampleInfo(request):
         # set the default information (mirroring forms.py as initial values)
         if 'region_name' not in mapDict: 
             siteFrame = SiteFrame.objects.get(pk = settings.XGDS_CURRENT_SITEFRAME_ID)
-            mapDict['region_name'] =  Region.objects.get(zone = siteFrame).name
+            mapDict['region_name'] =  Region.objects.get(zone = siteFrame)[0].name
         if 'number' not in mapDict:
             mapDict['number'] = sample.getCurrentNumber()
         # change the server time (UTC) to local time for display

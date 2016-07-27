@@ -57,15 +57,15 @@ addDateTimePicker("id_collection_time", $('#id_collection_timezone').val());
 // initialize the notes when the window is ready
 $(document).ready(function() {
 	{% if form.instance %}
-	var thedata = [{{form.instance.toMapDict|json_dumps|safe}}];
+		var thedata = [{{form.instance.toMapDict|json_dumps|safe}}];
 		showOnMap([{{form.instance.toMapDict|json_dumps|safe}}]);
+		
+		// show existing notes
+		var container = $('#notes_content');
+		xgds_notes.setupNotesUI(container);
+		xgds_notes.initializeNotesReference(container, '{{form.instance.app_label}}', '{{form.instance.model_type}}', '{{form.instance.pk }}', '{{form.instance.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{form.instance.collection_timezone}}');
+		xgds_notes.getNotesForObject('{{form.instance.app_label}}', '{{form.instance.model_type}}', '{{form.instance.pk }}', 'notes_content', container.find('table.notes_list'));
 	{% endif %}
-	
-	// show existing notes
-	var container = $('#notes_content');
-	xgds_notes.setupNotesUI();
-	xgds_notes.initializeNotesReference(container, '{{form.instance.app_label}}', '{{form.instance.model_type}}', '{{form.instance.pk }}', '{{form.instance.collection_time|date:"Y-m-d H:i:s"}}' + ' UTC', '{{form.instance.collection_timezone}}');
-	xgds_notes.getNotesForObject('{{form.instance.app_label}}', '{{form.instance.model_type}}', '{{form.instance.pk }}', 'notes_content', container.find('table.notes_list'));
 
 	xgds_sample.initializeSampleEditForm();
 });

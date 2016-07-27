@@ -125,6 +125,7 @@ $.extend(xgds_sample,{
 	updateNotes: function(data){
 		//TODO if collection_time is null or changes must update
 		var container = $('#notes_content');
+		xgds_notes.setupNotesUI(container);
 		xgds_notes.initializeNotesReference(container, data.app_label, data.model_type, data.pk, data.collection_time, data.collection_timezone);
 		xgds_notes.getNotesForObject(data.app_label, data.model_type, data.pk, 'notes_content', container.find('table.notes_list'));
 	},
