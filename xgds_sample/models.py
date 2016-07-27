@@ -133,6 +133,10 @@ class AbstractSample(models.Model, SearchableModel):
         return getUserName(self.collector)
 
     @property
+    def tz(self):
+        return self.collection_timezone
+    
+    @property
     def thumbnail_image_url(self):
         return self.thumbnail_url()
 
@@ -203,46 +207,46 @@ class AbstractSample(models.Model, SearchableModel):
             
         return result
     
-    def toMapDict(self):
-        #TODO remove this and use xgds_core functionality and make sure the keys are correct
-        result = modelToDict(self)
-        if not self.name:
-            result['name'] = ''
-        if self.pk:
-            result['pk'] = int(self.pk)
-        if self.app_label:
-            result['app_label'] = self.app_label
-        if self.model_type:
-            result['model_type'] = self.model_type
-        if self.collector:
-            result['collector_name'] = getUserName(self.collector)
-        if self.collection_time:     
-            result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M:%S")
-        else: 
-            result['collection_time'] = ''
-        if self.collection_timezone:     
-            result['timezone'] = str(self.collection_timezone)
-        else: 
-            result['timezone'] = ''
-        result.update(self.getPositionDict())
-        del result['user_position']
-        del result['track_position']
-        if result['resource']:
-            result['resource_name'] = self.resource.name
-            del result['resource']
-        if self.label:
-            result['label_number'] = int(self.label.number)
-         
-        if self.sample_type:
-            result['sample_type_name'] = self.sample_type.display_name
-        if self.region:
-            result['region_name'] = self.region.name
-        del result['modifier']
-        del result['creator']
-         
-        #TODO image support for samples
-        result['thumbnail_image_url'] = self.thumbnail_image_url
-        return result
+#     def toMapDict(self):
+#         #TODO remove this and use xgds_core functionality and make sure the keys are correct
+#         result = modelToDict(self)
+#         if not self.name:
+#             result['name'] = ''
+#         if self.pk:
+#             result['pk'] = int(self.pk)
+#         if self.app_label:
+#             result['app_label'] = self.app_label
+#         if self.model_type:
+#             result['model_type'] = self.model_type
+#         if self.collector:
+#             result['collector_name'] = getUserName(self.collector)
+#         if self.collection_time:     
+#             result['collection_time'] = self.collection_time.strftime("%m/%d/%Y %H:%M:%S")
+#         else: 
+#             result['collection_time'] = ''
+#         if self.collection_timezone:     
+#             result['timezone'] = str(self.collection_timezone)
+#         else: 
+#             result['timezone'] = ''
+#         result.update(self.getPositionDict())
+#         del result['user_position']
+#         del result['track_position']
+#         if result['resource']:
+#             result['resource_name'] = self.resource.name
+#             del result['resource']
+#         if self.label:
+#             result['label_number'] = int(self.label.number)
+#          
+#         if self.sample_type:
+#             result['sample_type_name'] = self.sample_type.display_name
+#         if self.region:
+#             result['region_name'] = self.region.name
+#         del result['modifier']
+#         del result['creator']
+#          
+#         #TODO image support for samples
+#         result['thumbnail_image_url'] = self.thumbnail_image_url
+#         return result
      
     class Meta:
         abstract = True

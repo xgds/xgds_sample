@@ -13,7 +13,6 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-
 import datetime
 import pytz
 
@@ -197,16 +196,17 @@ class SampleForm(ModelForm):
                 instance.name = builtName 
 
         # if name changed, validate against the fields.
-        if 'name' in self.changed_data:
-            builtName = instance.buildName()  # name built from the fields.
-            nameFromForm = self.cleaned_data['name']
-            if nameFromForm != builtName:  
-                try: 
-                    instance.updateSampleFromName(nameFromForm)
-                except: 
-                    # if validation fails, return without saving
-                    self.errors['error'] = "Save Failed. Name does not validate against the fields. "
-                    return instance
+        # you can no longer edit the name manually ...
+#         if 'name' in self.changed_data:
+#             builtName = instance.buildName()  # name built from the fields.
+#             nameFromForm = self.cleaned_data['name']
+#             if nameFromForm != builtName:  
+#                 try: 
+#                     instance.updateSampleFromName(nameFromForm)
+#                 except: 
+#                     # if validation fails, return without saving
+#                     self.errors['error'] = "Save Failed. Name does not validate against the fields. "
+#                     return instance
         if commit:
             instance.save()
         return instance

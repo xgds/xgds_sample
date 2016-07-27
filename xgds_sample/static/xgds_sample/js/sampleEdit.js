@@ -92,7 +92,7 @@ $.extend(xgds_sample,{
 		    	_this.all_input_fields.prop("disabled", false);
 		    	
 				// clear the error message
-				$("#error-message").html("");
+				xgds_sample.clearMessages();
 				
 				// insert data sent from the server.
 				var json_dict = data[0];
@@ -108,14 +108,12 @@ $.extend(xgds_sample,{
 				}
 				
 				showOnMap(data);
-				
 				_this.updateNotes(json_dict);
-				
 				_this.postDataLoad(json_dict);
 		    	
 			},
 			error: function(request, status, error) {
-				console.log("ERROR!")
+				xgds_sample.setMessage(request.responseJSON.message);
 			}
 		});
 	},
@@ -145,6 +143,11 @@ $.extend(xgds_sample,{
 	
 	clearMessages: function() {
 		$('.messages').html('<br/>');
+		$("#error-message").html('');
+	},
+	
+	setMessage: function(message){
+		$("#error-message").html(message);
 	},
 
 	onEnterLoadSampleInfo: function(event) {
@@ -162,15 +165,18 @@ $.extend(xgds_sample,{
 	    	var searchInput = $("#id_search_input").val();
     		var numchars = searchInput.length;
     		if (numchars == 0) {
-    			$("#error-message").html("Cannot search on nothing.");
+    			xgds_sample.setMessage("Cannot search on nothing.");
     			return;
     		}
 	    	if (searchType == "sampleName") {
-	    		if ((numchars != 14) && (numchars != 15)) {
-	    			$("#error-message").html("Sample name is not valid!");
+	    		if ($.isNumeric(searchInput)) {
+	    			xgds_sample.setMessage("Sample name cannot be a number.");
 	    			return;
 	    		}
-	    	}
+	    	} else if (! $.isNumeric(searchInput)) {
+    			xgds_sample.setMessage("Label number must be a number.");
+    			return;
+    		}
 	    	
 	    	// ajax to get sample info for given label insert into the form.
 	    	this.getSampleInfo();

@@ -16,7 +16,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response,  get_object_or_404, redirect
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse
 from django.template import RequestContext
 from django.forms.formsets import formset_factory
 from django.conf import settings
@@ -155,7 +155,6 @@ def saveSampleInfo(request):
                                                    'fieldsEnabledFlag': fieldsEnabledFlag})
                                                    )      
      
- 
 def getSampleInfo(request):
     """
     When user enters the label number of sample name
@@ -172,44 +171,46 @@ def getSampleInfo(request):
                 try: 
                     sample = SAMPLE_MODEL.get().objects.filter(name=sampleName)[0]
                 except: 
-                    sample = SAMPLE_MODEL.get().objects.create(name=sampleName)
-            else:
-                raise Exception("Sample %s is not found." % sampleName)
-        if 'labelNum' in postDict:
-            labelNum = int(postDict['labelNum'])
+                    # we no longer support creating sample by name
+                    return JsonResponse({'status':'false','message':"Sample %s is not found." % sampleName}, status=500)
+#                     sample = SAMPLE_MODEL.get().objects.create(name=sampleName)
+        elif 'labelNum' in postDict:
+            try:
+                labelNum = int(postDict['labelNum'])
+            except:
+                return JsonResponse({'status':'false','message':"Invalid label number %s" % postDict['labelNum']}, status=500)
             if labelNum:
                 label, labelCreate = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
                 if label:
                     # create the sample
                     sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
-                else: 
-                    raise Exception("Label with number %d is not found", labelNum)
+                else:
+                    return JsonResponse({'status':'false','message':"Label with number %d is not found" % labelNum}, status=500)
         # get sample info as json to pass back to client side
         mapDict = sample.toMapDict()
         # set the default information (mirroring forms.py as initial values)
-        if not mapDict['region']: 
+        if 'region_name' not in mapDict: 
             siteFrame = SiteFrame.objects.get(pk = settings.XGDS_CURRENT_SITEFRAME_ID)
-            mapDict['region'] =  Region.objects.get(zone = siteFrame).id
-        if not mapDict['number']:
+            mapDict['region_name'] =  Region.objects.get(zone = siteFrame).name
+        if 'number' not in mapDict:
             mapDict['number'] = sample.getCurrentNumber()
         # change the server time (UTC) to local time for display
-        if not mapDict['collection_time']: 
+        if 'collection_time' not in mapDict or not mapDict['collection_time']: 
             utc_time = timezone.now() 
         else: 
             # convert to a datetime object
             utc_time = mapDict['collection_time']
-            utc_time = datetime.strptime(utc_time, '%m/%d/%Y %H:%M:%S') 
         local_time = utcToLocalTime(utc_time) 
         collection_time = local_time.strftime("%m/%d/%Y %H:%M:%S")
         mapDict['collection_time'] = collection_time
         try: 
-            json_data = json.dumps([mapDict], indent=4)
+            json_data = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
         except: 
-            return HttpResponseBadRequest('sample info is not in proper JSON format')
+            return JsonResponse({'status':'false','message':'Sample info is not in proper JSON format'}, status=500)
         return HttpResponse(json_data, content_type='application/json',
                             status=200)
-    else: 
-        raise Exception("Request method %s not supported." % request.method)
+    else:
+        return JsonResponse({'status':'false','message':'Request method %s not supported.' % request.method}, status=500)
     
     
 @login_required
