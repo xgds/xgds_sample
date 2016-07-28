@@ -15,3 +15,9 @@
 #__END_LICENSE__
 
 from django.contrib import admin
+from xgds_sample.models import *
+
+admin.site.register(Region)
+admin.site.register(SampleType)
+admin.site.register(Label)
+admin.site.register(SampleLabelSize)
