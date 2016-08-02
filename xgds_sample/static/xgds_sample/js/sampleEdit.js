@@ -97,6 +97,7 @@ $.extend(xgds_sample,{
 				// insert data sent from the server.
 				var json_dict = data[0];
 				_this.updateLabelName(json_dict.label_number, json_dict.name);
+				_this.updateSampleType(json_dict.sample_type_name);
 				var field_id = "";
 				for (var key in json_dict) {
 					field_id = _this.getFormFieldID(key);
@@ -116,6 +117,10 @@ $.extend(xgds_sample,{
 				xgds_sample.setMessage(request.responseJSON.message);
 			}
 		});
+	},
+	
+	updateSampleType: function(name){
+		$("#id_sample_type option:contains('" + name + "')").attr('selected','selected');
 	},
 	
 	postDataLoad: function(data){

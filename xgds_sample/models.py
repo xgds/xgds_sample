@@ -189,7 +189,7 @@ class AbstractSample(models.Model, SearchableModel):
             result['lat'] = self.user_position.latitude
             result['lon'] = self.user_position.longitude
             if hasattr(self.user_position, 'altitude'):
-                result['altitude'] = self.user_position.altitude
+                result['alt'] = self.user_position.altitude
             return result
         
         result['position_id'] = ''
@@ -197,7 +197,7 @@ class AbstractSample(models.Model, SearchableModel):
             result['lat'] = self.track_position.latitude
             result['lon'] = self.track_position.longitude
             if self.track_position.altitude:
-                result['altitude'] = self.track_position.altitude
+                result['alt'] = self.track_position.altitude
             return result
         else: 
             result['lat'] = ''

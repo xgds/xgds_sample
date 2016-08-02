@@ -136,16 +136,21 @@ def saveSampleInfo(request):
 
         form = SampleForm(request.POST, instance=sample)
         fieldsEnabledFlag = 1  #enable fields so user can fix the form errors
-        if form.is_valid():
-            form.save()
-            if form.errors:
-                for key, msg in form.errors.items():
-                    if key == 'warning':
-                        messages.warning(request, msg)
-                    elif key == 'error':
-                        messages.error(request, msg)
-            else:
+        
+        try:
+            if form.is_valid():
+                form.save()
                 messages.success(request, 'Sample %s successfully updated.' % sample.name)  
+        except:
+            pass
+        
+        if form.errors:
+            for key, msg in form.errors.items():
+                if key == 'warning':
+                    messages.warning(request, msg)
+                elif key == 'error':
+                    messages.error(request, msg)
+
         return render_to_response('xgds_sample/sampleEdit.html',
                           RequestContext(request, {'form': form,
                                                    'users': getUserNames(),
