@@ -37,6 +37,10 @@ XGDS_MAP_SERVER_JS_MAP[XGDS_SAMPLE_SAMPLE_KEY] = {'ol': 'xgds_sample/js/olSample
                                                   'columnTitles': ['Collected', 'Timezone', 'Name', 'Type', 'Label', 'Collector', 'Resource', ''] 
                                                   }
 
+XGDS_MAP_SERVER_JS_MAP['Label'] = {'model': XGDS_SAMPLE_LABEL_MODEL,
+                                   'columns': ['number', 'url', 'last_printed', 'sampleName', 'pk'],
+                                   } 
+
 XGDS_DATA_MASKED_FIELDS = getOrCreateDict('XGDS_DATA_MASKED_FIELDS')
 XGDS_DATA_MASKED_FIELDS['xgds_sample'] = {'AbstractSample': ['track_position',
                                                              'user_position', 

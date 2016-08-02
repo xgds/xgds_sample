@@ -92,11 +92,12 @@ $.extend(xgds_sample,{
 		    	_this.all_input_fields.prop("disabled", false);
 		    	
 				// clear the error message
-				$("#error-message").html("");
+				xgds_sample.clearMessages();
 				
 				// insert data sent from the server.
 				var json_dict = data[0];
 				_this.updateLabelName(json_dict.label_number, json_dict.name);
+				_this.updateSampleType(json_dict.sample_type_name);
 				var field_id = "";
 				for (var key in json_dict) {
 					field_id = _this.getFormFieldID(key);
@@ -108,16 +109,18 @@ $.extend(xgds_sample,{
 				}
 				
 				showOnMap(data);
-				
 				_this.updateNotes(json_dict);
-				
 				_this.postDataLoad(json_dict);
 		    	
 			},
 			error: function(request, status, error) {
-				console.log("ERROR!")
+				xgds_sample.setMessage(request.responseJSON.message);
 			}
 		});
+	},
+	
+	updateSampleType: function(name){
+		$("#id_sample_type option:contains('" + name + "')").attr('selected','selected');
 	},
 	
 	postDataLoad: function(data){
@@ -127,6 +130,7 @@ $.extend(xgds_sample,{
 	updateNotes: function(data){
 		//TODO if collection_time is null or changes must update
 		var container = $('#notes_content');
+		xgds_notes.setupNotesUI(container);
 		xgds_notes.initializeNotesReference(container, data.app_label, data.model_type, data.pk, data.collection_time, data.collection_timezone);
 		xgds_notes.getNotesForObject(data.app_label, data.model_type, data.pk, 'notes_content', container.find('table.notes_list'));
 	},
@@ -145,6 +149,11 @@ $.extend(xgds_sample,{
 	
 	clearMessages: function() {
 		$('.messages').html('<br/>');
+		$("#error-message").html('');
+	},
+	
+	setMessage: function(message){
+		$("#error-message").html(message);
 	},
 
 	onEnterLoadSampleInfo: function(event) {
@@ -162,15 +171,18 @@ $.extend(xgds_sample,{
 	    	var searchInput = $("#id_search_input").val();
     		var numchars = searchInput.length;
     		if (numchars == 0) {
-    			$("#error-message").html("Cannot search on nothing.");
+    			xgds_sample.setMessage("Cannot search on nothing.");
     			return;
     		}
 	    	if (searchType == "sampleName") {
-	    		if ((numchars != 14) && (numchars != 15)) {
-	    			$("#error-message").html("Sample name is not valid!");
+	    		if ($.isNumeric(searchInput)) {
+	    			xgds_sample.setMessage("Sample name cannot be a number.");
 	    			return;
 	    		}
-	    	}
+	    	} else if (! $.isNumeric(searchInput)) {
+    			xgds_sample.setMessage("Label number must be a number.");
+    			return;
+    		}
 	    	
 	    	// ajax to get sample info for given label insert into the form.
 	    	this.getSampleInfo();
