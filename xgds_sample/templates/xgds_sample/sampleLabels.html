@@ -17,7 +17,7 @@
 	{% endfor %}
 	
 	var aoColumns = [{"mData":function(data, type, full){
-                                return "<input type='checkbox' name='label_checkbox' value='" + data["id"] +"'>";
+                                return "<input type='checkbox' name='label_checkbox' value='" + data["pk"] +"'>";
                             }},
 				   {"mData": function(data, type, full) {
 				   if (data['sampleName'] != ''){

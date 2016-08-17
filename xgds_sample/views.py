@@ -259,7 +259,8 @@ def printSampleLabels(request):
                 messages.error(request, "")
         else: 
             labelIds = request.POST.getlist('label_checkbox')
-            labelsToPrint = [LABEL_MODEL.get().objects.get(id=int(labelId)) for labelId in labelIds]
+            intLabelIds = [int(labelId) for labelId in labelIds]
+            labelsToPrint = LABEL_MODEL.get().objects.filter(id__in=intLabelIds)
         if labelsToPrint:
             size = SampleLabelSize.objects.get(name="small")
             labelChunks = chunks(labelsToPrint, 10)  # labels in chunks of 10. (list of lists)
