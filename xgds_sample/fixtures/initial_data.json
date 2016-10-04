@@ -24,5 +24,15 @@
             "paragraphWidth": 25,
             "templateElements": "xgds_sample.labelTemplates.medium"
         }
-    }
+    },
+    {"pk":"kml3000", "model":"xgds_map_server.KmlMap", "fields":
+		{"name":"Mapped Samples", 
+		 "description":"Samples from past 12 hours", 
+		 "kmlFile":"/xgds_sample/samplesFeed.kml", 
+		 "openable":1, 
+		 "visible":0, 
+		 "hasNetworkLink":1,
+		 "parent": "mg1"
+		 }
+	}
 ]
