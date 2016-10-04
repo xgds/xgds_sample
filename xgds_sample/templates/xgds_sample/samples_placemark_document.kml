@@ -1,0 +1,80 @@
+{% load tz %}
+{% load staticfiles %}
+
+<Document>
+    <Style id="sample_placemark">
+        <IconStyle>
+            <Icon>
+                <href>{{ iconUrl }}</href>
+            </Icon>
+	    <scale>0.75</scale>
+        </IconStyle>
+        <LabelStyle>
+            <scale>0.75</scale>
+        </LabelStyle>
+	<BalloonStyle>
+	    <text>$[description]</text>
+	</BalloonStyle>
+    </Style>
+    <name>{{settings.XGDS_SAMPLE_SAMPLE_KEY}}</name>
+    {% for day in days %}
+    <Folder>
+        <name>{{ day.date|date:"Y-m-d" }}</name>
+        {% for sample in day.samples %}{% if sample.lon and sample.lat %}
+            <Placemark>
+                <styleUrl>#sample_placemark</styleUrl>
+                <name>{{ sample.name }}</name>
+                <description><![CDATA[
+			<table>
+			<tr>
+            <td valign=top>Name:</td>
+            <td>{{sample.name}}</td>
+          </tr>
+          
+			<tr>
+            <td>Time:</td>
+            <td>{% timezone sample.collection_timezone %}{{sample.collection_time|date:"Y-m-d H:i e"}}{% endtimezone %}</td>
+          </tr>
+          <tr>
+            <td valign=top>Label:</td>
+            <td>{{sample.label}}</td>
+          </tr>
+          <tr>
+            <td valign=top>Type:</td>
+            <td>{{sample.sample_type}}</td>
+          </tr>
+          <tr>
+            <td valign=top>Description:</td>
+            <td>{{sample.description}}</td>
+          </tr>
+          <tr>
+            <td>Lat:</td>
+            <td>{{ sample.lat }}
+            </td>
+          </tr>
+          <tr>
+            <td>Lon:</td>
+            <td>{{ sample.lon }}
+            </td>
+          </tr>
+          {% if sample.alt %}
+          <tr>
+            <td>Altitude:</td>
+            <td>{{ sample.alt }}</td>
+          </tr>
+          {% endif %}
+        </table>
+        {% if sample.collector %}
+        <p><em>--Collector: {{ sample.collector.first_name }} {{sample.collector.last_name}}<br/></p>
+        {% endif %}
+		]]></description>
+                <Point>
+                    <extrude>0</extrude>
+                    <altitudeMode>clampToGround</altitudeMode>
+                    <coordinates>{{sample.lon}},{{sample.lat}}</coordinates>
+                </Point>
+            </Placemark>
+        {% endif %}{% endfor %}
+    </Folder>
+    {% endfor %}
+</Document>

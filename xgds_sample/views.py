@@ -18,7 +18,10 @@ from django.shortcuts import render_to_response,  get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse
 from django.template import RequestContext
+from django.template.loader import render_to_string
+
 from django.forms.formsets import formset_factory
+from django.views.decorators.cache import never_cache
 from django.conf import settings
 from django.contrib import messages 
 from django.db.models import Max
@@ -26,7 +29,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from PyPDF2 import PdfFileMerger, PdfFileReader
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import os
 import re
@@ -297,3 +300,41 @@ def getSampleHelpPage(request):
     return render_to_response('xgds_sample/sampleHelp.html', 
                               RequestContext(request, data))
     
+
+if settings.XGDS_NOTES_ENABLE_GEOCAM_TRACK_MAPPING:
+    from geocamUtil.KmlUtil import wrapKmlDjango, djangoResponse
+
+    def getKmlNetworkLink(request):
+        url = request.build_absolute_uri(settings.SCRIPT_NAME + 'xgds_sample/samples.kml')
+        return djangoResponse('''
+    <NetworkLink>
+      <name>%(name)s</name>
+      <Link>
+        <href>%(url)s</href>
+        <refreshMode>onInterval</refreshMode>
+        <refreshInterval>5</refreshInterval>
+      </Link>
+    </NetworkLink>
+    ''' % dict(name=settings.XGDS_SAMPLE_SAMPLE_KEY + 's',
+               url=url))
+
+    @never_cache
+    def sample_map_kml(request, range=12):
+        now = datetime.now(pytz.utc)
+        yesterday = now - timedelta(seconds=3600 * range)
+        objects = SAMPLE_MODEL.get().objects.filter(collection_time__lte=now).filter(collection_time__gte=yesterday)
+        days = []
+        if objects:
+            days.append({'date': now,
+                        'samples': objects
+                        })
+
+        if days:
+            kml_document = render_to_string(
+                'xgds_sample/samples_placemark_document.kml',
+                {'days': days,
+                 'iconUrl': request.build_absolute_uri('/static/xgds_sample/images/sample_icon.png')},
+            )
+            return wrapKmlDjango(kml_document)
+        return wrapKmlDjango("")
+

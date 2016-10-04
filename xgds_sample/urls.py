@@ -30,3 +30,7 @@ urlpatterns = [url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_label
                url(r'labels/print$', views.printSampleLabels, {}, 'xgds_sample_labels_print'),
                url(r'help$', views.getSampleHelpPage, {}, 'xgds_sample_help')
                ]
+
+if settings.XGDS_NOTES_ENABLE_GEOCAM_TRACK_MAPPING:
+    urlpatterns += [url(r'samples.kml', views.sample_map_kml, {'readOnly': True, 'loginRequired': False, 'securityTags': ['readOnly']}, 'sample_map_kml')]
+    urlpatterns += [url(r'samplesFeed.kml', views.getKmlNetworkLink, {'readOnly': True, 'loginRequired': False, 'securityTags': ['readOnly']}, 'sample_map_kml_feed')]
