@@ -107,8 +107,35 @@ class AbstractSample(models.Model, SearchableModel):
                 'description']
 
     @classmethod
-    def getSearchableFields(self):
+    def getSearchableFields(cls):
         return ['name', 'description', 'collector__first_name', 'collector__last_name', 'sample_type__display_name', 'region__name', 'region__zone__name']
+    
+    @classmethod
+    def getSearchFormFields(cls):
+        return ['name',
+                'label',
+                'sample_type',
+                'description',
+                'region',
+                'resource',
+                'collector',
+                'creator',
+                ]
+    
+    @classmethod
+    def getSearchFieldOrder(cls):
+        return ['name',
+                'label',
+                'sample_type',
+                'description',
+                'region',
+                'resource',
+                'collector',
+                'creator',
+                'collection_timezone',
+                'min_collection_time',
+                'max_collection_time'
+                ]
 
     @property
     def sample_type_name(self):

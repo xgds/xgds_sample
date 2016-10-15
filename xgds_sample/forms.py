@@ -19,21 +19,27 @@ import pytz
 from django.utils import timezone
 from django.conf import settings
 from django import forms
+from django.utils.functional import lazy
+from django.contrib.auth.models import User
+
 from django.forms import ModelForm, CharField
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from geocamUtil.loader import getModelByName
 from xgds_sample.models import SampleType, Region, Label
 from geocamUtil.loader import LazyGetModelByName
+from geocamUtil.forms.AbstractImportForm import getTimezoneChoices
+
 from geocamTrack.utils import getClosestPosition
 from geocamUtil.models import SiteFrame
 from geocamUtil.TimeUtil import utcToLocalTime
+from xgds_core.forms import SearchForm
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 GEOCAM_TRACK_RESOURCE_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_RESOURCE_MODEL)
-
 
 class CollectorCharField(CharField):
     def label_from_instance(self, obj):
@@ -222,3 +228,62 @@ class SampleForm(ModelForm):
                    'modifier', 
                    'collector',
                    'label']
+
+class SearchSampleForm(SearchForm):
+    region = forms.ModelChoiceField(required=False, queryset=Region.objects.all())
+    sample_type = forms.ModelChoiceField(required=False, queryset=SampleType.objects.all())
+    label = forms.IntegerField(required=False)
+    
+    min_collection_time = forms.DateTimeField(required=False, label='Min Time',
+                                         widget=forms.DateTimeInput(attrs={'class': 'datetimepicker'}))
+    max_collection_time = forms.DateTimeField(required=False, label = 'Max Time',
+                                         widget=forms.DateTimeInput(attrs={'class': 'datetimepicker'}))
+    
+    collection_timezone = forms.ChoiceField(required=False, choices=lazy(getTimezoneChoices, list)(empty=True), 
+                                             label='Time Zone', help_text='Required for Min/Max Time')
+
+    
+    field_order = SAMPLE_MODEL.get().getSearchFieldOrder()
+    
+    # populate the times properly
+    def clean_min_collection_time(self):
+        return self.clean_time('min_collection_time', self.clean_collection_timezone())
+
+    # populate the times properly
+    def clean_max_collection_time(self):
+        return self.clean_time('max_collection_time', self.clean_collection_timezone())
+    
+    def clean_collection_timezone(self):
+        if self.cleaned_data['collection_timezone'] == 'utc':
+            return 'Etc/UTC'
+        else:
+            return self.cleaned_data['collection_timezone']
+        return None
+
+    def clean(self):
+        cleaned_data = super(SearchSampleForm, self).clean()
+        collection_timezone = cleaned_data.get("collection_timezone")
+        min_collection_time = cleaned_data.get("min_collection_time")
+        max_collection_time = cleaned_data.get("max_collection_time")
+
+        if min_collection_time or max_collection_time:
+            if not collection_timezone:
+                self.add_error('event_timezone',"Time Zone is required for min / max times.")
+                raise forms.ValidationError(
+                    "Time Zone is required for min / max times."
+                )
+
+    def buildQueryForLabel(self, fieldname, field, value):
+        return Q(**{fieldname+'__number': int(value)})
+
+    def buildQueryForField(self, fieldname, field, value, minimum=False, maximum=False):
+        if fieldname == 'label':
+            return self.buildQueryForLabel(fieldname, field, value)
+        elif fieldname == 'description' or fieldname == 'name':
+            return self.buildContainsQuery(fieldname, field, value)
+        return super(SearchSampleForm, self).buildQueryForField(fieldname, field, value, minimum, maximum)
+        
+
+    class Meta:
+        model = SAMPLE_MODEL.get()
+        fields = SAMPLE_MODEL.get().getSearchFormFields()
