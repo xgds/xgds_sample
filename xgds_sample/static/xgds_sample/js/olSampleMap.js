@@ -62,6 +62,7 @@ var Sample = {
             var coords = transform([sampleJson.lon, sampleJson.lat]);
             var feature = new ol.Feature({
             	selected: false,
+            	view_url: '/xgds_map_server/view/' + sampleJson.type + '/' + sampleJson.pk,
                 name: sampleJson.name,
                 pk: sampleJson.pk,
                 type: sampleJson.type,
