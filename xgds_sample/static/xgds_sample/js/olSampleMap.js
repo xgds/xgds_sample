@@ -1,24 +1,39 @@
 // render json sample information on the openlayers map
 
 var Sample = {
+		selectedStylePath: '/static/xgds_sample/images/sample_icon_selected.png',
+		stylePath: '/static/xgds_sample/images/sample_icon.png',
         initStyles: function() {
             if (_.isUndefined(this.styles)){
                 this.styles = {};
                 this.styles['iconStyle'] = new ol.style.Style({
+                	zIndex: 1,
                     image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
-                        src: '/static/xgds_sample/images/sample_icon.png',
+                        src: this.stylePath,
                         scale: 0.8
                         }))
                       });
+                this.styles['selectedIconStyle'] = new ol.style.Style({
+                	zIndex: 10,
+                    image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+                        src: this.selectedStylePath,
+                        scale: 0.8
+                        }))
+                      });
+                this.styles['yellowStroke'] =  new ol.style.Stroke({
+                    color: 'yellow',
+                    width: 2
+                });
+                this.styles['greenStroke'] =  new ol.style.Stroke({
+                    color: 'green',
+                    width: 2
+                });
                 this.styles['text'] = {
                     font: '12px Calibri,sans-serif',
                     fill: new ol.style.Fill({
                         color: 'black'
                     }),
-                    stroke: new ol.style.Stroke({
-                        color: 'yellow',
-                        width: 2
-                    }),
+                    stroke: this.styles['yellowStroke'],
                     offsetY: -15
                 };
             }
@@ -36,7 +51,7 @@ var Sample = {
                 }
             }
             var vectorLayer = new ol.layer.Vector({
-                name: "Samples",
+                name: samplesJson[0].type,
                 source: new ol.source.Vector({
                     features: olFeatures
                 }),
@@ -46,7 +61,10 @@ var Sample = {
         constructMapElement:function(sampleJson){
             var coords = transform([sampleJson.lon, sampleJson.lat]);
             var feature = new ol.Feature({
+            	selected: false,
                 name: sampleJson.name,
+                pk: sampleJson.pk,
+                type: sampleJson.type,
                 geometry: new ol.geom.Point(coords)
             });
             feature.setStyle(this.getStyles(sampleJson));
@@ -62,6 +80,26 @@ var Sample = {
             });
             styles.push(textStyle);
             return styles;
+        },
+        selectMapElement:function(feature){
+        	feature.selected = false;
+        	var styles = feature.getStyle();
+        	var newstyles = [this.styles['selectedIconStyle']];
+        	var newtextstyle = styles[1];
+        	newtextstyle.getText().setStroke(this.styles['greenStroke']);
+        	newtextstyle.setZIndex(10);
+        	newstyles.push(newtextstyle);
+        	feature.setStyle(newstyles);
+        },
+        deselectMapElement:function(feature){
+        	feature.selected = true;
+        	var styles = feature.getStyle();
+        	var newstyles = [this.styles['iconStyle']];
+        	var newtextstyle = styles[1];
+        	newtextstyle.getText().setStroke(this.styles['yellowStroke']);
+        	newtextstyle.setZIndex(1);
+        	newstyles.push(newtextstyle);
+        	feature.setStyle(newstyles);
         },
         setupPopup: function(feature, sampleJson) {
             var trString = "<tr><td>%s</td><td>%s</td></tr>";
