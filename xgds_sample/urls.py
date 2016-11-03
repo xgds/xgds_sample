@@ -16,7 +16,8 @@
 
 from django.conf import settings
 from django.conf.urls import patterns, include, url
-
+from django.core.urlresolvers import reverse_lazy
+from django.views.generic import RedirectView
 from django.views.generic.base import TemplateView
 from xgds_sample import views
 
@@ -28,7 +29,10 @@ urlpatterns = [url(r'labels$', views.getSampleLabelsPage, {}, 'xgds_sample_label
                url(r'saveSample$', views.saveSampleInfo, {}, 'xgds_sample_info_save'),
                url(r'sample.json', views.getSampleInfo, {}, 'xgds_sample_get_info'),
                url(r'labels/print$', views.printSampleLabels, {}, 'xgds_sample_labels_print'),
-               url(r'help$', views.getSampleHelpPage, {}, 'xgds_sample_help')
+               url(r'help$', views.getSampleHelpPage, {}, 'xgds_sample_help'),
+               url(r'^search/$', RedirectView.as_view(url=reverse_lazy('search_map_object', kwargs={'modelName':'Sample'}), permanent=False), name='xgds_sample_fullsearch'),
+               
+#                url(r'^search/$', RedirectView.as_view(url=reverse('search_map_object'), permanent=False), {'modelName':'Sample'},  'xgds_sample_fullsearch'),
                ]
 
 if settings.XGDS_NOTES_ENABLE_GEOCAM_TRACK_MAPPING:
