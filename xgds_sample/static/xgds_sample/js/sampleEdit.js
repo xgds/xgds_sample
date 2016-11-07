@@ -73,6 +73,19 @@ $.extend(xgds_sample,{
 		return "id_" + jsonKey;
 	},
 	
+	setDomElement: function(id_str, content) {
+		var elem = $('#' + id_str);
+		if (elem.is("select")) {
+			var option_str = '#' + id_str + ' option:first';
+			if (content) {
+				option_str = '#' + id_str + ' option:contains("' + content + '")';
+			} 
+			$(option_str).prop('selected', true);
+		} else {
+			elem.val(content);
+		}
+	},
+ 	
 	getSampleInfo: function() {
 		/**
 		 * Fetch the sample info from the server given its label number or name.
@@ -104,15 +117,7 @@ $.extend(xgds_sample,{
 					var field_elem = $('#' + field_id);
 					var field_val = json_dict[key];
 					if(field_elem.length != 0) {  // id exists on page.
-						if (field_elem.is("select")) {
-							var option_str = '#' + field_id + ' option:first';
-							if (json_dict[key]) {
-								option_str = '#' + field_id + ' option:contains("' + json_dict[key] + '")';
-							} 
-							$(option_str).prop('selected', true);
-						} else {
-							field_elem.val(field_val);
-						}
+						_this.setDomElement(field_id, field_val);
 					}
 				}
 				// map and notes
