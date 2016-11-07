@@ -128,12 +128,11 @@ def saveSampleInfo(request):
     getSampleInfoUrl = reverse('xgds_sample_get_info')
     if request.method == "POST":
         data = request.POST.dict()
-        
         try:
             pk = int(data['pk'])
         except:
             pk = None
-        
+            
         if pk:
             sample = SAMPLE_MODEL.get().objects.get(pk=pk)
 
@@ -181,7 +180,6 @@ def getSampleInfo(request):
                 except: 
                     # we no longer support creating sample by name
                     return JsonResponse({'status':'false','message':"Sample %s is not found." % sampleName}, status=500)
-#                     sample = SAMPLE_MODEL.get().objects.create(name=sampleName)
         elif 'labelNum' in postDict:
             try:
                 labelNum = int(postDict['labelNum'])
@@ -195,12 +193,12 @@ def getSampleInfo(request):
                 else:
                     return JsonResponse({'status':'false','message':"Label with number %d is not found" % labelNum}, status=500)
         # get sample info as json to pass back to client side
+
         mapDict = sample.toMapDict()
         # set the default information (mirroring forms.py as initial values)
-        if 'region_name' not in mapDict: 
-            siteFrame = SiteFrame.objects.get(pk = settings.XGDS_CURRENT_SITEFRAME_ID)
-            mapDict['region_name'] =  Region.objects.get(zone = siteFrame)[0].name
-        if 'number' not in mapDict:
+        if 'region_name' not in mapDict or not mapDict['region_name']: 
+            mapDict['region_name'] = Region.objects.get(id = settings.XGDS_CURRENT_REGION_ID).name
+        if 'number' not in mapDict or not mapDict['number']:
             mapDict['number'] = sample.getCurrentNumber()
         # change the server time (UTC) to local time for display
         if 'collection_time' not in mapDict or not mapDict['collection_time']: 

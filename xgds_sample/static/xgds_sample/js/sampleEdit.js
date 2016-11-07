@@ -98,20 +98,27 @@ $.extend(xgds_sample,{
 				var json_dict = data[0];
 				_this.updateLabelName(json_dict.label_number, json_dict.name);
 				_this.updateSampleType(json_dict.sample_type_name);
-				var field_id = "";
+				var field_elem = undefined;
 				for (var key in json_dict) {
-					field_id = _this.getFormFieldID(key);
-					field_val = json_dict[key];
-					if($("#" + field_id).length != 0) {
-						// id exists on page.
-						$('#' + field_id).val(field_val);
+					var field_id = _this.getFormFieldID(key);
+					var field_elem = $('#' + field_id);
+					var field_val = json_dict[key];
+					if(field_elem.length != 0) {  // id exists on page.
+						if (field_elem.is("select")) {
+							var option_str = '#' + field_id + ' option:first';
+							if (json_dict[key]) {
+								option_str = '#' + field_id + ' option:contains("' + json_dict[key] + '")';
+							} 
+							$(option_str).prop('selected', true);
+						} else {
+							field_elem.val(field_val);
+						}
 					}
 				}
-				
+				// map and notes
 				showOnMap(data);
 				_this.updateNotes(json_dict);
 				_this.postDataLoad(json_dict);
-		    	
 			},
 			error: function(request, status, error) {
 				xgds_sample.setMessage(request.responseJSON.message);
@@ -124,7 +131,6 @@ $.extend(xgds_sample,{
 	},
 	
 	postDataLoad: function(data){
-		
 	},
 	
 	updateNotes: function(data){
@@ -164,28 +170,28 @@ $.extend(xgds_sample,{
 		 * (optional) copy over the label number or sample name field into form's hidden fields 
 		 */
 		// on label number field enter, get the sample info
-	    	this.clearMessages();
+    	this.clearMessages();
 	    	
-	    	//if it's a name, make sure it passes sanity checks
-	    	var searchType = $("#search_input_type").val();
-	    	var searchInput = $("#id_search_input").val();
-    		var numchars = searchInput.length;
-    		if (numchars == 0) {
-    			xgds_sample.setMessage("Cannot search on nothing.");
+    	//if it's a name, make sure it passes sanity checks
+    	var searchType = $("#search_input_type").val();
+    	var searchInput = $("#id_search_input").val();
+		var numchars = searchInput.length;
+		if (numchars == 0) {
+			xgds_sample.setMessage("Cannot search on nothing.");
+			return;
+		}
+    	if (searchType == "sampleName") {
+    		if ($.isNumeric(searchInput)) {
+    			xgds_sample.setMessage("Sample name cannot be a number.");
     			return;
     		}
-	    	if (searchType == "sampleName") {
-	    		if ($.isNumeric(searchInput)) {
-	    			xgds_sample.setMessage("Sample name cannot be a number.");
-	    			return;
-	    		}
-	    	} else if (! $.isNumeric(searchInput)) {
-    			xgds_sample.setMessage("Label number must be a number.");
-    			return;
-    		}
-	    	
-	    	// ajax to get sample info for given label insert into the form.
-	    	this.getSampleInfo();
+    	} else if (! $.isNumeric(searchInput)) {
+			xgds_sample.setMessage("Label number must be a number.");
+			return;
+		}
+    	
+    	// ajax to get sample info for given label insert into the form.
+    	this.getSampleInfo();
 	},
 	
 	setupCollectorInput: function() {

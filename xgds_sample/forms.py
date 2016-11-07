@@ -81,11 +81,7 @@ class SampleForm(ModelForm):
             self.fields['lon'].initial = positionDict['lon']
             if 'altitude' in positionDict:
                 self.fields['altitude'].initial = positionDict['altitude']
-            # check the site frame and set the regions.
-            siteframe = SiteFrame.objects.get(pk = settings.XGDS_CURRENT_SITEFRAME_ID)
-            # get all the regions for this site frame. 
-            regionsForZone = Region.objects.filter(zone = siteframe)
-            self.initial['region'] = regionsForZone[0]
+            self.fields['region'].initial = Region.objects.get(id = settings.XGDS_CURRENT_REGION_ID)
             self.fields['region'].empty_label = None
             # auto increment the sample number
             self.initial['number'] = self.instance.number
@@ -200,19 +196,6 @@ class SampleForm(ModelForm):
             builtName = instance.buildName()
             if instance.name != builtName:
                 instance.name = builtName 
-
-        # if name changed, validate against the fields.
-        # you can no longer edit the name manually ...
-#         if 'name' in self.changed_data:
-#             builtName = instance.buildName()  # name built from the fields.
-#             nameFromForm = self.cleaned_data['name']
-#             if nameFromForm != builtName:  
-#                 try: 
-#                     instance.updateSampleFromName(nameFromForm)
-#                 except: 
-#                     # if validation fails, return without saving
-#                     self.errors['error'] = "Save Failed. Name does not validate against the fields. "
-#                     return instance
         if commit:
             instance.save()
         return instance
