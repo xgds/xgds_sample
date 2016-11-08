@@ -193,7 +193,9 @@ def getSampleInfo(request):
                     sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
                 else:
                     return JsonResponse({'status':'false','message':"Label with number %d is not found" % labelNum}, status=500)
-        if sample_create:  # if new sample is created, make sure to set the defaults for extra fields. 
+        
+        sampleName = sample.name
+        if sample_create or (not sampleName):  # if new sample is created, make sure to set the defaults for extra fields. 
             try: 
                 notesUserSession = request.session.get('notes_user_session', None)
                 resourceId = int(notesUserSession['resource'])
