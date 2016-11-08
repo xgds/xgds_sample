@@ -159,6 +159,7 @@ class SampleForm(ModelForm):
                     
     def save(self, commit=True):
         instance = super(SampleForm, self).save(commit=False)
+        
         instance.collection_time = self.cleaned_data['collection_time']
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)

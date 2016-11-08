@@ -171,6 +171,7 @@ def getSampleInfo(request):
     if request.method == "POST":
         json_data = {}
         postDict = request.POST.dict()
+        sample_create = False
         # get the sample either by name or label number
         if 'sampleName' in postDict:
             sampleName = postDict['sampleName']
@@ -192,8 +193,15 @@ def getSampleInfo(request):
                     sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
                 else:
                     return JsonResponse({'status':'false','message':"Label with number %d is not found" % labelNum}, status=500)
+        if sample_create:  # if new sample is created, make sure to set the defaults for extra fields. 
+            try: 
+                notesUserSession = request.session.get('notes_user_session', None)
+                resourceId = int(notesUserSession['resource'])
+                defaultResource = RESOURCE_MODEL.get().objects.get(id = resourceId)
+                sample.setExtrasDefault(defaultResource)
+            except: 
+                pass
         # get sample info as json to pass back to client side
-
         mapDict = sample.toMapDict()
         # set the default information (mirroring forms.py as initial values)
         if 'region_name' not in mapDict or not mapDict['region_name']: 
