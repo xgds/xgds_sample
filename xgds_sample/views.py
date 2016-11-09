@@ -109,15 +109,19 @@ def getSampleEditPage(request, samplePK = None):
     fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
     getSampleInfoUrl = reverse('xgds_sample_get_info')
     sample = None
+    sampleMapDict = None
     if samplePK:
         sample = SAMPLE_MODEL.get().objects.get(pk=samplePK)
         fieldsEnabledFlag = 1  # if we get to this page from sample view, enable the fields.
+        mapDict = sample.toMapDict()
+        sampleMapDict = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
     form = SampleForm(instance=sample)
     return render_to_response('xgds_sample/sampleEdit.html',
                               RequestContext(request, {'form': form,
                                                        'users': getUserNames(),
                                                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
                                                        'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
+                                                       'sampleMapDict': sampleMapDict,
                                                        'getSampleInfoUrl': getSampleInfoUrl,
                                                        'fieldsEnabledFlag': fieldsEnabledFlag})
                               )      
@@ -126,6 +130,7 @@ def getSampleEditPage(request, samplePK = None):
 @login_required
 def saveSampleInfo(request):
     getSampleInfoUrl = reverse('xgds_sample_get_info')
+    sampleMapDict = None
     if request.method == "POST":
         data = request.POST.dict()
         try:
@@ -142,7 +147,7 @@ def saveSampleInfo(request):
         try:
             if form.is_valid():
                 form.save()
-                messages.success(request, 'Sample %s successfully updated.' % sample.name)  
+            messages.success(request, 'Sample %s successfully updated.' % sample.name)  
         except:
             pass
         
@@ -153,11 +158,16 @@ def saveSampleInfo(request):
                 elif key == 'error':
                     messages.error(request, msg)
 
+        if sample:
+            mapDict = sample.toMapDict()
+            sampleMapDict = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
+
         return render_to_response('xgds_sample/sampleEdit.html',
                           RequestContext(request, {'form': form,
                                                    'users': getUserNames(),
                                                    'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
                                                    'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
+                                                   'sampleMapDict': sampleMapDict,
                                                    'getSampleInfoUrl': getSampleInfoUrl,
                                                    'fieldsEnabledFlag': fieldsEnabledFlag})
                                                    )      
