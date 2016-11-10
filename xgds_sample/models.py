@@ -84,6 +84,9 @@ class AbstractSample(models.Model, SearchableModel):
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
     
+    def __unicode__(self):
+        return u'%s' % (self.name)
+
     @classmethod
     def cls_type(cls):
         return 'Sample'
