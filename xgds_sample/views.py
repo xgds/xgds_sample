@@ -109,15 +109,19 @@ def getSampleEditPage(request, samplePK = None):
     fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
     getSampleInfoUrl = reverse('xgds_sample_get_info')
     sample = None
+    sampleMapDict = None
     if samplePK:
         sample = SAMPLE_MODEL.get().objects.get(pk=samplePK)
         fieldsEnabledFlag = 1  # if we get to this page from sample view, enable the fields.
+        mapDict = sample.toMapDict()
+        sampleMapDict = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
     form = SampleForm(instance=sample)
     return render_to_response('xgds_sample/sampleEdit.html',
                               RequestContext(request, {'form': form,
                                                        'users': getUserNames(),
                                                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
                                                        'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
+                                                       'sampleMapDict': sampleMapDict,
                                                        'getSampleInfoUrl': getSampleInfoUrl,
                                                        'fieldsEnabledFlag': fieldsEnabledFlag})
                               )      
@@ -126,6 +130,7 @@ def getSampleEditPage(request, samplePK = None):
 @login_required
 def saveSampleInfo(request):
     getSampleInfoUrl = reverse('xgds_sample_get_info')
+    sampleMapDict = None
     if request.method == "POST":
         data = request.POST.dict()
         try:
@@ -142,7 +147,7 @@ def saveSampleInfo(request):
         try:
             if form.is_valid():
                 form.save()
-                messages.success(request, 'Sample %s successfully updated.' % sample.name)  
+            messages.success(request, 'Sample %s successfully updated.' % sample.name)  
         except:
             pass
         
@@ -153,11 +158,16 @@ def saveSampleInfo(request):
                 elif key == 'error':
                     messages.error(request, msg)
 
+        if sample:
+            mapDict = sample.toMapDict()
+            sampleMapDict = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
+
         return render_to_response('xgds_sample/sampleEdit.html',
                           RequestContext(request, {'form': form,
                                                    'users': getUserNames(),
                                                    'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
                                                    'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
+                                                   'sampleMapDict': sampleMapDict,
                                                    'getSampleInfoUrl': getSampleInfoUrl,
                                                    'fieldsEnabledFlag': fieldsEnabledFlag})
                                                    )      
@@ -171,6 +181,7 @@ def getSampleInfo(request):
     if request.method == "POST":
         json_data = {}
         postDict = request.POST.dict()
+        sample_create = False
         # get the sample either by name or label number
         if 'sampleName' in postDict:
             sampleName = postDict['sampleName']
@@ -192,8 +203,17 @@ def getSampleInfo(request):
                     sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
                 else:
                     return JsonResponse({'status':'false','message':"Label with number %d is not found" % labelNum}, status=500)
+        
+        sampleName = sample.name
+        if sample_create or (not sampleName):  # if new sample is created, make sure to set the defaults for extra fields. 
+            try: 
+                notesUserSession = request.session.get('notes_user_session', None)
+                resourceId = int(notesUserSession['resource'])
+                defaultResource = RESOURCE_MODEL.get().objects.get(id = resourceId)
+                sample.setExtrasDefault(defaultResource)
+            except: 
+                pass
         # get sample info as json to pass back to client side
-
         mapDict = sample.toMapDict()
         # set the default information (mirroring forms.py as initial values)
         if 'region_name' not in mapDict or not mapDict['region_name']: 

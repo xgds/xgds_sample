@@ -47,11 +47,10 @@ $.extend(xgds_sample,{
 			 }
 		});
 		
-		// if we get to edit page from sampleview, pull up the info
-		if (existingSample) {
+		if (sampleJson) {  // if we get to edit page from sampleview, pull up the info
 			// label number and name should be hidden within the form
 			this.updateLabelName(hiddenLabel,hiddenName);
-			this.postDataLoad();
+			this.postDataLoad(sampleJson);
 		}
 		
 		this.postInit();

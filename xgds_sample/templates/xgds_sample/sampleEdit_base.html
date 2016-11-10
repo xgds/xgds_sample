@@ -39,12 +39,12 @@
 {{ block.super }}
 // url to server side code that fetches sample info for given sample label or name.
 var getSampleInfoUrl = '{{ getSampleInfoUrl }}';
+var sampleJson = undefined;
 {% if form.instance.pk %}
-var existingSample = true;
+var sampleJson = {{ sampleMapDict|safe}}[0];
 var hiddenLabel = "{{form.instance.label_number}}";
 var hiddenName = "{{form.instance.name}}";
 {% else %}
-var existingSample = false;
 var hiddenLabel = null;
 var hiddenName = null;
 {% endif %}

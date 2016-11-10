@@ -203,6 +203,13 @@ class AbstractSample(models.Model, SearchableModel):
         #TODO implement for your model if you want fields to change based on name change
         pass
     
+    def setExtrasDefault(self, defaultResource):
+        ''' If the sample does not have resource, set it with the default resource'''
+        if not self.resource:
+            if defaultResource: 
+                self.resource = defaultResource
+                self.save()
+    
     def finish_initialization(self, request):
         ''' during construction, if you have extra data to fill in you can override this method'''
         pass
