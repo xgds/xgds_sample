@@ -161,6 +161,12 @@ class AbstractSample(models.Model, SearchableModel):
         return getUserName(self.collector)
 
     @property
+    def collector_pk(self):
+        if self.collector:
+            return self.collector.pk
+        return None
+
+    @property
     def tz(self):
         return self.collection_timezone
     
