@@ -49,12 +49,11 @@ $.extend(xgds_sample,{
 		
 		if (sampleJson) {  // if we get to edit page from sampleview, pull up the info
 			// label number and name should be hidden within the form
-			this.updateLabelName(hiddenLabel,hiddenName);
+			this.updateLabelName(hiddenLabel, hiddenName);
 			this.postDataLoad(sampleJson);
 		}
 		
 		this.postInit();
-		
 	},
 	
 	postInit: function() {
@@ -105,6 +104,9 @@ $.extend(xgds_sample,{
 		    	
 				// clear the error message
 				xgds_sample.clearMessages();
+				
+				// clear all input fields
+				_this.all_input_fields.val('');
 				
 				// insert data sent from the server.
 				var json_dict = data[0];

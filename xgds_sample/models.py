@@ -58,6 +58,10 @@ class Label(models.Model, SearchableModel):
                 return self.sample.name
         return ''
     
+    @classmethod
+    def getAvailableLabels(cls):
+        return cls.objects.filter(sample__name__isnull=True)
+    
     class Meta:
         ordering = ['number']
 
@@ -159,6 +163,12 @@ class AbstractSample(models.Model, SearchableModel):
     @property
     def collector_name(self):
         return getUserName(self.collector)
+
+    @property
+    def collector_pk(self):
+        if self.collector:
+            return self.collector.pk
+        return None
 
     @property
     def tz(self):

@@ -52,7 +52,7 @@ class SampleForm(ModelForm):
     altitude = forms.FloatField(required=False, label="Altitude")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
     number = forms.IntegerField(required=False, min_value=0, label="Number", disabled=True)
-    station_number = forms.CharField(required=False, label="Station #")
+    station_number = forms.CharField(required=True, label="Station #")
     collector_name = forms.CharField(required=False, label="Collector")
     name = forms.CharField(widget = forms.HiddenInput(), required = False, label="Name", help_text='Name autofills on save.')
     
@@ -72,30 +72,28 @@ class SampleForm(ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(SampleForm, self).__init__(*args, **kwargs)
-        if self.instance:
-            self.fields['pk'].initial = self.instance.pk
-            if self.instance.collector:
-                self.fields['collector_name'].initial = self.instance.collector.first_name + ' ' + self.instance.collector.last_name
-            positionDict = self.instance.getPositionDict()
-            self.fields['lat'].initial = positionDict['lat']
-            self.fields['lon'].initial = positionDict['lon']
-            if 'altitude' in positionDict:
-                self.fields['altitude'].initial = positionDict['altitude']
-            self.fields['region'].initial = Region.objects.get(id = settings.XGDS_CURRENT_REGION_ID)
-            self.fields['region'].empty_label = None
-            # auto increment the sample number
-            self.initial['number'] = self.instance.number
-            if not self.instance.number:
-                self.initial['number'] = self.instance.getCurrentNumber()
-            
-            if self.instance.collection_time:
-                utc_collection_time = self.instance.collection_time
-            else: 
-                utc_collection_time = timezone.now()
-            local_time = utcToLocalTime(utc_collection_time) 
-            collection_time = local_time.strftime("%m/%d/%Y %H:%M:%S")
-            self.initial['collection_time'] = collection_time
-    
+        self.fields['pk'].initial = self.instance.pk
+        if self.instance.collector:
+            self.fields['collector_name'].initial = self.instance.collector.first_name + ' ' + self.instance.collector.last_name
+        positionDict = self.instance.getPositionDict()
+        self.fields['lat'].initial = positionDict['lat']
+        self.fields['lon'].initial = positionDict['lon']
+        if 'altitude' in positionDict:
+            self.fields['altitude'].initial = positionDict['altitude']
+        self.fields['region'].initial = Region.objects.get(id = settings.XGDS_CURRENT_REGION_ID)
+        self.fields['region'].empty_label = None
+        # auto increment the sample number
+        self.initial['number'] = self.instance.number
+        if not self.instance.number:
+            self.initial['number'] = SAMPLE_MODEL.get().getCurrentNumber()
+        if self.instance.collection_time:
+            utc_collection_time = self.instance.collection_time
+        else: 
+            utc_collection_time = timezone.now()
+        local_time = utcToLocalTime(utc_collection_time) 
+        collection_time = local_time.strftime("%m/%d/%Y %H:%M:%S")
+        self.initial['collection_time'] = collection_time
+
     
     def clean_year(self):
         year = self.cleaned_data['year']
@@ -159,7 +157,6 @@ class SampleForm(ModelForm):
                     
     def save(self, commit=True):
         instance = super(SampleForm, self).save(commit=False)
-        
         instance.collection_time = self.cleaned_data['collection_time']
         if instance.resource and instance.collection_time:
             instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
