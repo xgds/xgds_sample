@@ -58,6 +58,10 @@ class Label(models.Model, SearchableModel):
                 return self.sample.name
         return ''
     
+    @classmethod
+    def getAvailableLabels(cls):
+        return cls.objects.filter(sample__name__isnull=True)
+    
     class Meta:
         ordering = ['number']
 

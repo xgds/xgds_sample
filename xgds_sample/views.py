@@ -38,7 +38,7 @@ import pytz
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
 from xgds_data.forms import SearchForm, SpecializedForm
-from xgds_sample.models import SampleLabelSize, Region
+from xgds_sample.models import SampleLabelSize, Region, Label
 from xgds_core.views import get_handlebars_templates
 from geocamTrack.utils import getClosestPosition
 from geocamUtil.models import SiteFrame
@@ -58,6 +58,7 @@ LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 TRACK_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_TRACK_MODEL)
 POSITION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 RESOURCE_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_RESOURCE_MODEL)
+ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL)
 
 XGDS_SAMPLE_TEMPLATE_LIST = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
 XGDS_SAMPLE_TEMPLATE_LIST = XGDS_SAMPLE_TEMPLATE_LIST + settings.XGDS_CORE_TEMPLATE_DIRS[settings.XGDS_SAMPLE_SAMPLE_MODEL]
@@ -133,35 +134,36 @@ def saveSampleInfo(request):
     sampleMapDict = None
     if request.method == "POST":
         data = request.POST.dict()
-        try:
-            pk = int(data['pk'])
-        except:
-            pk = None
-            
+        fieldsEnabledFlag = 1  # input fields can be edited.
+        pk = data['pk']
         if pk:
-            sample = SAMPLE_MODEL.get().objects.get(pk=pk)
-
-        form = SampleForm(request.POST, instance=sample)
-        fieldsEnabledFlag = 1  #enable fields so user can fix the form errors
-        
-        try:
-            if form.is_valid():
-                form.save()
-            messages.success(request, 'Sample %s successfully updated.' % sample.name)  
-        except:
-            pass
-        
-        if form.errors:
-            for key, msg in form.errors.items():
-                if key == 'warning':
-                    messages.warning(request, msg)
-                elif key == 'error':
-                    messages.error(request, msg)
-
-        if sample:
+            try:
+                sample = SAMPLE_MODEL.get().objects.get(pk=int(pk))
+            except:
+                sample = None
+        else: 
+            # create a new sample.
+            labelNum = int(data['hidden_labelNum'])
+            label, created = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
+            sample = SAMPLE_MODEL.get().objects.create(label = label)
+        if sample:            
+            form = SampleForm(request.POST, instance=sample)
+            try:
+                if form.is_valid():
+                    form.save()
+                    fieldsEnabledFlag = 0  # disable fields if successfuly saved.
+                    messages.success(request, 'Sample %s successfully updated.' % sample.name)  
+            except:
+                messages.error(request, 'Sample %s could not be saved.' % sample.name)  
+            if form.errors:
+                for key, msg in form.errors.items():
+                    if key == 'warning':
+                        messages.warning(request, msg)
+                    elif key == 'error':
+                        messages.error(request, msg)
             mapDict = sample.toMapDict()
             sampleMapDict = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
-
+            form = SampleForm(request.POST)
         return render_to_response('xgds_sample/sampleEdit.html',
                           RequestContext(request, {'form': form,
                                                    'users': getUserNames(),
@@ -171,72 +173,80 @@ def saveSampleInfo(request):
                                                    'getSampleInfoUrl': getSampleInfoUrl,
                                                    'fieldsEnabledFlag': fieldsEnabledFlag})
                                                    )      
-     
+
+
+def addDefaults(mapDict):
+    # set the default information (mirroring forms.py as initial values)
+    if 'region_name' not in mapDict or not mapDict['region_name']: 
+        mapDict['region_name'] = Region.objects.get(id = settings.XGDS_CURRENT_REGION_ID).name
+    if 'number' not in mapDict or not mapDict['number']:
+        mapDict['number'] = SAMPLE_MODEL.get().getCurrentNumber()
+    # change the server time (UTC) to local time for display
+    if 'collection_time' not in mapDict or not mapDict['collection_time']: 
+        utc_time = timezone.now() 
+    else: 
+        utc_time = mapDict['collection_time']
+    local_time = utcToLocalTime(utc_time) 
+    collection_time = local_time.strftime("%m/%d/%Y %H:%M:%S")
+    mapDict['collection_time'] = collection_time
+    return mapDict
+ 
+ 
 def getSampleInfo(request):
-    """
-    When user enters the label number of sample name
-    this sends back the corresponding sample information
-    to populate the sample edit form
+    """ 
+    When user enters the label number or the sample name, 
+    This sends back the associated sample info to populate the 
+    edit form. 
     """
     if request.method == "POST":
-        json_data = {}
         postDict = request.POST.dict()
-        sample_create = False
-        # get the sample either by name or label number
         if 'sampleName' in postDict:
             sampleName = postDict['sampleName']
-            if sampleName:  # sampleName is not necessarily unique.
+            if sampleName: 
                 try: 
                     sample = SAMPLE_MODEL.get().objects.filter(name=sampleName)[0]
                 except: 
                     # we no longer support creating sample by name
                     return JsonResponse({'status':'false','message':"Sample %s is not found." % sampleName}, status=500)
         elif 'labelNum' in postDict:
-            try:
-                labelNum = int(postDict['labelNum'])
-            except:
-                return JsonResponse({'status':'false','message':"Invalid label number %s" % postDict['labelNum']}, status=500)
-            if labelNum:
-                label, labelCreate = LABEL_MODEL.get().objects.get_or_create(number=labelNum)
-                if label:
-                    # create the sample
-                    sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
-                else:
-                    return JsonResponse({'status':'false','message':"Label with number %d is not found" % labelNum}, status=500)
-        
-        sampleName = sample.name
-        if sample_create or (not sampleName):  # if new sample is created, make sure to set the defaults for extra fields. 
             try: 
-                notesUserSession = request.session.get('notes_user_session', None)
-                resourceId = int(notesUserSession['resource'])
-                defaultResource = RESOURCE_MODEL.get().objects.get(id = resourceId)
-                sample.setExtrasDefault(defaultResource)
+                labelNum = int(postDict['labelNum'])
             except: 
-                pass
-        # get sample info as json to pass back to client side
-        mapDict = sample.toMapDict()
-        # set the default information (mirroring forms.py as initial values)
-        if 'region_name' not in mapDict or not mapDict['region_name']: 
-            mapDict['region_name'] = Region.objects.get(id = settings.XGDS_CURRENT_REGION_ID).name
-        if 'number' not in mapDict or not mapDict['number']:
-            mapDict['number'] = sample.getCurrentNumber()
-        # change the server time (UTC) to local time for display
-        if 'collection_time' not in mapDict or not mapDict['collection_time']: 
-            utc_time = timezone.now() 
-        else: 
-            utc_time = mapDict['collection_time']
-        local_time = utcToLocalTime(utc_time) 
-        collection_time = local_time.strftime("%m/%d/%Y %H:%M:%S")
-        mapDict['collection_time'] = collection_time
-        try: 
-            json_data = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
-        except: 
-            return JsonResponse({'status':'false','message':'Sample info is not in proper JSON format'}, status=500)
-        return HttpResponse(json_data, content_type='application/json',
-                            status=200)
-    else:
+                return JsonResponse({'status':'false','message':"Invalid label number %s" % postDict['labelNum']}, status=500)
+            if labelNum: 
+                defaultResource = None
+                try: 
+                    notesUserSession = request.session.get('notes_user_session', None)
+                    resourceId = int(notesUserSession['resource'])
+                    defaultResource = RESOURCE_MODEL.get().objects.get(id = resourceId)
+                except: 
+                    print "no default resource available."
+                try: 
+                    sample = SAMPLE_MODEL.get().objects.get(label__number = labelNum)
+                    if defaultResource:
+                        sample.setExtrasDefault(defaultResource)
+                    mapDict = sample.toMapDict()
+                except: 
+                    # sample does not exist yet. Proceed.
+                    year = timezone.now().year % 2000
+                    mapDict = {'label_number': labelNum, 'collection_timezone': settings.TIME_ZONE, 
+                               'pk': '', 'year': year}
+                    if defaultResource: 
+                        mapDict['resource_name'] = defaultResource.name
+                        foundActiveFlights = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__vehicle = defaultResource.vehicle)
+                        if foundActiveFlights: 
+                            defaultFlight = foundActiveFlights[0].flight
+                            mapDict['flight'] = defaultFlight.name
+                mapDict = addDefaults(mapDict)
+                try: 
+                    json_data = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
+                except: 
+                    return JsonResponse({'status':'false','message':'Sample info is not in proper JSON format'}, status=500)
+                return HttpResponse(json_data, content_type='application/json', status=200)
+        return JsonResponse({'status':'false','message':'Sample info is not in proper JSON format'}, status=500)
+    else: 
         return JsonResponse({'status':'false','message':'Request method %s not supported.' % request.method}, status=500)
-    
+                    
     
 @login_required
 def getSampleLabelsPage(request):
@@ -245,6 +255,7 @@ def getSampleLabelsPage(request):
                               RequestContext(request,
                                              {'labels': labels,
                                               'file_url': ""}))
+
 
 def chunks(l, n):
     n = max(1, n)
@@ -256,28 +267,24 @@ def printSampleLabels(request):
     if request.method == 'POST': 
         if 'label_quantity' in request.POST:
             quantity = int(request.POST['label_quantity'])
-            labels = LABEL_MODEL.get().objects.all()
-            data['labels'] = labels
-            aggregate = labels.aggregate(Max('number'))
-            if aggregate['number__max']:
-                startNum = aggregate['number__max'] + 1
-            else:
-                startNum = 1
-            labelNumbers = range(startNum, startNum + quantity)
-            labelsToPrint = []
-            for labelNum in labelNumbers:
-                label, create = LABEL_MODEL.get().objects.get_or_create(number=int(labelNum))
-                sample, sample_create = SAMPLE_MODEL.get().objects.get_or_create(label=label)
-                sample.save()
-                if sample_create:
-                    label.url = settings.XGDS_SAMPLE_PERM_LINK_PREFIX + reverse('search_map_single_object', kwargs={'modelName':settings.XGDS_SAMPLE_SAMPLE_KEY,
-                                                                                                                    'modelPK':sample.pk})
-                    label.save() 
-                labelsToPrint.append(label)
-            if quantity <=0:
+            if quantity <= 0:
                 messages.error(request, "Quantity must be an integer greater than 0.")
-            else: 
-                messages.error(request, "")
+                return render_to_response('xgds_sample/sampleLabels.html', 
+                               RequestContext(request, {}))
+            labels = LABEL_MODEL.get().getAvailableLabels()
+            labelNumbers = [label.number for label in labels]
+            
+            # if there are lots of available label numbers, get just the number specified in 'quantity'
+            labelNumbers = labelNumbers[:quantity]
+
+            # if there are not enough label numbers, add more
+            for x in range(quantity - len(labelNumbers)): 
+                labelNumbers.append(labelNumbers[-1] + 1)
+            
+            labelsToPrint = []
+            for labelNum in labelNumbers: 
+                label, create = LABEL_MODEL.get().objects.get_or_create(number=int(labelNum))
+                labelsToPrint.append(label)
         else: 
             labelIds = request.POST.getlist('label_checkbox')
             intLabelIds = [int(labelId) for labelId in labelIds]
