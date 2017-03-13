@@ -82,7 +82,7 @@
 			</table>
 			{% csrf_token %} 
 			<a href="#" id="show_labels">Show existing labels</a>
-			<div style="float:right;"><input id="print_labels_btn" type="submit" value="Print" class="small" /></div>
+			<div style="float:right;"><input id="print_labels_btn btn-primary" type="submit" value="Print" class="small" /></div>
 		</form>
 		<a href="{{file_url}}" id="download_file" hidden>Download PDF</a> <!-- necessary to avoid pop up blocker -->
 	</div>
@@ -99,7 +99,7 @@
 			    <input name="hide_printed" id="hide_printed" value="hide_printed" type="checkbox">
 			    <span></span> Hide Printed
 			  </label>
-			<input type="submit" class="mybutton small right" id="print_button" value="Print Selected" ></input>
+			<input type="submit" class="btn btn-primary small right" id="print_button" value="Print Selected" ></input>
 		</div>
 		<table cellpadding="0" cellspacing="0" border="0"  id="labels_table">
 			<thead class="table_header">
