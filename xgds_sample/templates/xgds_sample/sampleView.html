@@ -50,7 +50,9 @@
         data-gs-width="3" data-gs-height="4">
         <div class="grid-stack-item-content" >
 	<div class="error-message upload-error"></div>
-	<i class="fa fa-unlock-alt pinDiv"></i><br />
+	<ul class="nav justify-content-end">
+		<i class="fa fa-unlock-alt pinDiv"></i><br />
+	</ul>
 	<div id="save-status"> {{status}} </div>
 	
 	<div> <strong> Viewing sample</strong> <a id="edit_sample_button" href="{% url 'xgds_sample_record_update' sample.label.number %}" class="btn btn-primary small">Edit</a> </div>
@@ -120,7 +122,9 @@
         data-gs-x="3" data-gs-y="3"
         data-gs-width="2" data-gs-height="1">
         <div class="grid-stack-item-content" >
-		<i class="fa fa-unlock-alt pinDiv"></i><br />
+        <ul class="nav justify-content-end">
+			<i class="fa fa-unlock-alt pinDiv"></i>
+		</ul>
 		<form class="label_number_form" id="label_number_form" action="{% url 'xgds_sample_record_edit' %}" method="post" enctype="multipart/form-data">
 			<strong> Look up sample </strong>
 			<table>
