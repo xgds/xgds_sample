@@ -53,7 +53,7 @@
 	<ul class="nav justify-content-end">
 		<i class="fa fa-unlock-alt pinDiv"></i><br />
 	</ul>
-	<div id="save-status"> {{status}} </div>
+	<div id="save-status" class="mt-negative-1rem"> {{status}} </div>
 	
 	<div> <strong> Viewing sample</strong> <a id="edit_sample_button" href="{% url 'xgds_sample_record_update' sample.label.number %}" class="btn btn-primary small">Edit</a> </div>
 	<input type=hidden name=sampleId value="{{ sample.pk }}">
@@ -125,7 +125,7 @@
         <ul class="nav justify-content-end">
 			<i class="fa fa-unlock-alt pinDiv"></i>
 		</ul>
-		<form class="label_number_form" id="label_number_form" action="{% url 'xgds_sample_record_edit' %}" method="post" enctype="multipart/form-data">
+		<form class="label_number_form mt-negative-1rem" id="label_number_form" action="{% url 'xgds_sample_record_edit' %}" method="post" enctype="multipart/form-data">
 			<strong> Look up sample </strong>
 			<table>
 				<tr>
