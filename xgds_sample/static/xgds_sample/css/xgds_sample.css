@@ -1,6 +1,7 @@
 #lookupsample_table {
 	border: 1px solid black;
 	padding: 4px;
+	display: inline-block;
 }
 
 hr {
@@ -55,7 +56,3 @@ li.success {
 	float: right;
 }
 
-.toggleInputFields {
-	float: right;
-	border-bottom: 10px;
-}

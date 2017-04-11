@@ -267,9 +267,9 @@ $.extend(xgds_sample,{
 			$(field).parent().parent().toggle();
 		});
 		if ($('#id_lat').is(":visible")) {
-			$('.toggleInputFields').html('Close out-of-sim fields');	
+			$('#toggleInputFields').html('Close out-of-sim fields');	
 		} else {
-			$('.toggleInputFields').html('Open out-of-sim fields');	
+			$('#toggleInputFields').html('Open out-of-sim fields');	
 		}
 	},
 	

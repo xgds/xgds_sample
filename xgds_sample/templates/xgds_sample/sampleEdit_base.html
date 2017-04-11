@@ -76,19 +76,14 @@ $(document).ready(function() {
 {% load xgds_sample_extras %}
 
 {% block preDashboard %}
-<div class="error-message upload-error">
-	<ul class="messages">
-	{% if messages %}
-	    {% for message in messages %}
-	    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-	    {% endfor %}
-	    {% else %}
-	    <br/>
-	    {% endif  %}
-	</ul>
+{% if messages %}
+<div class="alert alert-warning" role="alert">
+    {% for message in messages %}
+    <span{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</span></br>
+    {% endfor %}
 </div>
+{% endif  %}
 {% endblock preDashboard %}
-
 
 {% block preMap %} 
 <div class="grid-stack-item" id='item_sample_create'
@@ -100,15 +95,15 @@ $(document).ready(function() {
 			</ul>
 	<div id="error-message" class="mt-negative-1rem"></div>
 	<div><strong> Look up sample </strong></div>
-	<table id="lookupsample_table">
+	<table id="lookupsample_table" class="form-inline">
 		<tr>
 			<th>
-				<select class="sample_info_type" id="search_input_type">
+				<select class="sample_info_type mt-1" id="search_input_type">
 					<option value="labelNum">Label Number</option>
 					<option value="sampleName">Sample Name</option>
 				</select>
 			</th>
-			<td class='sample_info_type_value'><input id="id_search_input" min="0" />  <button id="load" onclick="xgds_sample.onEnterLoadSampleInfo()" type="button" class="btn btn-primary">Load</button> </td>
+			<td class='sample_info_type_value form-group'><input id="id_search_input" min="0" />  <button id="load" onclick="xgds_sample.onEnterLoadSampleInfo()" type="button" class="btn btn-primary ml-1">Load</button> </td>
 		</tr>
 	</table>
 	
@@ -124,12 +119,15 @@ $(document).ready(function() {
 	<form class="updateSample" id="updateSampleForm" action="{% url 'xgds_sample_info_save' %}" method="post" enctype="multipart/form-data">
 		<table>
 			{{ form.as_table }}
+			<tr>
+			<td colspan='2'>
+			<a id="toggleInputFields" class="btn btn-primary" onclick="xgds_sample.toggleAdvancedInput();" href="#"> Open out-of-sim fields </a>
+			<input class="btn btn-primary small" id="sample-info-submit" type="submit" value="Save"/>
+			</td>
+			</tr>
 		</table>
 		{% csrf_token %}
-		<a class="toggleInputFields" onclick="xgds_sample.toggleAdvancedInput();"> Open out-of-sim fields </a>
-		<div id="sample-edit-button-group">
-		<input class="btn btn-primary small" id="sample-info-submit" type="submit" value="Save"/>
-		</div>
+		
 	</form>
 	
 	<hr>

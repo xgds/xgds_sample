@@ -13,6 +13,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
+import traceback
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response,  get_object_or_404, redirect
 from django.core.urlresolvers import reverse
@@ -205,6 +206,7 @@ def getSampleInfo(request):
             if sampleName: 
                 try: 
                     sample = SAMPLE_MODEL.get().objects.filter(name=sampleName)[0]
+                    mapDict = sample.toMapDict()
                 except: 
                     # we no longer support creating sample by name
                     return JsonResponse({'status':'false','message':"Sample %s is not found." % sampleName}, status=500)
@@ -237,13 +239,14 @@ def getSampleInfo(request):
                         if foundActiveFlights: 
                             defaultFlight = foundActiveFlights[0].flight
                             mapDict['flight'] = defaultFlight.name
-                mapDict = addDefaults(mapDict)
-                try: 
-                    json_data = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
-                except: 
-                    return JsonResponse({'status':'false','message':'Sample info is not in proper JSON format'}, status=500)
-                return HttpResponse(json_data, content_type='application/json', status=200)
-        return JsonResponse({'status':'false','message':'Sample info is not in proper JSON format'}, status=500)
+                
+        try: 
+            mapDict = addDefaults(mapDict)
+            json_data = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
+            return HttpResponse(json_data, content_type='application/json', status=200)
+        except: 
+            traceback.print_exc()
+            return JsonResponse({'status':'false','message':'Sample info is not in proper JSON format'}, status=500)
     else: 
         return JsonResponse({'status':'false','message':'Request method %s not supported.' % request.method}, status=500)
                     
