@@ -23,7 +23,7 @@
                             }},
 				   {"mData": function(data, type, full) {
 				   if (data['sampleName'] != ''){
-				   		var result = "<a href=" + data['url'] +  ">" + data.number + "</a>";
+				   		var result = "<a href='/xgds_map_server/view/Sample/" + data['pk'] +  "'>" + data.number + "</a>";
 				   	} else {
 				   		var result = '' + data.number;
 				   	}
@@ -31,7 +31,7 @@
 				   }},
                    {"mData": function(data, type, full) {
                    		if (data['sampleName'] != ''){
-						   	return "<a href=" + data['url'] +  ">" + data['sampleName']   + "</a>";
+						   	return "<a href='/xgds_map_server/view/Sample/" + data['pk'] +  "'>" + data['sampleName']   + "</a>";
 						} else {
 							return '';
 						}
@@ -72,18 +72,19 @@
 <div class="grid-stack-item" id='print_labels_div' data-gs-x="0"
 	data-gs-y="0" data-gs-width="2" data-gs-height="1">
 	<div class="grid-stack-item-content">
+		<h4>Print New Labels</h4>
 		<form class="print_labels_form" id="print_labels_form" action="{% url 'xgds_sample_labels_print' %}" method="post">
-			<strong>Print New Labels</strong>
 			<table>
 				<tr>
-					<th><label for="id_label_quantity">Quantity:</label></th>
-					<td><input id="id_label_quantity" maxlength="512" name="label_quantity" type="number"></td>
+					<th class="align-middle"><label for="id_label_quantity">Quantity:</label></th>
+					<td><input id="id_label_quantity" maxlength="512" name="label_quantity" type="number"> <input id="print_labels_btn" type="submit" value="Print" class="btn btn-primary ml-1" /></td>
 				</tr>
 			</table>
 			{% csrf_token %} 
-			<a href="#" id="show_labels">Show existing labels</a>
-			<div style="float:right;"><input id="print_labels_btn btn-primary" type="submit" value="Print" class="small" /></div>
+			
 		</form>
+		<a href="#" id="show_labels" class="btn btn-primary">Show existing labels</a>
+		
 		<a href="{{file_url}}" id="download_file" hidden>Download PDF</a> <!-- necessary to avoid pop up blocker -->
 	</div>
 </div>
@@ -93,15 +94,17 @@
 		data-gs-x="2" data-gs-y="0"
         data-gs-width="4" data-gs-height="3">
         <div class="grid-stack-item-content">
-	<form class="labels_table_form" id="labels_table_form" action="{% url 'xgds_sample_labels_print' %}" method="post">
-		<div id="labels_table_button_group"> 
-			  <label class="checkbox" for="hide_printed">
-			    <input name="hide_printed" id="hide_printed" value="hide_printed" type="checkbox">
-			    <span></span> Hide Printed
-			  </label>
-			<input type="submit" class="btn btn-primary small right" id="print_button" value="Print Selected" ></input>
+	<form class="flex-column" id="labels_table_form" action="{% url 'xgds_sample_labels_print' %}" method="post">
+		<div class="d-flex justify-content-between " style="width: 100%;">
+			<div class="form-check" > 
+				  <label for="hide_printed" class="form-check-label">
+				    <input name="hide_printed" id="hide_printed" value="hide_printed" class="form-check-input" type="checkbox">
+				    Hide Printed
+				  </label>
+			</div>
+			<input type="submit" class="btn btn-primary" id="print_button" value="Print Selected" ></input>
 		</div>
-		<table cellpadding="0" cellspacing="0" border="0"  id="labels_table">
+		<table id="labels_table" class="" >
 			<thead>
 				<tr>
 					<th></th>

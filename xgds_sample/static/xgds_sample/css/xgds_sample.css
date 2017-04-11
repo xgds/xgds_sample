@@ -4,36 +4,8 @@
 	display: inline-block;
 }
 
-hr {
-    border: none;
-    height: 1px;
-    /* Set the hr color */
-    background-color: #333; /* Modern Browsers */
-}
-
 #error-message {
 	color: red;
-}
-
-#map {
-	width:550px;
-	height: 600px;
-}
-
-#edit_sample_button {
-	float: right;
-}
-
-#record_sample_submit_btn {
-	float: right;
-}
-
-#messages {
-	heigth: 50px;
-}
-
-#labels_messages {
-	height: 20px;
 }
 
 li.error {
@@ -44,15 +16,6 @@ li.success {
 	color: green;
 }
 
-#labels_table_button_group {
-	float: right:
+#labels_table_wrapper {
+	width: 100%;
 }
-
-#hide_printed {
-	border-right:10px;
-}
-
-#edit_sample_button {
-	float: right;
-}
-
