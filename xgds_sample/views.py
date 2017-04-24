@@ -15,13 +15,12 @@
 # __END_LICENSE__
 import traceback
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response,  get_object_or_404, redirect
+from django.shortcuts import render
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.template import RequestContext
 from django.template.loader import render_to_string
 
-from django.forms.formsets import formset_factory
 from django.views.decorators.cache import never_cache
 from django.conf import settings
 from django.contrib import messages 
@@ -88,8 +87,7 @@ def deleteLabelAndSample(request, labelNum):
         pass
     label.delete()
     messages.error(request, message)
-    return render_to_response('xgds_sample/recordSample.html',
-                              RequestContext(request, {}))
+    return render(request, 'xgds_sample/recordSample.html')
 
 
 def setSampleCustomFields(form, sample):       
@@ -118,15 +116,15 @@ def getSampleEditPage(request, samplePK = None):
         mapDict = sample.toMapDict()
         sampleMapDict = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
     form = SampleForm(instance=sample)
-    return render_to_response('xgds_sample/sampleEdit.html',
-                              RequestContext(request, {'form': form,
-                                                       'users': getUserNames(),
-                                                       'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
-                                                       'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
-                                                       'sampleMapDict': sampleMapDict,
-                                                       'getSampleInfoUrl': getSampleInfoUrl,
-                                                       'fieldsEnabledFlag': fieldsEnabledFlag})
-                              )      
+    return render(request,
+                  'xgds_sample/sampleEdit.html',
+                   {'form': form,
+                    'users': getUserNames(),
+                    'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
+                    'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
+                    'sampleMapDict': sampleMapDict,
+                    'getSampleInfoUrl': getSampleInfoUrl,
+                    'fieldsEnabledFlag': fieldsEnabledFlag})
  
  
 @login_required
@@ -165,15 +163,15 @@ def saveSampleInfo(request):
             mapDict = sample.toMapDict()
             sampleMapDict = json.dumps([mapDict], indent=4, cls=DatetimeJsonEncoder)
             form = SampleForm(request.POST)
-        return render_to_response('xgds_sample/sampleEdit.html',
-                          RequestContext(request, {'form': form,
-                                                   'users': getUserNames(),
-                                                   'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
-                                                   'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
-                                                   'sampleMapDict': sampleMapDict,
-                                                   'getSampleInfoUrl': getSampleInfoUrl,
-                                                   'fieldsEnabledFlag': fieldsEnabledFlag})
-                                                   )      
+        return render(request,
+                      'xgds_sample/sampleEdit.html',
+                       {'form': form,
+                        'users': getUserNames(),
+                        'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY,
+                        'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
+                        'sampleMapDict': sampleMapDict,
+                        'getSampleInfoUrl': getSampleInfoUrl,
+                        'fieldsEnabledFlag': fieldsEnabledFlag})
 
 
 def addDefaults(mapDict):
@@ -254,10 +252,10 @@ def getSampleInfo(request):
 @login_required
 def getSampleLabelsPage(request):
     labels = LABEL_MODEL.get().objects.all()
-    return render_to_response('xgds_sample/sampleLabels.html',
-                              RequestContext(request,
-                                             {'labels': labels,
-                                              'file_url': ""}))
+    return render(request,
+                  'xgds_sample/sampleLabels.html',
+                  {'labels': labels,
+                   'file_url': ""})
 
 
 def chunks(l, n):
@@ -272,8 +270,7 @@ def printSampleLabels(request):
             quantity = int(request.POST['label_quantity'])
             if quantity <= 0:
                 messages.error(request, "Quantity must be an integer greater than 0.")
-                return render_to_response('xgds_sample/sampleLabels.html', 
-                               RequestContext(request, {}))
+                return render(request, 'xgds_sample/sampleLabels.html') 
             labels = LABEL_MODEL.get().getAvailableLabels()
             labelNumbers = [label.number for label in labels]
             
@@ -314,8 +311,7 @@ def printSampleLabels(request):
             outputFileName = outputFileName.replace(settings.DATA_ROOT, settings.DATA_URL)
             messages.success(request, "Labels successfully generated.")
             data['file_url'] = outputFileName         
-    return render_to_response('xgds_sample/sampleLabels.html', 
-                               RequestContext(request, data))
+    return render(request,'xgds_sample/sampleLabels.html', data) 
     
 
 def getSampleHelpPage(request):
@@ -325,8 +321,7 @@ def getSampleHelpPage(request):
     data = {'image1': image1Url,
             'image2': image2Url, 
             'image3': image3Url}
-    return render_to_response('xgds_sample/sampleHelp.html', 
-                              RequestContext(request, data))
+    return render(request, 'xgds_sample/sampleHelp.html', data) 
     
 
 if settings.XGDS_NOTES_ENABLE_GEOCAM_TRACK_MAPPING:
