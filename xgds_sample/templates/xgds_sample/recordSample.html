@@ -1,4 +1,5 @@
 {% extends 'dashboard_no_map.html' %}
+{% load static %}
 
 {% block sitemenu-content-secondary %}
 	{% include "sample_subnav.html" %}
@@ -8,7 +9,7 @@
 
  {% block cssExtras %}
  {{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
+    <link rel="stylesheet" type="text/css" href="{% static 'xgds_sample/css/xgds_sample.css' %}"></link>
  {% endblock cssExtras %}
 
 {% block preDashboard %}

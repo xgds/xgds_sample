@@ -1,6 +1,7 @@
 {% extends 'dashboard_base.html' %}
 
 {% load json_dumps %}
+{% load static %}
 
 {% block sitemenu-content-secondary %}
 	{% include "sample_subnav.html" %}
@@ -12,7 +13,7 @@
  {{ block.super }}
  {% include "xgds_notes2/NoteCSS.html" %}
   <link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css"></link>
-  <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}xgds_sample/css/xgds_sample.css"></link>
+  <link rel="stylesheet" type="text/css" href="{% static 'xgds_sample/css/xgds_sample.css' %}"></link>
  {% endblock cssExtras %}
 
 
@@ -22,8 +23,8 @@
 	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}typeahead.js/dist/typeahead.bundle.min.js"></script> 
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
-	<script type="text/javascript" src='{{ STATIC_URL }}xgds_core/js/datetimepickerUtils.js'></script>
-	<script type="text/javascript" src='{{ STATIC_URL }}xgds_sample/js/sampleEdit.js'></script>
+	<script type="text/javascript" src="{% static 'xgds_core/js/datetimepickerUtils.js' %}"></script>
+	<script type="text/javascript" src="{% static 'xgds_sample/js/sampleEdit.js' %}"></script>
 	<script type="text/javascript">
 		var collectors = {{ users|safe }};
 	</script>
