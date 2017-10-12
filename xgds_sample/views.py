@@ -328,7 +328,7 @@ if settings.XGDS_NOTES_ENABLE_GEOCAM_TRACK_MAPPING:
     from geocamUtil.KmlUtil import wrapKmlDjango, djangoResponse
 
     def getKmlNetworkLink(request):
-        url = request.build_absolute_uri(settings.SCRIPT_NAME + 'xgds_sample/samples.kml')
+        url = request.build_absolute_uri(settings.SCRIPT_NAME + 'xgds_sample/rest/samples.kml')
         return djangoResponse('''
     <NetworkLink>
       <name>%(name)s</name>
@@ -353,7 +353,7 @@ if settings.XGDS_NOTES_ENABLE_GEOCAM_TRACK_MAPPING:
                         })
 
         if days:
-            kml_document = render_to_string('xgds_sample/samples_placemark_document.kml',
+            kml_document = render_to_string('xgds_sample/rest/samples_placemark_document.kml',
                                             {'days': days,
                                              'iconUrl': request.build_absolute_uri('/static/xgds_sample/images/sample_icon.png')},
                                             request)
