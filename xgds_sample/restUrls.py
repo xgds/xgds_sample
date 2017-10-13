@@ -23,5 +23,5 @@ urlpatterns = [url(r'sample.json', views.getSampleInfo, {}, 'xgds_sample_get_inf
                ]
 
 if settings.XGDS_NOTES_ENABLE_GEOCAM_TRACK_MAPPING:
-    urlpatterns += [url(r'samples.kml', views.sample_map_kml, {'readOnly': True, 'securityTags': ['readOnly']}, 'sample_map_kml')]
-    urlpatterns += [url(r'samplesFeed.kml', views.getKmlNetworkLink, {'readOnly': True, 'securityTags': ['readOnly']}, 'sample_map_kml_feed')]
+    urlpatterns += [url(r'samples.kml', views.sample_map_kml, {}, 'sample_map_kml')]
+    urlpatterns += [url(r'samplesFeed.kml', views.getKmlNetworkLink, {}, 'sample_map_kml_feed')]

@@ -353,9 +353,9 @@ if settings.XGDS_NOTES_ENABLE_GEOCAM_TRACK_MAPPING:
                         })
 
         if days:
-            kml_document = render_to_string('xgds_sample/rest/samples_placemark_document.kml',
+            kml_document = render_to_string('xgds_sample/samples_placemark_document.kml',
                                             {'days': days,
-                                             'iconUrl': request.build_absolute_uri('/static/xgds_sample/images/sample_icon.png')},
+                                             'iconUrl': request.build_absolute_uri('/static/rest/xgds_sample/images/sample_icon.png')},
                                             request)
             return wrapKmlDjango(kml_document)
         return wrapKmlDjango("")
