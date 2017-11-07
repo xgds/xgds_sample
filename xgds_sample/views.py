@@ -14,7 +14,6 @@
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 import traceback
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse
@@ -104,7 +103,6 @@ def setSampleCustomFields(form, sample):
     return form
 
 
-@login_required 
 def getSampleEditPage(request, samplePK = None):
     fieldsEnabledFlag = 0  # initially, sample info fields are disabled until user presses enter to submit label number or name
     getSampleInfoUrl = reverse('xgds_sample_get_info')
@@ -127,7 +125,6 @@ def getSampleEditPage(request, samplePK = None):
                     'fieldsEnabledFlag': fieldsEnabledFlag})
  
  
-@login_required
 def saveSampleInfo(request):
     getSampleInfoUrl = reverse('xgds_sample_get_info')
     sampleMapDict = None
@@ -249,7 +246,6 @@ def getSampleInfo(request):
         return JsonResponse({'status':'false','message':'Request method %s not supported.' % request.method}, status=500)
                     
     
-@login_required
 def getSampleLabelsPage(request):
     labels = LABEL_MODEL.get().objects.all()
     return render(request,
