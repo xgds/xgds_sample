@@ -48,7 +48,7 @@
 
 {% block scripts %}
 {{block.super}}
-	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/handlebars.min.js'></script>
+	<script type="text/javascript" src='{{ EXTERNAL_URL }}/handlebars/dist/handlebars.min.js'></script>
 	<script type="text/javascript">
 		var printLabelsUrl = "{% url 'xgds_sample_labels_print' %}";
 	    var labelsPdfUrl = "{{ file_url }}";
