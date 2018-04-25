@@ -36,7 +36,6 @@ import pytz
 
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
-from xgds_data.forms import SearchForm, SpecializedForm
 from xgds_sample.models import SampleLabelSize, Region, Label
 from xgds_core.views import get_handlebars_templates
 from geocamTrack.utils import getClosestPosition
