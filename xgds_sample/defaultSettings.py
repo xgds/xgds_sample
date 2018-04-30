@@ -19,7 +19,6 @@ from geocamUtil.SettingsUtil import getOrCreateDict
 
 XGDS_SAMPLE_SAMPLE_MODEL = 'xgds_sample.Sample'
 XGDS_SAMPLE_LABEL_MODEL = 'xgds_sample.Label'
-XGDS_SAMPLE_RESOURCE_MODEL = 'geocamTrack.Resource'
 XGDS_SAMPLE_PERM_LINK_PREFIX = 'TODO:FIXME'
 
 XGDS_SAMPLE_DEFAULT_COLLECTOR = 'EV2'
@@ -33,8 +32,8 @@ XGDS_MAP_SERVER_JS_MAP = getOrCreateDict('XGDS_MAP_SERVER_JS_MAP')
 XGDS_SAMPLE_SAMPLE_KEY = 'Sample'
 XGDS_MAP_SERVER_JS_MAP[XGDS_SAMPLE_SAMPLE_KEY] = {'ol': 'xgds_sample/js/olSampleMap.js',
                                                   'model': XGDS_SAMPLE_SAMPLE_MODEL,
-                                                  'columns': ['collection_time', 'timezone', 'name', 'sample_type', 'label', 'collector', 'resource', 'thumbnail_image_url'],
-                                                  'columnTitles': ['Collected', 'Timezone', 'Name', 'Type', 'Label', 'Collector', 'Resource', ''] 
+                                                  'columns': ['collection_time', 'timezone', 'name', 'sample_type', 'label', 'collector', 'vehicle_name', 'thumbnail_image_url'],
+                                                  'columnTitles': ['Collected', 'Timezone', 'Name', 'Type', 'Label', 'Collector', 'vehicle_name', '']
                                                   }
 
 XGDS_MAP_SERVER_JS_MAP['Label'] = {'model': XGDS_SAMPLE_LABEL_MODEL,

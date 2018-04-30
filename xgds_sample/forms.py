@@ -39,7 +39,7 @@ from xgds_core.forms import SearchForm
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
-GEOCAM_TRACK_RESOURCE_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_RESOURCE_MODEL)
+XGDS_CORE_VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_CORE_VEHICLE_MODEL)
 
 class CollectorCharField(CharField):
     def label_from_instance(self, obj):
@@ -158,8 +158,8 @@ class SampleForm(ModelForm):
     def save(self, commit=True):
         instance = super(SampleForm, self).save(commit=False)
         instance.collection_time = self.cleaned_data['collection_time']
-        if instance.resource and instance.collection_time:
-            instance.track_position = getClosestPosition(timestamp=instance.collection_time, resource=instance.resource)
+        if instance.vehicle and instance.collection_time:
+            instance.track_position = getClosestPosition(timestamp=instance.collection_time, vehicle=instance.vehicle)
             
         if (('lat' in self.changed_data) and ('lon' in self.changed_data)) or ('altitude' in self.changed_data):
             if instance.user_position is None:

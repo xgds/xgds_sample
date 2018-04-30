@@ -55,7 +55,7 @@ LABEL_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_LABEL_MODEL)
 
 TRACK_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_TRACK_MODEL)
 POSITION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
-RESOURCE_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_RESOURCE_MODEL)
+VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_CORE_VEHICLE_MODEL)
 ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_CORE_ACTIVE_FLIGHT_MODEL)
 
 XGDS_SAMPLE_TEMPLATE_LIST = list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS)
@@ -68,11 +68,11 @@ def getUserNames():
     return allUsers
 
 
-def getTrackPosition(timestamp, resource):
+def getTrackPosition(timestamp, vehicle):
     '''
     Look up and return the closest tracked position if there is one.
     '''
-    return getClosestPosition(timestamp=timestamp, resource=resource)
+    return getClosestPosition(timestamp=timestamp, vehicle=vehicle)
 
 
 def deleteLabelAndSample(request, labelNum):
@@ -210,26 +210,26 @@ def getSampleInfo(request):
             except: 
                 return JsonResponse({'status':'false','message':"Invalid label number %s" % postDict['labelNum']}, status=500)
             if labelNum: 
-                defaultResource = None
+                defaultVehicle = None
                 try: 
                     notesUserSession = request.session.get('notes_user_session', None)
-                    resourceId = int(notesUserSession['resource'])
-                    defaultResource = RESOURCE_MODEL.get().objects.get(id = resourceId)
+                    vehicleId = int(notesUserSession['vehicle'])
+                    defaultVehicle = VEHICLE_MODEL.get().objects.get(id = vehicleId)
                 except: 
-                    print "no default resource available."
+                    print "no default vehicle available."
                 try: 
                     sample = SAMPLE_MODEL.get().objects.get(label__number = labelNum)
-                    if defaultResource:
-                        sample.setExtrasDefault(defaultResource)
+                    if defaultVehicle:
+                        sample.setExtrasDefault(defaultVehicle)
                     mapDict = sample.toMapDict()
                 except: 
                     # sample does not exist yet. Proceed.
                     year = timezone.now().year % 2000
                     mapDict = {'label_number': labelNum, 'collection_timezone': settings.TIME_ZONE, 
                                'pk': '', 'year': year}
-                    if defaultResource: 
-                        mapDict['resource_name'] = defaultResource.name
-                        foundActiveFlights = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__vehicle = defaultResource.vehicle)
+                    if defaultVehicle:
+                        mapDict['vehicle_name'] = defaultVehicle.name
+                        foundActiveFlights = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__vehicle = defaultVehicle.vehicle)
                         if foundActiveFlights: 
                             defaultFlight = foundActiveFlights[0].flight
                             mapDict['flight'] = defaultFlight.name

@@ -25,7 +25,8 @@ from geocamUtil.modelJson import modelToDict
 from geocamUtil.UserUtil import getUserName
 from django.contrib.auth.models import User
 
-from xgds_core.models import SearchableModel
+from xgds_core.models import SearchableModel, HasVehicle
+
 
 class Region(models.Model):
     ''' A region is a sub section of an exploration area or zone, ie North Crater'''
@@ -65,17 +66,16 @@ class Label(models.Model, SearchableModel):
     class Meta:
         ordering = ['number']
 
-
-DEFAULT_RESOURCE_FIELD = lambda: models.ForeignKey('geocamTrack.Resource', null=True, blank=True)
+#TODO if you are are not using any of these default types be sure to customize these fields.
+DEFAULT_VEHICLE_FIELD = lambda: models.ForeignKey('xgds_core.Vehicle', null=True, blank=True)
 DEFAULT_TRACK_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourcePosition', null=True, blank=True)
 DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourcePosition', null=True, blank=True, related_name="sample_user_set" )
 
 
-class AbstractSample(models.Model, SearchableModel):
+class AbstractSample(SearchableModel, HasVehicle):
     name = models.CharField(max_length=64, null=True, blank=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
-    resource = 'set to DEFAULT_RESOURCE_FIELD() or similar in derived classes'
     track_position = 'set to DEFAULT_TRACK_POSITION_FIELD() or similar in derived classes'
     user_position = 'set to DEFAULT_USER_POSITION_FIELD() or similar in derived classes'
     collector = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_collector") # person who collected the sample
@@ -124,7 +124,7 @@ class AbstractSample(models.Model, SearchableModel):
                 'sample_type',
                 'description',
                 'region',
-                'resource',
+                'vehicle',
                 'collector',
                 'creator',
                 ]
@@ -136,7 +136,7 @@ class AbstractSample(models.Model, SearchableModel):
                 'sample_type',
                 'description',
                 'region',
-                'resource',
+                'vehicle',
                 'collector',
                 'creator',
                 'collection_timezone',
@@ -213,11 +213,11 @@ class AbstractSample(models.Model, SearchableModel):
         #TODO implement for your model if you want fields to change based on name change
         pass
     
-    def setExtrasDefault(self, defaultResource):
-        ''' If the sample does not have resource, set it with the default resource'''
-        if not self.resource:
-            if defaultResource: 
-                self.resource = defaultResource
+    def setExtrasDefault(self, defaultVehicle):
+        ''' If the sample does not have vehicle, set it with the default vehicle'''
+        if not self.vehicle:
+            if defaultVehicle:
+                self.vehicle = defaultVehicle
                 self.save()
     
     def finish_initialization(self, request):
