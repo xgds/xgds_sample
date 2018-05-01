@@ -124,7 +124,7 @@ class AbstractSample(models.Model, SearchableModel):
                 'sample_type',
                 'description',
                 'region',
-                #'vehicle',
+                'flight__vehicle',
                 'flight',
                 'collector',
                 'creator',
