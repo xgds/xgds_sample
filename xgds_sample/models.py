@@ -25,7 +25,7 @@ from geocamUtil.modelJson import modelToDict
 from geocamUtil.UserUtil import getUserName
 from django.contrib.auth.models import User
 
-from xgds_core.models import SearchableModel, HasVehicle
+from xgds_core.models import SearchableModel
 
 
 class Region(models.Model):
@@ -72,7 +72,7 @@ DEFAULT_TRACK_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResour
 DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourcePosition', null=True, blank=True, related_name="sample_user_set" )
 
 
-class AbstractSample(SearchableModel, HasVehicle):
+class AbstractSample(models.Model, SearchableModel):
     name = models.CharField(max_length=64, null=True, blank=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
@@ -124,7 +124,8 @@ class AbstractSample(SearchableModel, HasVehicle):
                 'sample_type',
                 'description',
                 'region',
-                'vehicle',
+                #'vehicle',
+                'flight',
                 'collector',
                 'creator',
                 ]
@@ -136,7 +137,8 @@ class AbstractSample(SearchableModel, HasVehicle):
                 'sample_type',
                 'description',
                 'region',
-                'vehicle',
+                #'vehicle',
+                'flight',
                 'collector',
                 'creator',
                 'collection_timezone',
