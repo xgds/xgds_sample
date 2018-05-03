@@ -32,8 +32,8 @@ XGDS_MAP_SERVER_JS_MAP = getOrCreateDict('XGDS_MAP_SERVER_JS_MAP')
 XGDS_SAMPLE_SAMPLE_KEY = 'Sample'
 XGDS_MAP_SERVER_JS_MAP[XGDS_SAMPLE_SAMPLE_KEY] = {'ol': 'xgds_sample/js/olSampleMap.js',
                                                   'model': XGDS_SAMPLE_SAMPLE_MODEL,
-                                                  'columns': ['collection_time', 'timezone', 'name', 'sample_type', 'label', 'collector', 'vehicle_name', 'thumbnail_image_url'],
-                                                  'columnTitles': ['Collected', 'Timezone', 'Name', 'Type', 'Label', 'Collector', 'vehicle_name', '']
+                                                  'columns': ['collection_time', 'timezone', 'name', 'sample_type', 'label', 'collector', 'vehicle', 'thumbnail_image_url'],
+                                                  'columnTitles': ['Collected', 'Timezone', 'Name', 'Type', 'Label', 'Collector', 'vehicle', '']
                                                   }
 
 XGDS_MAP_SERVER_JS_MAP['Label'] = {'model': XGDS_SAMPLE_LABEL_MODEL,
