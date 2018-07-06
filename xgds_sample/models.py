@@ -19,13 +19,16 @@ from django.utils import timezone
 
 from django.db import models
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
 from geocamUtil.modelJson import modelToDict
 from geocamUtil.UserUtil import getUserName
 from django.contrib.auth.models import User
+from django.urls import reverse
 
-from xgds_core.models import SearchableModel
+from xgds_core.models import SearchableModel, IsFlightChild
+from geocamUtil.loader import LazyGetModelByName
 
 
 class Region(models.Model):
@@ -72,7 +75,7 @@ DEFAULT_TRACK_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResour
 DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourcePosition', null=True, blank=True, related_name="sample_user_set" )
 
 
-class AbstractSample(models.Model, SearchableModel):
+class AbstractSample(models.Model, SearchableModel): #, IsFlightChild):
     name = models.CharField(max_length=64, null=True, blank=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
@@ -87,7 +90,30 @@ class AbstractSample(models.Model, SearchableModel):
     modification_time = models.DateTimeField(blank=True, default=timezone.now, editable=False, db_index=True)
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
-    
+
+    @classmethod
+    def get_tree_json(cls, parent_class, parent_pk):
+        try:
+            found = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL).get().objects.filter(flight__id=parent_pk)
+            result = None
+            if found.exists():
+                moniker = settings.XGDS_SAMPLE_SAMPLE_MONIKER + 's'
+                flight = found[0].flight
+                result = {"title": moniker,
+                          "selected": False,
+                          "tooltip": "%s for %s " % (moniker, flight.name),
+                          "key": "%s_%s" % (flight.uuid, moniker),
+                          "data": {"json": reverse('xgds_map_server_objectsJson',
+                                                   kwargs={'object_name': 'XGDS_SAMPLE_SAMPLE_MODEL',
+                                                           'filter': 'flight__pk:' + str(flight.pk)}),
+                                   "sseUrl": "",
+                                   "type": 'MapLink',
+                                   }
+                          }
+            return result
+        except ObjectDoesNotExist:
+            return None
+
     def __unicode__(self):
         return u'%s' % (self.name)
 
