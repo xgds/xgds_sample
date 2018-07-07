@@ -27,7 +27,7 @@ from geocamUtil.UserUtil import getUserName
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from xgds_core.models import SearchableModel, IsFlightChild
+from xgds_core.models import SearchableModel, IsFlightChild, IsFlightData
 from geocamUtil.loader import LazyGetModelByName
 
 
@@ -75,7 +75,7 @@ DEFAULT_TRACK_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResour
 DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey('geocamTrack.PastResourcePosition', null=True, blank=True, related_name="sample_user_set" )
 
 
-class AbstractSample(models.Model, SearchableModel): #, IsFlightChild):
+class AbstractSample(models.Model, SearchableModel): #, IsFlightChild, IsFlightData):
     name = models.CharField(max_length=64, null=True, blank=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
@@ -113,6 +113,19 @@ class AbstractSample(models.Model, SearchableModel): #, IsFlightChild):
             return result
         except ObjectDoesNotExist:
             return None
+
+    @classmethod
+    def get_info_json(cls, flight_pk):
+        found = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL).get().objects.filter(flight__id=flight_pk)
+        result = None
+        if found.exists():
+            result = {'name': settings.XGDS_SAMPLE_SAMPLE_MONIKER + 's',
+                      'count': found.count(),
+                      'url': reverse('search_map_object_filter',
+                                     kwargs={'modelName': settings.XGDS_SAMPLE_SAMPLE_MONIKER,
+                                             'filter': 'flight__pk:' + str(flight_pk)})
+                      }
+        return result
 
     def __unicode__(self):
         return u'%s' % (self.name)
