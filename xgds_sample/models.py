@@ -119,11 +119,13 @@ class AbstractSample(models.Model, SearchableModel): #, IsFlightChild, IsFlightD
         found = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL).get().objects.filter(flight__id=flight_pk)
         result = None
         if found.exists():
+            flight = LazyGetModelByName(settings.XGDS_CORE_FLIGHT_MODEL).get().objects.get(id=flight_pk)
             result = {'name': settings.XGDS_SAMPLE_SAMPLE_MONIKER + 's',
                       'count': found.count(),
                       'url': reverse('search_map_object_filter',
                                      kwargs={'modelName': settings.XGDS_SAMPLE_SAMPLE_MONIKER,
-                                             'filter': 'flight__pk:' + str(flight_pk)})
+                                             'filter': 'flight__group:%d,flight__vehicle:%d' % (
+                                             flight.group.pk, flight.vehicle.pk)})
                       }
         return result
 
