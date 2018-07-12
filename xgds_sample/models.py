@@ -71,8 +71,8 @@ class Label(models.Model, SearchableModel):
 
 #TODO if you are are not using any of these default types be sure to customize these fields.
 DEFAULT_VEHICLE_FIELD = lambda: models.ForeignKey('xgds_core.Vehicle', null=True, blank=True)
-DEFAULT_TRACK_POSITION_FIELD = lambda: models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True)
-DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True, related_name="sample_user_set" )
+DEFAULT_TRACK_POSITION_FIELD = lambda: models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True, related_name="%(app_label)s_%(class)s_track_position")
+DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True, related_name="%(app_label)s_%(class)s_user_position" )
 
 
 class AbstractSample(models.Model, SearchableModel): #, IsFlightChild, IsFlightData):
