@@ -215,10 +215,10 @@ class SearchSampleForm(SearchForm):
     sample_type = forms.ModelChoiceField(required=False, queryset=SampleType.objects.all())
     label = forms.IntegerField(required=False)
     
-    min_collection_time = forms.DateTimeField(required=False, label='Min Time',
-                                         widget=forms.DateTimeInput(attrs={'class': 'datetimepicker'}))
-    max_collection_time = forms.DateTimeField(required=False, label = 'Max Time',
-                                         widget=forms.DateTimeInput(attrs={'class': 'datetimepicker'}))
+    min_collection_time = forms.DateTimeField(input_formats=settings.XGDS_CORE_DATE_FORMATS, required=False, label='Min Time',
+                                              widget=forms.DateTimeInput(attrs={'class': 'datetimepicker'}))
+    max_collection_time = forms.DateTimeField(input_formats=settings.XGDS_CORE_DATE_FORMATS, required=False, label = 'Max Time',
+                                              widget=forms.DateTimeInput(attrs={'class': 'datetimepicker'}))
     
     collection_timezone = forms.ChoiceField(required=False, choices=lazy(getTimezoneChoices, list)(empty=True), 
                                              label='Time Zone', help_text='Required for Min/Max Time')
