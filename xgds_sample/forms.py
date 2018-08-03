@@ -253,6 +253,8 @@ class SearchSampleForm(SearchForm):
                 raise forms.ValidationError(
                     "Time Zone is required for min / max times."
                 )
+            else:
+                del cleaned_data["collection_timezone"]
 
     def buildQueryForLabel(self, fieldname, field, value):
         return Q(**{fieldname+'__number': int(value)})
