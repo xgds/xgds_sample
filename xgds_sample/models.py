@@ -294,6 +294,14 @@ class AbstractSample(models.Model, SearchableModel): #, IsFlightChild, IsFlightD
             result['lon'] = ''
             
         return result
+
+    @classmethod
+    def get_time_bounds_field_name(cls):
+        """
+        If your min/max time search field differs from this name override this method.
+        :return:
+        """
+        return 'collection_time'
      
     class Meta:
         abstract = True

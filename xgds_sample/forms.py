@@ -255,6 +255,7 @@ class SearchSampleForm(SearchForm):
                 )
             else:
                 del cleaned_data["collection_timezone"]
+        return cleaned_data
 
     def buildQueryForLabel(self, fieldname, field, value):
         return Q(**{fieldname+'__number': int(value)})
