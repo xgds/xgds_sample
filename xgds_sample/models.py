@@ -73,9 +73,11 @@ class Label(models.Model, SearchableModel):
 DEFAULT_VEHICLE_FIELD = lambda: models.ForeignKey('xgds_core.Vehicle', null=True, blank=True)
 DEFAULT_TRACK_POSITION_FIELD = lambda: models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True, related_name="%(app_label)s_%(class)s_track_position")
 DEFAULT_USER_POSITION_FIELD = lambda: models.ForeignKey(settings.GEOCAM_TRACK_PAST_POSITION_MODEL, null=True, blank=True, related_name="%(app_label)s_%(class)s_user_position" )
+DEFAULT_FLIGHT_FIELD = lambda: models.ForeignKey('xgds_core.Flight', related_name='%(app_label)s_%(class)s_related',
+                                                 verbose_name=settings.XGDS_CORE_FLIGHT_MONIKER, blank=True, null=True)
 
 
-class AbstractSample(models.Model, SearchableModel): #, IsFlightChild, IsFlightData):
+class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData):
     name = models.CharField(max_length=64, null=True, blank=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     region = models.ForeignKey(Region, null=True)
@@ -90,6 +92,8 @@ class AbstractSample(models.Model, SearchableModel): #, IsFlightChild, IsFlightD
     modification_time = models.DateTimeField(blank=True, default=timezone.now, editable=False, db_index=True)
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
+    flight = "TODO set to DEFAULT_FLIGHT_FIELD or similar"
+
 
     @classmethod
     def get_tree_json(cls, parent_class, parent_pk):
@@ -350,3 +354,14 @@ class SampleLabelSize(models.Model):
                 return template
 
         raise LabelTemplateException("No Template found for label " + self.name)       
+
+
+class Sample(AbstractSample):
+    """
+    Sample sample class
+    TODO: ensure it is minimal viable model
+    """
+
+    track_position = DEFAULT_TRACK_POSITION_FIELD()
+    user_position = DEFAULT_USER_POSITION_FIELD()
+    flight = DEFAULT_FLIGHT_FIELD()
