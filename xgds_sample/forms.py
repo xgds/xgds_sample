@@ -13,8 +13,11 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+
 import datetime
 import pytz
+
+from dal import autocomplete
 
 from django.utils import timezone
 from django.conf import settings
@@ -28,7 +31,8 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 
 from geocamUtil.loader import getModelByName
-from xgds_sample.models import SampleType, Region, Label
+from xgds_map_server.models import Place
+from xgds_sample.models import SampleType, Label
 from geocamUtil.loader import LazyGetModelByName
 from geocamUtil.forms.AbstractImportForm import getTimezoneChoices
 
@@ -40,6 +44,7 @@ from xgds_core.forms import SearchForm
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
 XGDS_CORE_VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_CORE_VEHICLE_MODEL)
+PLACE_FILTER_URL = '/xgds_core/complete/%s.json/' % 'xgds_map_server.Place'
 
 class CollectorCharField(CharField):
     def label_from_instance(self, obj):
@@ -80,8 +85,9 @@ class SampleForm(ModelForm):
         self.fields['lon'].initial = positionDict['lon']
         if 'altitude' in positionDict:
             self.fields['altitude'].initial = positionDict['altitude']
-        self.fields['region'].initial = Region.objects.get(id = settings.XGDS_CURRENT_REGION_ID)
-        self.fields['region'].empty_label = None
+        if settings.XGDS_MAP_SERVER_DEFAULT_PLACE_ID:
+            self.fields['place'].initial = Place.objects.get(id=settings.XGDS_MAP_SERVER_DEFAULT_PLACE_ID)
+        self.fields['place'].empty_label = None
         # auto increment the sample number
         self.initial['number'] = self.instance.number
         if not self.instance.number:
@@ -210,8 +216,13 @@ class SampleForm(ModelForm):
                    'collector',
                    'label']
 
+
 class SearchSampleForm(SearchForm):
-    region = forms.ModelChoiceField(required=False, queryset=Region.objects.all())
+    place = forms.ModelChoiceField(Place.objects.all(),
+                                   label=settings.XGDS_MAP_SERVER_PLACE_MONIKER,
+                                   required=False,
+                                   widget=autocomplete.ModelSelect2(url=PLACE_FILTER_URL))
+
     sample_type = forms.ModelChoiceField(required=False, queryset=SampleType.objects.all())
     label = forms.IntegerField(required=False)
     

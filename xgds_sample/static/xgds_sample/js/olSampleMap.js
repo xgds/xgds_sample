@@ -112,7 +112,7 @@ var Sample = {
             var data = ["Label:", sampleJson.label_number,
                         "Name:", sampleJson.name ? sampleJson.name : '',
                         "Type:", sampleJson.sample_type_name,
-                        "Region:", sampleJson.region_name,
+                        "Place:", sampleJson.place_name, //TODO: get label from settings
                         "Collector:", sampleJson.collector_name ? sampleJson.collector_name: '',
                         "Time:", sampleJson.collection_time ? getLocalTimeString(sampleJson.collection_time, sampleJson.collection_timezone):'',
                         "Description:", sampleJson.description ? sampleJson.description : ''];

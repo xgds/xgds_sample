@@ -13,47 +13,54 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-import datetime
-import pytz
+
 from django.utils import timezone
 
 from django.db import models
+from django.db.models import Max
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from geocamUtil.models.AbstractEnum import AbstractEnumModel
-from geocamUtil.modelJson import modelToDict
 from geocamUtil.UserUtil import getUserName
 from django.contrib.auth.models import User
 from django.urls import reverse
 
 from xgds_core.models import SearchableModel, IsFlightChild, IsFlightData
 from geocamUtil.loader import LazyGetModelByName
-
-
-class Region(models.Model):
-    ''' A region is a sub section of an exploration area or zone, ie North Crater'''
-    name = models.CharField(max_length=128, db_index=True)
-    shortName = models.CharField(max_length=8, db_index=True)
-    zone = models.ForeignKey('geocamUtil.SiteFrame', null=True)
-    
-    def __unicode__(self):
-        return u'%s' % (self.name)
+from xgds_map_server.models import Place
 
 
 class SampleType(AbstractEnumModel):
     
     def __unicode__(self):
         return u'%s' % (self.display_name)
-    
+
+
+def get_next_label_number():
+    """
+    Get the next unused label number, or 1 if none exist
+    :return:
+    """
+    try:
+        max_dict = Label.objects.all().aggregate(Max('number'))
+        max_value = max_dict['number__max']
+        if max_value:
+            return max_value + 1
+        else:
+            return 1
+    except ObjectDoesNotExist:
+        return 1
+
 
 class Label(models.Model, SearchableModel):
-    number = models.IntegerField(db_index=True)
+
+    number = models.IntegerField(db_index=True, default=get_next_label_number)
     url = models.CharField(null=True, max_length=512)    
     last_printed = models.DateTimeField(blank=True, null=True, editable=False, db_index=True)
     
     def __unicode__(self):
-        return u'%s' % (self.number)
+        return u'%s' % self.number
     
     @property
     def sampleName(self):
@@ -65,7 +72,7 @@ class Label(models.Model, SearchableModel):
     @classmethod
     def getAvailableLabels(cls):
         return cls.objects.filter(sample__name__isnull=True)
-    
+
     class Meta:
         ordering = ['number']
 
@@ -80,7 +87,7 @@ DEFAULT_FLIGHT_FIELD = lambda: models.ForeignKey('xgds_core.Flight', related_nam
 class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData):
     name = models.CharField(max_length=64, null=True, blank=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
-    region = models.ForeignKey(Region, null=True)
+    place = models.ForeignKey(Place, null=True, verbose_name=settings.XGDS_MAP_SERVER_PLACE_MONIKER)
     track_position = 'set to DEFAULT_TRACK_POSITION_FIELD() or similar in derived classes'
     user_position = 'set to DEFAULT_USER_POSITION_FIELD() or similar in derived classes'
     collector = models.ForeignKey(User, null=True, blank=True, related_name="%(app_label)s_%(class)s_collector") # person who collected the sample
@@ -152,7 +159,7 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
     def getFieldOrder(cls):
         return ['label',
                 'name',
-                'region', 
+                'place',
                 'sample_type', 
                 'collector_name', 
                 'collection_time',
@@ -160,7 +167,7 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
 
     @classmethod
     def getSearchableFields(cls):
-        return ['name', 'description', 'collector__first_name', 'collector__last_name', 'sample_type__display_name', 'region__name', 'region__zone__name']
+        return ['name', 'description', 'collector__first_name', 'collector__last_name', 'sample_type__display_name', 'place__name', 'place__region__name']
     
     @classmethod
     def getSearchFormFields(cls):
@@ -168,7 +175,7 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
                 'label',
                 'sample_type',
                 'description',
-                'region',
+                'place',
                 'flight__vehicle',
                 'flight',
                 'collector',
@@ -181,7 +188,7 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
                 'label',
                 'sample_type',
                 'description',
-                'region',
+                'place',
                 #'vehicle',
                 'flight',
                 'collector',
@@ -202,11 +209,15 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
         return int(self.label.number)
 
     @property
-    def region_name(self):
-        if self.region:
-            return self.region.name
+    def place_name(self):
+        if self.place:
+            return self.place.name
         return None
-    
+
+    @classmethod
+    def place_label(cls):
+        return settings.XGDS_MAP_SERVER_PLACE_MONIKER
+
     @property
     def collector_name(self):
         return getUserName(self.collector)

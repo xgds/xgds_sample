@@ -36,7 +36,8 @@ import pytz
 
 from geocamUtil.loader import getClassByName, LazyGetModelByName
 from forms import SampleForm
-from xgds_sample.models import SampleLabelSize, Region, Label
+from xgds_map_server.models import Place
+from xgds_sample.models import SampleLabelSize, Label
 from xgds_core.views import get_handlebars_templates
 from geocamTrack.utils import getClosestPosition
 from geocamUtil.models import SiteFrame
@@ -172,8 +173,9 @@ def saveSampleInfo(request):
 
 def addDefaults(mapDict):
     # set the default information (mirroring forms.py as initial values)
-    if 'region_name' not in mapDict or not mapDict['region_name']: 
-        mapDict['region_name'] = Region.objects.get(id = settings.XGDS_CURRENT_REGION_ID).name
+    if 'place_name' not in mapDict or not mapDict['place_name']:
+        if settings.XGDS_MAP_SERVER_DEFAULT_PLACE_ID:
+            mapDict['place_name'] = Place.objects.get(id=settings.XGDS_MAP_SERVER_DEFAULT_PLACE_ID).name
     if 'number' not in mapDict or not mapDict['number']:
         mapDict['number'] = SAMPLE_MODEL.get().getCurrentNumber()
     # change the server time (UTC) to local time for display
