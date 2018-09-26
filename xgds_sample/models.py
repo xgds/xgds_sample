@@ -55,7 +55,7 @@ def get_next_label_number():
 
 class Label(models.Model, SearchableModel):
 
-    number = models.IntegerField(db_index=True, default=get_next_label_number)
+    number = models.IntegerField(db_index=True, unique=True, default=get_next_label_number)
     url = models.CharField(null=True, max_length=512)    
     last_printed = models.DateTimeField(blank=True, null=True, editable=False, db_index=True)
     
