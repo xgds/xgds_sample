@@ -1,5 +1,5 @@
 <div> <h4>Sample</h4> <a id="edit_sample_button" href="/xgds_sample/edit/sample/{{pk}}" class="btn btn-primary" target="_blank">Edit</a> </div>
-	<table>
+	<table style="width:100%;">
 		<tr>
 			<th><label for="id_name">Name:</label></th>
 			<td>{{name}}</td>
@@ -9,7 +9,7 @@
 			<td>{{label_number}}</td>
 		</tr>
 		<tr>
-			<th><label for="id_place">{{place_label}}:</label></th>
+			<th><label for="id_place">Place:</label></th>
 			<td>{{place_name}}</td>
 		</tr>
 		<tr>
@@ -21,7 +21,7 @@
 			<td>{{collector_name}}</td>
 		</tr>
 		<tr>
-			<th><label for="id_collection_time">Collection time:</label></th>
+			<th><label for="id_collection_time">Collection Time:</label></th>
 			<td>{{prettyTime collection_time collection_timezone}}</td>
 		</tr>
 		<tr>
