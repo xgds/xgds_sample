@@ -2,6 +2,6 @@
 {% load nav %}
 		<li class="nav-item {% currentnav xgds_sample_record* xgds_sample_info_save %}"><a class="nav-link {% currentnav xgds_sample_record* xgds_sample_info_save %}" href="{% url 'xgds_sample_record_edit' %}">Record Samples</a></li>
 		<li class="nav-item {% currentnav xgds_sample_labels* %}"><a class="nav-link {% currentnav xgds_sample_labels* %}" href="{% url 'xgds_sample_labels' %}">Print Labels</a></li>
-		<li class="nav-item {% currentnav xgds_sample_fullsearch %}"><a class="nav-link {% currentnav xgds_sample_fullsearch %}" href="{% url 'xgds_sample_fullsearch'%}">Search Samples</a></li>
+		<li class="nav-item {% currentnav search_map_object %}"><a class="nav-link {% currentnav search_map_object %}" href="{% url 'search_map_object' 'Sample'%}">Search Samples</a></li>
 		<li class="nav-item {% currentnav xgds_sample_help* %}"><a class="nav-link {% currentnav xgds_sample_help* %}" href="{% url 'xgds_sample_help' %}">Help</a></li>
 {% endblock %}

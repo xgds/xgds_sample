@@ -30,11 +30,20 @@ XGDS_SAMPLE_HANDLEBARS_DIR = [os.path.join('xgds_sample', 'templates', 'handleba
 
 XGDS_MAP_SERVER_JS_MAP = getOrCreateDict('XGDS_MAP_SERVER_JS_MAP')
 XGDS_SAMPLE_SAMPLE_KEY = 'Sample'
+XGDS_SAMPLE_SAMPLE_MONIKER = 'Sample'
+
 XGDS_MAP_SERVER_JS_MAP[XGDS_SAMPLE_SAMPLE_KEY] = {'ol': 'xgds_sample/js/olSampleMap.js',
                                                   'model': XGDS_SAMPLE_SAMPLE_MODEL,
-                                                  'columns': ['collection_time', 'timezone', 'name', 'sample_type', 'label', 'collector', 'vehicle', 'thumbnail_image_url'],
-                                                  'columnTitles': ['Collected', 'Timezone', 'Name', 'Type', 'Label', 'Collector', 'vehicle', '']
+                                                  'searchableColumns': ['name','description','flight_name', 'sample_type'],
+                                                  'columns': ['checkbox', 'collection_time', 'collection_timezone', 'name', 'sample_type_name', 'label_number', 'collector_name', 'vehicle_name', 'thumbnail_image_url', 'place_name', 'pk', 'lat', 'lon', 'alt', 'flight_name', 'app_label', 'model_type', 'type', 'description', 'DT_RowId'],
+                                                  'hiddenColumns': ['thumbnail_image_url', 'place_name', 'pk','lat', 'lon', 'alt', 'flight_name', 'vehicle_name', 'app_label', 'model_type', 'type', 'description',  'DT_RowId'],
+                                                  'columnTitles': ['Time', 'TZ', 'Name', 'Type', 'Label', 'Collector'],
+                                                  'viewHandlebars': 'xgds_sample/templates/handlebars/sample-view.handlebars',
+                                                  'event_time_field': 'collection_time',
+                                                  'event_timezone_field': 'collection_timezone',
+                                                  'search_form_class': 'xgds_sample.forms.SearchSampleForm',
                                                   }
+
 
 XGDS_MAP_SERVER_JS_MAP['Label'] = {'model': XGDS_SAMPLE_LABEL_MODEL,
                                    'columns': ['number', 'url', 'last_printed', 'sampleName', 'pk'],
