@@ -229,6 +229,10 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
         return None
 
     @property
+    def id(self):
+        return self.pk
+
+    @property
     def tz(self):
         return self.collection_timezone
     

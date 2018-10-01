@@ -13,6 +13,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
+
 import traceback
 from django.shortcuts import render
 from django.core.urlresolvers import reverse
@@ -150,7 +151,7 @@ def saveSampleInfo(request):
                     fieldsEnabledFlag = 0  # disable fields if successfuly saved.
                     messages.success(request, 'Sample %s successfully updated.' % sample.name)  
             except:
-                messages.error(request, 'Sample %s could not be saved.' % sample.name)  
+                messages.error(request, 'Sample %s could not be saved.' % sample.name)
             if form.errors:
                 for key, msg in form.errors.items():
                     if key == 'warning':
@@ -168,7 +169,8 @@ def saveSampleInfo(request):
                         'templates': get_handlebars_templates(list(settings.XGDS_MAP_SERVER_HANDLEBARS_DIRS), 'XGDS_MAP_SERVER_HANDLEBARS_DIRS'),
                         'sampleMapDict': sampleMapDict,
                         'getSampleInfoUrl': getSampleInfoUrl,
-                        'fieldsEnabledFlag': fieldsEnabledFlag})
+                        'fieldsEnabledFlag': fieldsEnabledFlag,
+                        })
 
 
 def addDefaults(mapDict):

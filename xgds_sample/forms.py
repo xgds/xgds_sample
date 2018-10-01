@@ -40,6 +40,7 @@ from geocamTrack.utils import getClosestPosition
 from geocamUtil.models import SiteFrame
 from geocamUtil.TimeUtil import utcToLocalTime
 from xgds_core.forms import SearchForm
+from xgds_core.flightUtils import lookup_vehicle
 
 LOCATION_MODEL = LazyGetModelByName(settings.GEOCAM_TRACK_PAST_POSITION_MODEL)
 SAMPLE_MODEL = LazyGetModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
@@ -56,8 +57,6 @@ class SampleForm(ModelForm):
     lon = forms.FloatField(required=False, label="Longitude")
     altitude = forms.FloatField(required=False, label="Altitude")
     description = forms.CharField(widget=forms.Textarea, required=False, label="Description")
-    number = forms.IntegerField(required=False, min_value=0, label="Number", disabled=True)
-    station_number = forms.CharField(required=True, label="Station #")
     collector_name = forms.CharField(required=False, label="Collector")
     name = forms.CharField(widget = forms.HiddenInput(), required = False, label="Name", help_text='Name autofills on save.')
     
@@ -65,12 +64,7 @@ class SampleForm(ModelForm):
     hidden_name = forms.CharField(widget = forms.HiddenInput(), required = False)
     pk = forms.IntegerField(widget = forms.HiddenInput(), required = False)
     
-    date_formats = list(forms.DateTimeField.input_formats) + [
-        '%Y/%m/%d %H:%M:%S',
-        '%Y-%m-%d %H:%M:%S',
-        '%m/%d/%Y %H:%M'
-    ]
-    collection_time = forms.DateTimeField(required=True, input_formats=date_formats, help_text="")
+    collection_time = forms.DateTimeField(required=True, input_formats=settings.XGDS_CORE_DATE_FORMATS, help_text="")
     collection_timezone = forms.CharField(widget=forms.HiddenInput(), initial=settings.TIME_ZONE)
     
     field_order = SAMPLE_MODEL.get().getFieldOrder()
@@ -85,13 +79,11 @@ class SampleForm(ModelForm):
         self.fields['lon'].initial = positionDict['lon']
         if 'altitude' in positionDict:
             self.fields['altitude'].initial = positionDict['altitude']
+        if 'depth' in positionDict:
+            self.fields['depth'].initial = positionDict['depth']
         if settings.XGDS_MAP_SERVER_DEFAULT_PLACE_ID:
             self.fields['place'].initial = Place.objects.get(id=settings.XGDS_MAP_SERVER_DEFAULT_PLACE_ID)
         self.fields['place'].empty_label = None
-        # auto increment the sample number
-        self.initial['number'] = self.instance.number
-        if not self.instance.number:
-            self.initial['number'] = SAMPLE_MODEL.get().getCurrentNumber()
         if self.instance.collection_time:
             utc_collection_time = self.instance.collection_time
         else: 
@@ -99,7 +91,6 @@ class SampleForm(ModelForm):
         local_time = utcToLocalTime(utc_collection_time) 
         collection_time = local_time.strftime("%m/%d/%Y %H:%M:%S")
         self.initial['collection_time'] = collection_time
-
     
     def clean_year(self):
         year = self.cleaned_data['year']
@@ -107,28 +98,12 @@ class SampleForm(ModelForm):
             raise forms.ValidationError(u"You haven't set a year.")
         return year
     
-    
-    def clean_number(self):
-        number = self.cleaned_data['number']
-        if number == None:
-            raise forms.ValidationError(u"You haven't set a number.")
-        return number
-    
-    
-    def clean_station_number(self):
-        station_number = self.cleaned_data['station_number']
-        if station_number == None:
-            raise forms.ValidationError(u"You haven't set a station_number.")
-        return station_number
-    
-    
-    def clean_collection_timezone(self): 
+    def clean_collection_timezone(self):
         try:
             return self.cleaned_data['collection_timezone']
         except:
             return settings.TIME_ZONE
-    
-    
+
     def clean_collection_time(self): 
         ctime = self.cleaned_data['collection_time']
         if ctime:  # if there is a time input, convert to utc
@@ -139,8 +114,7 @@ class SampleForm(ModelForm):
             utcTime = localizedTime.astimezone(pytz.utc)
             ctime = utcTime
         return ctime
-    
-    
+
     def clean(self):
         """
         Checks that both lat and lon are entered (or both are empty)
@@ -159,27 +133,28 @@ class SampleForm(ModelForm):
                 if not self.cleaned_data['collection_time']:
                     msg = "Must enter collection time to record position"
                     self.add_error('collection_time', msg)
-                    
-                    
+
     def save(self, commit=True):
         instance = super(SampleForm, self).save(commit=False)
         instance.collection_time = self.cleaned_data['collection_time']
-        if instance.vehicle and instance.collection_time:
-            instance.track_position = getClosestPosition(timestamp=instance.collection_time, vehicle=instance.vehicle)
+        if instance.vehicle_name and instance.collection_time:
+            instance.track_position = getClosestPosition(timestamp=instance.collection_time, vehicle=lookup_vehicle(instance.vehicle_name))
             
-        if (('lat' in self.changed_data) and ('lon' in self.changed_data)) or ('altitude' in self.changed_data):
+        if (('lat' in self.changed_data) and ('lon' in self.changed_data)) or 'altitude' in self.changed_data or 'depth' in self.changed_data:
             if instance.user_position is None:
-                instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp = datetime.datetime.now(pytz.utc),
-                                                                             timestamp = instance.collection_time,
-                                                                             latitude = self.cleaned_data['lat'],
-                                                                             longitude = self.cleaned_data['lon'], 
-                                                                             altitude = self.cleaned_data['altitude'])
+                instance.user_position = LOCATION_MODEL.get().objects.create(serverTimestamp=datetime.datetime.now(pytz.utc),
+                                                                             timestamp=instance.collection_time,
+                                                                             latitude=self.cleaned_data['lat'],
+                                                                             longitude=self.cleaned_data['lon'],
+                                                                             altitude=self.cleaned_data['altitude'],
+                                                                             depth=self.cleaned_data['depth'])
             else:
                 instance.user_position.latitude = self.cleaned_data['lat']
                 instance.user_position.longitude = self.cleaned_data['lon']
                 instance.user_position.altitude = self.cleaned_data['altitude']
-        
-        if ('collector_name' in self.changed_data):
+                instance.user_position.depth = self.cleaned_data['depth']
+
+        if 'collector_name' in self.changed_data:
             fullName = self.cleaned_data['collector_name']
             try: 
                 splitName = fullName.split(' ')
@@ -203,7 +178,6 @@ class SampleForm(ModelForm):
         if commit:
             instance.save()
         return instance
-
 
     class Meta: 
         model = getModelByName(settings.XGDS_SAMPLE_SAMPLE_MODEL)
@@ -232,7 +206,7 @@ class SearchSampleForm(SearchForm):
                                               widget=forms.DateTimeInput(attrs={'class': 'datetimepicker'}))
     
     collection_timezone = forms.ChoiceField(required=False, choices=lazy(getTimezoneChoices, list)(empty=True), 
-                                             label='Time Zone', help_text='Required for Min/Max Time')
+                                            label='Time Zone', help_text='Required for Min/Max Time')
 
     
     field_order = SAMPLE_MODEL.get().getSearchFieldOrder()
@@ -277,7 +251,6 @@ class SearchSampleForm(SearchForm):
         elif fieldname == 'description' or fieldname == 'name':
             return self.buildContainsQuery(fieldname, field, value)
         return super(SearchSampleForm, self).buildQueryForField(fieldname, field, value, minimum, maximum)
-        
 
     class Meta:
         model = SAMPLE_MODEL.get()
