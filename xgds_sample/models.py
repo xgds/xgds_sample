@@ -249,7 +249,7 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
     def view_url(self):
         return reverse('search_map_single_object', kwargs={'modelPK':self.pk,
                                                            'modelName': settings.XGDS_SAMPLE_SAMPLE_KEY})
-    
+
     def getPosition(self):
         if self.user_position:
             return self.user_position
