@@ -28,6 +28,8 @@ from django.urls import reverse
 
 from xgds_core.models import SearchableModel, IsFlightChild, IsFlightData
 from geocamUtil.loader import LazyGetModelByName
+from geocamUtil.models.ExtrasDotField import ExtrasDotField
+
 from xgds_map_server.models import Place
 
 
@@ -100,7 +102,7 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
     label = models.OneToOneField(Label, primary_key=True, related_name='sample')
     description = models.CharField(null=True, blank=True, max_length=1024)
     flight = "TODO set to DEFAULT_FLIGHT_FIELD or similar"
-
+    extras = ExtrasDotField(default='')
 
     @classmethod
     def get_tree_json(cls, parent_class, parent_pk):
@@ -167,7 +169,14 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
 
     @classmethod
     def getSearchableFields(cls):
-        return ['name', 'description', 'collector__first_name', 'collector__last_name', 'sample_type__display_name', 'place__name', 'place__region__name']
+        return ['name',
+                'description',
+                'collector__first_name',
+                'collector__last_name',
+                'sample_type__display_name',
+                'place__name',
+                'place__region__name',
+                'extras']
     
     @classmethod
     def getSearchFormFields(cls):

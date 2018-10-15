@@ -34,9 +34,9 @@ XGDS_SAMPLE_SAMPLE_MONIKER = 'Sample'
 
 XGDS_MAP_SERVER_JS_MAP[XGDS_SAMPLE_SAMPLE_KEY] = {'ol': 'xgds_sample/js/olSampleMap.js',
                                                   'model': XGDS_SAMPLE_SAMPLE_MODEL,
-                                                  'searchableColumns': ['name','description','flight_name', 'sample_type'],
-                                                  'columns': ['checkbox', 'collection_time', 'collection_timezone', 'name', 'sample_type_name', 'label_number', 'collector_name', 'vehicle_name', 'thumbnail_image_url', 'place_name', 'pk', 'lat', 'lon', 'alt', 'flight_name', 'app_label', 'model_type', 'type', 'description', 'DT_RowId'],
-                                                  'hiddenColumns': ['thumbnail_image_url', 'place_name', 'pk','lat', 'lon', 'alt', 'flight_name', 'vehicle_name', 'app_label', 'model_type', 'type', 'description',  'DT_RowId'],
+                                                  'searchableColumns': ['name', 'description', 'flight_name', 'sample_type', 'extras'],
+                                                  'columns': ['checkbox', 'collection_time', 'collection_timezone', 'name', 'sample_type_name', 'label_number', 'collector_name', 'vehicle_name', 'thumbnail_image_url', 'place_name', 'pk', 'lat', 'lon', 'alt', 'flight_name', 'app_label', 'model_type', 'type', 'description', 'extras', 'DT_RowId'],
+                                                  'hiddenColumns': ['thumbnail_image_url', 'place_name', 'pk','lat', 'lon', 'alt', 'flight_name', 'vehicle_name', 'app_label', 'model_type', 'type', 'description', 'extras', 'DT_RowId'],
                                                   'columnTitles': ['Time', 'TZ', 'Name', 'Type', 'Label', 'Collector'],
                                                   'order_columns': ['pk', 'collection_time', 'collection_timezone', 'name',
                                                                     'sample_type__display_name', 'label__number', 'collector__first_name'],
