@@ -147,7 +147,7 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData)
 
     @classmethod
     def cls_type(cls):
-        return 'Sample'
+        return settings.XGDS_SAMPLE_SAMPLE_KEY
     
     @property
     def type(self):
