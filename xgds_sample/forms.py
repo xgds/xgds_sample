@@ -234,7 +234,7 @@ class SearchSampleForm(SearchForm):
 
         if min_collection_time or max_collection_time:
             if not collection_timezone:
-                self.add_error('event_timezone',"Time Zone is required for min / max times.")
+                self.add_error('collection_timezone',"Time Zone is required for min / max times.")
                 raise forms.ValidationError(
                     "Time Zone is required for min / max times."
                 )
