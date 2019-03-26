@@ -157,8 +157,18 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData,
         return self.__class__.cls_type()
 
     def getSseType(self):
-        return settings.XGDS_SAMPLE_SAMPLE_CHANNEL
-    
+        return settings.XGDS_SAMPLE_SSE_TYPE
+
+    def getBroadcastChannel(self):
+        if self.flight:
+            return self.flight.vehicle.shortName
+        return 'sse'
+
+    @classmethod
+    def getChannels(self):
+        """ for sse, return a list of channels """
+        return settings.XGDS_SSE_SAMPLE_CHANNELS
+
     @classmethod
     def timesearchField(self):
         return 'collection_time'

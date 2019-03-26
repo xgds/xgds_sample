@@ -64,4 +64,5 @@ XGDS_DATA_MASKED_FIELDS['xgds_sample'] = {'AbstractSample': ['track_position',
 XGDS_DATA_EXPAND_RELATED = getOrCreateDict('XGDS_DATA_EXPAND_RELATED')
 XGDS_DATA_EXPAND_RELATED['xgds_sample'] = {'AbstractSample': [('place', 'site', 'Site')]}
 
-XGDS_SAMPLE_SAMPLE_CHANNEL = 'sample'
+XGDS_SAMPLE_SSE_TYPE = XGDS_SAMPLE_SAMPLE_KEY
+XGDS_SSE_SAMPLE_CHANNELS = []
