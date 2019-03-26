@@ -359,7 +359,9 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData,
     @receiver(post_save)
     def publishAfterSave(sender, **kwargs):
         if settings.XGDS_CORE_REDIS:
-            publishRedisSSE(settings.XGDS_SAMPLES_SAMPLE_CHANNEL, "Sample", json.dumps({}))
+            for channel in settings.XGDS_SSE_SAMPLE_CHANNELS:
+                # TODO this should really be just one channel
+                publishRedisSSE(channel, settings.XGDS_SAMPLE_SSE_TYPE, json.dumps({}))
 
 
 class SampleLabelSize(models.Model):
