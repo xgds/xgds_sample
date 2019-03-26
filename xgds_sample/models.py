@@ -34,6 +34,10 @@ from geocamUtil.models.ExtrasDotField import ExtrasDotField
 
 from xgds_map_server.models import Place
 
+import json
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from xgds_core.redisUtil import publishRedisSSE
 
 class SampleType(AbstractEnumModel):
     
@@ -349,6 +353,11 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData,
      
     class Meta:
         abstract = True
+
+    @receiver(post_save)
+    def publishAfterSave(sender, **kwargs):
+        if settings.XGDS_CORE_REDIS:
+            publishRedisSSE(settings.XGDS_SAMPLES_SAMPLE_CHANNEL, "Sample", json.dumps({}))
 
 
 class SampleLabelSize(models.Model):
