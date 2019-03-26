@@ -161,7 +161,7 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData,
         return self.__class__.cls_type()
 
     def getSseType(self):
-        return settings.XGDS_SAMPLE_SAMPLE_CHANNEL
+        return settings.XGDS_SAMPLES_SAMPLE_CHANNEL
     
     @classmethod
     def timesearchField(self):
