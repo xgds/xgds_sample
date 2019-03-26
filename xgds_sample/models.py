@@ -26,7 +26,7 @@ from geocamUtil.UserUtil import getUserName
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from xgds_core.models import SearchableModel, IsFlightChild, IsFlightData
+from xgds_core.models import SearchableModel, IsFlightChild, IsFlightData, BroadcastMixin
 from xgds_notes2.models import NoteMixin, NoteLinksMixin, DEFAULT_NOTES_GENERIC_RELATION
 
 from geocamUtil.loader import LazyGetModelByName
@@ -92,7 +92,8 @@ DEFAULT_FLIGHT_FIELD = lambda: models.ForeignKey('xgds_core.Flight', related_nam
                                                  verbose_name=settings.XGDS_CORE_FLIGHT_MONIKER, blank=True, null=True)
 
 
-class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData, NoteMixin, NoteLinksMixin):
+class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData, NoteMixin, NoteLinksMixin,
+                     BroadcastMixin):
     name = models.CharField(max_length=64, null=True, blank=True, db_index=True) # 9 characters
     sample_type = models.ForeignKey(SampleType, null=True)
     place = models.ForeignKey(Place, null=True, verbose_name=settings.XGDS_MAP_SERVER_PLACE_MONIKER)
@@ -158,6 +159,9 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData,
     @property
     def type(self):
         return self.__class__.cls_type()
+
+    def getSseType(self):
+        return settings.XGDS_SAMPLE_SAMPLE_CHANNEL
     
     @classmethod
     def timesearchField(self):
