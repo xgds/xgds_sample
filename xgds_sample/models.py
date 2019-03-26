@@ -37,7 +37,9 @@ from xgds_map_server.models import Place
 import json
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from xgds_core.redisUtil import publishRedisSSE
+if settings.XGDS_CORE_REDIS:
+    from xgds_core.redisUtil import publishRedisSSE
+
 
 class SampleType(AbstractEnumModel):
     
