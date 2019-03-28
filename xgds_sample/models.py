@@ -356,21 +356,6 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData,
     class Meta:
         abstract = True
 
-    @receiver(post_save)
-    def publishAfterSave(sender, **kwargs):
-        if settings.XGDS_CORE_REDIS:
-            for channel in settings.XGDS_SSE_SAMPLE_CHANNELS:
-                # TODO this should really be just one channel
-                publishRedisSSE(channel, settings.XGDS_SAMPLE_SSE_TYPE.lower(), json.dumps({}))
-
-    @classmethod
-    def getSseType(cls):
-        return settings.XGDS_SAMPLE_SSE_TYPE
-
-    def getBroadcastChannel(self):
-        if self.flight:
-            return self.flight.vehicle.shortName
-        return 'sse'
 
 
 class SampleLabelSize(models.Model):
@@ -428,4 +413,10 @@ class Sample(AbstractSample):
     user_position = DEFAULT_USER_POSITION_FIELD()
     flight = DEFAULT_FLIGHT_FIELD()
     notes = DEFAULT_NOTES_GENERIC_RELATION()
+
+@receiver(post_save, sender=Sample)
+def publishAfterSave(sender, instance, **kwargs):
+    if settings.XGDS_CORE_REDIS:
+        for channel in settings.XGDS_SSE_SAMPLE_CHANNELS:
+            publishRedisSSE(channel, settings.XGDS_SAMPLE_SSE_TYPE.lower(), json.dumps({}))
 
