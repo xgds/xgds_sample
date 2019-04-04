@@ -162,11 +162,6 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData,
     def type(self):
         return self.__class__.cls_type()
 
-    def getBroadcastChannel(self):
-        if self.flight:
-            return self.flight.vehicle.name.lower()
-        return 'sse'
-
     @classmethod
     def timesearchField(self):
         return 'collection_time'
