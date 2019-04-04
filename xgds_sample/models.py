@@ -162,18 +162,10 @@ class AbstractSample(models.Model, SearchableModel, IsFlightChild, IsFlightData,
     def type(self):
         return self.__class__.cls_type()
 
-    def getSseType(self):
-        return settings.XGDS_SAMPLE_SSE_TYPE
-
     def getBroadcastChannel(self):
         if self.flight:
-            return self.flight.vehicle.shortName
+            return self.flight.vehicle.name.lower()
         return 'sse'
-
-    @classmethod
-    def getChannels(self):
-        """ for sse, return a list of channels """
-        return settings.XGDS_SSE_SAMPLE_CHANNELS
 
     @classmethod
     def timesearchField(self):
@@ -414,9 +406,9 @@ class Sample(AbstractSample):
     flight = DEFAULT_FLIGHT_FIELD()
     notes = DEFAULT_NOTES_GENERIC_RELATION()
 
-@receiver(post_save, sender=Sample)
-def publishAfterSave(sender, instance, **kwargs):
-    if settings.XGDS_CORE_REDIS:
-        for channel in settings.XGDS_SSE_SAMPLE_CHANNELS:
-            publishRedisSSE(channel, settings.XGDS_SAMPLE_SSE_TYPE.lower(), json.dumps({}))
+# @receiver(post_save, sender=Sample)
+# def publishAfterSave(sender, instance, **kwargs):
+#     if settings.XGDS_CORE_REDIS:
+#         for channel in settings.XGDS_SSE_SAMPLE_CHANNELS:
+#             publishRedisSSE(channel, settings.XGDS_SAMPLE_SSE_TYPE.lower(), json.dumps({}))
 
